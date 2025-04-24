@@ -6,7 +6,7 @@ import Button from '@/components/Button';
 
 export default function Index() {
   const handleStart = () => {
-    router.push('/register');
+    router.push('/auth/register');
   };
   return (
     <SafeAreaView style={styles.container}>

@@ -15,26 +15,34 @@ import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [form, setForm] = useState({
+    username: '',
+    birthday: '',
+    phoneNumber: '',
+    agreedToTerms: false,
+  });
+
+  const handleChange = (key: keyof typeof form, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleGoBack = () => {
     router.back();
   };
 
-  const handleSettings = () => {
-    // 설정 기능 구현
-  };
-
   const handleRegister = () => {
-    // 회원가입 기능 구현
-    if (name && birthdate && phoneNumber && agreedToTerms) {
+    const { username, birthday, phoneNumber, agreedToTerms } = form;
+    if (username && birthday && phoneNumber && agreedToTerms) {
       // 유효성 검사 후 회원가입 처리
-      router.push('/');
+      router.push('/auth/pin');
     }
   };
+
+  const isDisabled =
+    !form.username ||
+    !form.birthday ||
+    !form.phoneNumber ||
+    !form.agreedToTerms;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,12 +54,7 @@ export default function Register() {
           <Ionicons name="arrow-back" size={24} color={colors.black} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>회원가입</Text>
-        <TouchableOpacity
-          onPress={handleSettings}
-          style={styles.settingsButton}
-        >
-          <Ionicons name="settings-outline" size={24} color={colors.black} />
-        </TouchableOpacity>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <View style={styles.content}>
@@ -61,8 +64,8 @@ export default function Register() {
           <TextInput
             style={styles.input}
             placeholder="이름을 입력해주세요"
-            value={name}
-            onChangeText={setName}
+            value={form.username}
+            onChangeText={(text) => handleChange('username', text)}
           />
         </View>
 
@@ -72,8 +75,8 @@ export default function Register() {
           <TextInput
             style={styles.input}
             placeholder="YYYY.MM.DD"
-            value={birthdate}
-            onChangeText={setBirthdate}
+            value={form.birthday}
+            onChangeText={(text) => handleChange('birthday', text)}
             keyboardType="numeric"
           />
         </View>
@@ -83,9 +86,9 @@ export default function Register() {
           <Text style={styles.inputLabel}>휴대폰 번호</Text>
           <TextInput
             style={styles.input}
-            placeholder="'-'로 구분해주세요"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            placeholder="'-'없이 입력해주세요"
+            value={form.phoneNumber}
+            onChangeText={(text) => handleChange('phoneNumber', text)}
             keyboardType="phone-pad"
           />
         </View>
@@ -93,12 +96,12 @@ export default function Register() {
         {/* 약관 동의 */}
         <TouchableOpacity
           style={styles.termsRow}
-          onPress={() => setAgreedToTerms(!agreedToTerms)}
+          onPress={() => handleChange('agreedToTerms', !form.agreedToTerms)}
         >
           <Ionicons
-            name={agreedToTerms ? 'checkmark-circle' : 'ellipse-outline'}
+            name={form.agreedToTerms ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={agreedToTerms ? colors.primary : colors.grey}
+            color={form.agreedToTerms ? colors.primary : colors.grey}
           />
           <Text style={styles.termsText}>약관 동의</Text>
         </TouchableOpacity>
@@ -106,14 +109,10 @@ export default function Register() {
         {/* 회원가입 버튼 */}
         <Button
           title="회원가입"
-          variant={
-            !name || !birthdate || !phoneNumber || !agreedToTerms
-              ? 'disabled'
-              : 'primary'
-          }
+          variant={isDisabled ? 'disabled' : 'primary'}
           size="large"
           onPress={handleRegister}
-          disabled={!name || !birthdate || !phoneNumber || !agreedToTerms}
+          disabled={isDisabled}
           fullWidth
         />
       </View>
@@ -136,24 +135,27 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+    width: 40,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.black,
+    textAlign: 'center',
+    flex: 1,
   },
-  settingsButton: {
-    padding: 8,
+  headerRightPlaceholder: {
+    width: 40,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 30,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
     color: colors.black,

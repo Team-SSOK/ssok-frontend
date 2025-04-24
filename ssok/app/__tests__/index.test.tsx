@@ -9,13 +9,13 @@ describe('기본 테스트', () => {
     const mockPush = jest.fn();
 
     const handleStart = () => {
-      mockPush('/register');
+      mockPush('/auth/register');
     };
 
     handleStart();
 
     // 회원가입 페이지로 이동했는지 확인
-    expect(mockPush).toHaveBeenCalledWith('/register');
+    expect(mockPush).toHaveBeenCalledWith('/auth/register');
     expect(mockPush).toHaveBeenCalledTimes(1);
   });
 });
