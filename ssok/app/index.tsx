@@ -1,17 +1,12 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
+import LottieView from 'lottie-react-native';
+import Button from '@/components/Button';
 
 export default function Index() {
   const handleStart = () => {
-    router.push('/');
+    router.push('/register');
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -23,13 +18,24 @@ export default function Index() {
           <Text style={styles.subtitle}>나만의 간편 송금 앱</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.button}
+        <View style={styles.lottieContainer}>
+          <LottieView
+            source={require('@/assets/lottie/welcome.json')}
+            autoPlay
+            loop
+            style={styles.lottieAnimation}
+          />
+        </View>
+
+        <Button
+          title="SSOK 시작하기"
+          variant="secondary"
+          size="large"
           onPress={handleStart}
           testID="start-button"
-        >
-          <Text style={styles.buttonText}>SSOK 시작하기</Text>
-        </TouchableOpacity>
+          buttonStyle={styles.startButton}
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -44,7 +50,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: '30%',
+    paddingTop: 60,
     paddingBottom: 40,
   },
   titleContainer: {
@@ -54,23 +60,25 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'bold',
     color: colors.white,
-    marginBottom: 30,
+    marginBottom: 40,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 20,
+    fontWeight: '200',
     color: colors.white,
-    lineHeight: 24,
+    lineHeight: 30,
   },
-  button: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: 16,
+  lottieContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginVertical: 30,
   },
-  buttonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: 'bold',
+  lottieAnimation: {
+    width: 250,
+    height: 250,
+  },
+  startButton: {
+    marginTop: 20,
   },
 });
