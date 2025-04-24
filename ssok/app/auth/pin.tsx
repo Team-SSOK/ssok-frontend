@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { usePin } from '@/contexts/PinContext';
@@ -25,16 +18,11 @@ export default function PinSetup() {
     router.push('/auth/pin-confirm');
   };
 
-  const {
-    inputPin,
-    errorMessage,
-    isComplete,
-    handlePressNumber,
-    handleDelete,
-  } = usePinInput({
-    maxLength,
-    onComplete: handleComplete,
-  });
+  const { inputPin, errorMessage, handlePressNumber, handleDelete } =
+    usePinInput({
+      maxLength,
+      onComplete: handleComplete,
+    });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,16 +43,6 @@ export default function PinSetup() {
           onPressDelete={handleDelete}
         />
       </View>
-
-      {/* PIN 번호가 모두 입력되면 다음 버튼 활성화 */}
-      {isComplete && (
-        <TouchableOpacity
-          style={styles.completeButton}
-          onPress={() => handleComplete(inputPin)}
-        >
-          <Text style={styles.completeButtonText}>다음</Text>
-        </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 }
@@ -78,13 +56,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingVertical: 80,
+    justifyContent: 'space-between',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 35,
     color: colors.black,
-    marginBottom: 50,
   },
   completeButton: {
     position: 'absolute',

@@ -12,6 +12,8 @@ export default function RootLayout() {
           name="auth/pin-confirm"
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="auth/pin-login" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PinProvider>
   );

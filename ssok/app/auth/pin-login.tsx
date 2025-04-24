@@ -1,41 +1,22 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Alert,
-} from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { usePin } from '@/contexts/PinContext';
 import PinDots from '@/modules/auth/components/PinDots';
 import PinKeypad from '@/modules/auth/components/PinKeypad';
 import usePinInput from '@/modules/auth/hooks/usePin';
-import AuthStorage from '@/services/AuthStorage';
 
-export default function PinConfirm() {
-  const { pin: savedPin, saveUserRegistration } = usePin();
+export default function PinLogin() {
+  const { verifyAndLogin } = usePin();
   const [errorMessage, setErrorMessage] = useState<string>('');
   const maxLength = 6;
 
   const validatePin = async (inputPin: string) => {
-    if (inputPin === savedPin) {
-      try {
-        // 휴대폰 번호 가져오기 (회원가입 과정에서 저장되어야 함)
-        const phoneNumber = (await AuthStorage.getPhoneNumber()) || '';
-
-        // 사용자 정보 등록 (전화번호, PIN)
-        await saveUserRegistration(phoneNumber, inputPin);
-
-        // 회원가입 완료 후 탭 화면으로 이동
-        router.replace('/(tabs)/index');
-      } catch (error) {
-        console.error('Error during registration:', error);
-        Alert.alert('오류', '회원가입 중 오류가 발생했습니다.');
-      }
+    const isValid = await verifyAndLogin(inputPin);
+    if (isValid) {
+      // 로그인 성공 시 탭 화면으로 이동
+      router.replace('/(tabs)/index');
     } else {
       // PIN 번호가 일치하지 않으면 에러 메시지 표시
       setErrorMessage('PIN 번호가 일치하지 않습니다.');
@@ -44,26 +25,25 @@ export default function PinConfirm() {
     return true;
   };
 
-  const { inputPin, isComplete, handlePressNumber, handleDelete, resetPin } =
-    usePinInput({
-      maxLength,
-      onComplete: (pin) => {
-        const isValid = validatePin(pin);
-        if (!isValid) {
-          setTimeout(() => {
-            resetPin();
-            setErrorMessage('');
-          }, 1000);
-        }
-      },
-    });
+  const { inputPin, handlePressNumber, handleDelete, resetPin } = usePinInput({
+    maxLength,
+    onComplete: async (pin) => {
+      const isValid = await validatePin(pin);
+      if (!isValid) {
+        setTimeout(() => {
+          resetPin();
+          setErrorMessage('');
+        }, 1000);
+      }
+    },
+  });
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>PIN번호 확인</Text>
+        <Text style={styles.title}>PIN 번호 입력</Text>
 
         <View style={styles.pinSection}>
           <PinDots

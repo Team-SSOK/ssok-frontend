@@ -81,13 +81,13 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '90%',
     maxWidth: 300,
   },
   keypadRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   keypadButton: {
     width: 70,
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
   },
   keypadButtonText: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: colors.white,
   },
   keypadEmpty: {
