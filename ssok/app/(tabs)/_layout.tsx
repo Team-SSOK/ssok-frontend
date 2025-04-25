@@ -25,7 +25,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="transfer"
+        name="bluetooth"
         options={{
           title: '블루투스 송금',
           tabBarIcon: ({ color, size }) => (

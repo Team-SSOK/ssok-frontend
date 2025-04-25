@@ -45,6 +45,11 @@ export default function HomeScreen() {
     router.push('/settings');
   };
 
+  const handleAccountPress = () => {
+    // @ts-ignore - Expo Router typing issue
+    router.push(`/account/${mockAccount.accountID}`);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
@@ -63,7 +68,7 @@ export default function HomeScreen() {
         <AccountCard
           account={mockAccount}
           balance={accountBalance}
-          onPress={() => console.log('계좌 상세 보기')}
+          onPress={handleAccountPress}
         />
 
         {/* 최근 거래내역 */}
