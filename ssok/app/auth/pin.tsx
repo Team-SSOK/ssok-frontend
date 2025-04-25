@@ -26,7 +26,7 @@ export default function PinSetup() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.content}>
         <Text style={styles.title}>PIN번호 설정</Text>

@@ -17,15 +17,16 @@ const NextButton: React.FC<NextButtonProps> = ({
     <TouchableOpacity
       style={[
         styles.button,
-        enabled ? styles.buttonEnabled : styles.buttonDisabled,
+        enabled ? styles.enabledButton : styles.disabledButton,
       ]}
       onPress={onPress}
       disabled={!enabled}
+      activeOpacity={0.8}
     >
       <Text
         style={[
           styles.buttonText,
-          enabled ? styles.buttonTextEnabled : styles.buttonTextDisabled,
+          enabled ? styles.enabledText : styles.disabledText,
         ]}
       >
         {title}
@@ -36,25 +37,27 @@ const NextButton: React.FC<NextButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
     paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
-  buttonEnabled: {
+  enabledButton: {
     backgroundColor: colors.primary,
   },
-  buttonDisabled: {
-    backgroundColor: colors.silver,
+  disabledButton: {
+    backgroundColor: colors.disabled,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
   },
-  buttonTextEnabled: {
+  enabledText: {
     color: colors.white,
   },
-  buttonTextDisabled: {
-    color: colors.lGrey,
+  disabledText: {
+    color: colors.grey,
   },
 });
 

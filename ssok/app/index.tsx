@@ -161,6 +161,6 @@ const styles = StyleSheet.create({
     height: 250,
   },
   startButton: {
-    marginTop: 20,
+    marginVertical: 40,
   },
 });
