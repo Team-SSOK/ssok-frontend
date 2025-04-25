@@ -36,21 +36,21 @@ export default function TransferScreen() {
   const handleNextPress = () => {
     if (accountNumber && selectedBank) {
       // 다음 단계(금액 입력 등)로 이동
-      console.log('다음 단계로 이동', {
-        accountNumber,
-        bankId: selectedBank.id,
-        bankName: selectedBank.name,
-        bankCode: selectedBank.code,
-      });
-      // router.push({
-      //   pathname: '/transfer/amount',
-      //   params: {
-      //     accountNumber,
-      //     bankId: selectedBank.id,
-      //     bankName: selectedBank.name,
-      //     bankCode: selectedBank.code
-      //   }
+      // console.log('다음 단계로 이동', {
+      //   accountNumber,
+      //   bankId: selectedBank.id,
+      //   bankName: selectedBank.name,
+      //   bankCode: selectedBank.code,
       // });
+      router.push({
+        pathname: '/transfer/amount',
+        params: {
+          accountNumber,
+          bankId: selectedBank.id,
+          bankName: selectedBank.name,
+          bankCode: selectedBank.code,
+        },
+      });
     }
   };
 
