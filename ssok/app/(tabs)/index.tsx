@@ -72,9 +72,7 @@ export default function HomeScreen() {
         />
 
         {/* 최근 거래내역 */}
-        <RecentTransactions
-          onViewAllPress={() => console.log('거래내역 전체보기')}
-        />
+        <RecentTransactions />
       </ScrollView>
     </SafeAreaView>
   );
