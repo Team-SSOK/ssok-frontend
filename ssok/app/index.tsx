@@ -42,7 +42,7 @@ export default function Index() {
   useEffect(() => {
     if (isLoggedIn) {
       // 탭 화면으로 이동
-      router.replace('/(tabs)/index');
+      router.replace('/(tabs)');
     }
   }, [isLoggedIn]);
 

@@ -27,9 +27,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="transfer"
         options={{
-          title: '송금/서비스',
+          title: '블루투스 송금',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="wallet-outline" size={size} color={color} />
+            <Ionicons name="bluetooth" size={size} color={color} />
           ),
         }}
       />

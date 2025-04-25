@@ -62,33 +62,10 @@ export default function SettingsScreen() {
         {/* 앱 설정 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>앱 설정</Text>
-
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color={colors.black}
-              />
-              <Text style={styles.settingText}>알림 설정</Text>
-            </View>
-            <Switch
-              trackColor={{ false: colors.silver, true: colors.primary }}
-              thumbColor={colors.white}
-              ios_backgroundColor={colors.silver}
-              onValueChange={setNotifications}
-              value={notifications}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Ionicons
-                name="finger-print-outline"
-                size={24}
-                color={colors.black}
-              />
-              <Text style={styles.settingText}>생체인증 사용</Text>
+              <Ionicons name="bluetooth" size={24} color={colors.black} />
+              <Text style={styles.settingText}>블루투스 사용</Text>
             </View>
             <Switch
               trackColor={{ false: colors.silver, true: colors.primary }}
@@ -124,11 +101,6 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={20} color={colors.grey} />
           </TouchableOpacity>
         </View>
-
-        {/* 로그아웃 */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>로그아웃</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

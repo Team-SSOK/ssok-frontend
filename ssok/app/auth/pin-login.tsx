@@ -16,7 +16,7 @@ export default function PinLogin() {
     const isValid = await verifyAndLogin(inputPin);
     if (isValid) {
       // 로그인 성공 시 탭 화면으로 이동
-      router.replace('/(tabs)/index');
+      router.replace('/(tabs)');
     } else {
       // PIN 번호가 일치하지 않으면 에러 메시지 표시
       setErrorMessage('PIN 번호가 일치하지 않습니다.');
@@ -43,7 +43,7 @@ export default function PinLogin() {
       <StatusBar barStyle="dark-content" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>PIN 번호 입력</Text>
+        <Text style={styles.title}>PIN 번호 로그인</Text>
 
         <View style={styles.pinSection}>
           <PinDots

@@ -31,7 +31,7 @@ export default function PinConfirm() {
         await saveUserRegistration(phoneNumber, inputPin);
 
         // 회원가입 완료 후 탭 화면으로 이동
-        router.replace('/(tabs)/index');
+        router.replace('/');
       } catch (error) {
         console.error('Error during registration:', error);
         Alert.alert('오류', '회원가입 중 오류가 발생했습니다.');

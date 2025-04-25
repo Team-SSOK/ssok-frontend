@@ -18,7 +18,7 @@ export default function TransferScreen() {
 
       {/* 헤더 */}
       <View style={styles.header}>
-        <Text style={styles.title}>송금/서비스</Text>
+        <Text style={styles.title}>블루투스 송금</Text>
       </View>
 
       <ScrollView style={styles.content}>
