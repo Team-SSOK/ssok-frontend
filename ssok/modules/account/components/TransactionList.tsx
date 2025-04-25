@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
-import TransactionItem, { Transaction } from './TransactionItem';
+import TransactionItem from './TransactionItem';
+import { Transaction } from '@/utils/types';
 
 interface TransactionListProps {
   transactions: Transaction[];

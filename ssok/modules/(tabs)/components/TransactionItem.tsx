@@ -1,12 +1,8 @@
 import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
-import {
-  formatNumber,
-  formatDate,
-  maskAccountNumber,
-} from '@/utils/formatters';
-import { Transaction } from './RecentTransactions';
+import { formatNumber, formatDate } from '@/utils/formatters';
+import { Transaction } from '@/utils/types';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -54,11 +50,6 @@ const styles = StyleSheet.create({
   transactionDescription: {
     fontSize: 16,
     color: colors.black,
-    marginBottom: 4,
-  },
-  transactionAccount: {
-    fontSize: 12,
-    color: colors.mGrey,
     marginBottom: 4,
   },
   transactionDate: {

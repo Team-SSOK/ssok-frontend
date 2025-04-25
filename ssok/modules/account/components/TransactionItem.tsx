@@ -2,19 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import { formatNumber, formatDate } from '@/utils/formatters';
-
-export interface Transaction {
-  transferID: number;
-  accountId: number;
-  counterpartAccount: string;
-  counterpartName: string;
-  transferType: 'DEPOSIT' | 'WITHDRAW';
-  transferMoney: number;
-  currencyCode: number;
-  transferMethod: number;
-  createdAt: string;
-  balanceAfterTransaction?: number;
-}
+import { Transaction } from '@/utils/types';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -43,11 +31,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
           {isDeposit ? '' : '-'}
           {formatNumber(transaction.transferMoney)}원
         </Text>
-        {transaction.balanceAfterTransaction && (
-          <Text style={styles.currentBalance}>
-            잔액 {formatNumber(transaction.balanceAfterTransaction)}원
-          </Text>
-        )}
+        <Text style={styles.currentBalance}>
+          잔액 {formatNumber(transaction.balanceAfterTransaction)}원
+        </Text>
       </View>
     </View>
   );

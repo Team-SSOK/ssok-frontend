@@ -1,4 +1,4 @@
-import { Transaction } from '@/modules/account/components/TransactionItem';
+import { Transaction } from '@/utils/types';
 
 /**
  * 현재 날짜로부터 지정된 일수 전의 날짜를 ISO 문자열로 반환합니다.

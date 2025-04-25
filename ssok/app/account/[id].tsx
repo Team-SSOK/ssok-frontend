@@ -21,7 +21,7 @@ import PeriodFilter, {
   PeriodFilterType,
 } from '@/modules/account/components/PeriodFilter';
 import TransactionList from '@/modules/account/components/TransactionList';
-import { Transaction } from '@/modules/account/components/TransactionItem';
+import { Transaction } from '@/utils/types';
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams();

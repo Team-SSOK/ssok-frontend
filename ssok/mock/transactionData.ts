@@ -1,4 +1,4 @@
-import { Transaction } from '@/modules/account/components/TransactionItem';
+import { Transaction } from '@/utils/types';
 import { getDateBefore } from '@/utils/dateUtils';
 
 // 모든 거래내역 데이터 (3개월치)
