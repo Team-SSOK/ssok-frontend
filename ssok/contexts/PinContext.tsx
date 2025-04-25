@@ -60,6 +60,8 @@ export const PinProvider: React.FC<{ children: ReactNode }> = ({
   // 사용자 등록 정보 저장 (회원가입 완료 시)
   const saveUserRegistration = async (phoneNumber: string, pin: string) => {
     try {
+      console.log('[LOG] 사용자 회원 가입 정보 저장');
+      console.log('[LOG] phoneNumber: ', phoneNumber, 'PIN: ', pin);
       await AuthStorage.saveUserInfo(phoneNumber, pin);
       setPinState(pin);
     } catch (error) {

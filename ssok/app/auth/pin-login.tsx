@@ -40,7 +40,7 @@ export default function PinLogin() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.content}>
         <Text style={styles.title}>PIN 번호 로그인</Text>

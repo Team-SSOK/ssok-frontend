@@ -30,6 +30,7 @@ export const AuthStorage = {
       const isRegistered = await AsyncStorage.getItem(
         STORAGE_KEYS.IS_REGISTERED,
       );
+      console.log('[LOG] isRegistered: ', isRegistered);
       return isRegistered === 'true';
     } catch (error) {
       console.error('Error checking registration status:', error);
@@ -43,6 +44,7 @@ export const AuthStorage = {
   verifyPin: async (inputPin: string): Promise<boolean> => {
     try {
       const storedPin = await AsyncStorage.getItem(STORAGE_KEYS.PIN);
+      console.log('[LOG] storedPin: ', storedPin);
       return storedPin === inputPin;
     } catch (error) {
       console.error('Error verifying PIN:', error);

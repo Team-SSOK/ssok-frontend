@@ -50,6 +50,7 @@ export default function Index() {
   if (isLoading || checkingStatus) {
     return (
       <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.white} />
         </View>
@@ -58,15 +59,17 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.content}>
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+      <SafeAreaView style={styles.titleWrapper}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>SSOK 쏙</Text>
           <Text style={styles.subtitle}>터치 한 번으로 완성되는</Text>
           <Text style={styles.subtitle}>나만의 간편 송금 앱</Text>
         </View>
+      </SafeAreaView>
 
+      <View style={styles.contentContainer}>
         <View style={styles.lottieContainer}>
           <LottieView
             source={require('@/assets/lottie/welcome.json')}
@@ -79,7 +82,7 @@ export default function Index() {
         {isRegistered ? (
           <Button
             title="SSOK 로그인하기"
-            variant="secondary"
+            variant="primary"
             size="large"
             onPress={handleLogin}
             testID="login-button"
@@ -89,7 +92,7 @@ export default function Index() {
         ) : (
           <Button
             title="SSOK 시작하기"
-            variant="secondary"
+            variant="primary"
             size="large"
             onPress={handleStart}
             testID="start-button"
@@ -98,13 +101,19 @@ export default function Index() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+    backgroundColor: colors.primary,
+  },
+  titleWrapper: {
     backgroundColor: colors.primary,
   },
   loadingContainer: {
@@ -112,15 +121,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
+  contentContainer: {
     flex: 1,
-    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
+    marginTop: -20,
   },
   titleContainer: {
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingTop: 80,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 36,
@@ -138,7 +154,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 30,
+    marginVertical: 10,
   },
   lottieAnimation: {
     width: 250,

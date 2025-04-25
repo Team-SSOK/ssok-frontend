@@ -60,7 +60,7 @@ export default function PinConfirm() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.content}>
         <Text style={styles.title}>PIN번호 확인</Text>
