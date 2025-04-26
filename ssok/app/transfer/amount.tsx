@@ -6,7 +6,11 @@ import Header from '../../modules/transfer/components/Header';
 import AmountDisplay from '../../modules/transfer/components/AmountDisplay';
 import Keypad from '../../modules/transfer/components/Keypad';
 import NextButton from '../../modules/transfer/components/NextButton';
+import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
 
+/**
+ * 송금 금액 입력 화면
+ */
 export default function AmountScreen() {
   const { accountNumber, bankName, userName } = useLocalSearchParams();
   const [amount, setAmount] = useState<string>('0');
@@ -66,7 +70,7 @@ export default function AmountScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <Header title="얼마를 보낼까요?" onBackPress={handleBackPress} />
 
-      <View style={styles.content}>
+      <AnimatedLayout style={styles.content}>
         <AmountDisplay
           amount={amount}
           recipientName={userName as string}
@@ -80,7 +84,7 @@ export default function AmountScreen() {
         <View style={styles.buttonContainer}>
           <NextButton onPress={handleNext} enabled={btnEnabled} title="다음" />
         </View>
-      </View>
+      </AnimatedLayout>
     </SafeAreaView>
   );
 }
@@ -91,7 +95,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 20,
   },
   spacer: {

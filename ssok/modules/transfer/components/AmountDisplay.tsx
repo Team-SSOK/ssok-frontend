@@ -25,10 +25,7 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
       </View>
 
       <View style={styles.amountContainer}>
-        <View style={styles.amountRow}>
-          <Text style={styles.amount}>{formattedAmount}</Text>
-          <Text style={styles.currency}>원</Text>
-        </View>
+        <Text style={styles.currency}>{formattedAmount}원</Text>
       </View>
     </View>
   );
@@ -67,19 +64,9 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: 16,
   },
-  amountRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  amount: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
   currency: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: colors.primary,
     marginLeft: 4,
   },
 });
