@@ -1,24 +1,22 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import LottieView from 'lottie-react-native';
 import { colors } from '@/constants/colors';
 import NextButton from '../../modules/transfer/components/NextButton';
+import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
+import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
 
+/**
+ * 송금 완료 화면
+ * 송금이 성공적으로 완료되었음을 사용자에게 알리는 화면
+ */
 export default function CompleteScreen() {
   const { amount } = useLocalSearchParams();
-  const formattedAmount = parseInt(amount as string, 10).toLocaleString(
-    'ko-KR',
-  );
 
-  // 3초 후 자동으로 홈으로 이동하는 타이머 설정
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // 자동으로 홈으로 이동
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const parsedAmount = parseFloat(amount as string);
+  const formattedAmount = !isNaN(parsedAmount)
+    ? parsedAmount.toLocaleString('ko-KR')
+    : '0';
 
   const handleGoHome = () => {
     router.replace('/(tabs)' as any);
@@ -28,26 +26,17 @@ export default function CompleteScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-      <View style={styles.content}>
-        <View style={styles.animationContainer}>
-          <LottieView
-            source={require('@/assets/lottie/success.json')}
-            autoPlay
-            loop={false}
-            style={styles.animation}
-          />
-        </View>
-
-        <Text style={styles.title}>송금 완료</Text>
-        <Text style={styles.amountText}>{formattedAmount}원</Text>
-        <Text style={styles.message}>송금이 성공적으로 완료되었습니다.</Text>
+      <AnimatedLayout style={styles.content} duration={500}>
+        {/* 송금 완료 메시지와 애니메이션 */}
+        <CompleteMessage amount={formattedAmount} />
 
         <View style={styles.spacer} />
 
+        {/* 홈으로 돌아가기 버튼 */}
         <View style={styles.buttonContainer}>
           <NextButton onPress={handleGoHome} enabled={true} title="홈으로" />
         </View>
-      </View>
+      </AnimatedLayout>
     </SafeAreaView>
   );
 }
@@ -58,37 +47,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   content: {
-    flex: 1,
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  animationContainer: {
-    width: 200,
-    height: 200,
-    marginBottom: 30,
-  },
-  animation: {
-    width: '100%',
-    height: '100%',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.black,
-    marginBottom: 16,
-  },
-  amountText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 20,
-  },
-  message: {
-    fontSize: 16,
-    color: colors.grey,
-    textAlign: 'center',
-    marginHorizontal: 20,
   },
   spacer: {
     flex: 1,

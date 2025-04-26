@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 
 // 모듈화된 컴포넌트 임포트
@@ -17,15 +16,11 @@ import AccountInput from '@/modules/transfer/components/AccountInput';
 import BankSelector from '@/modules/transfer/components/BankSelector';
 import NextButton from '@/modules/transfer/components/NextButton';
 import { Bank } from '@/mock/bankData';
+import Header from '@/modules/transfer/components/Header';
 
 export default function TransferScreen() {
   const [accountNumber, setAccountNumber] = useState('');
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
-
-  // 뒤로가기 처리
-  const handleBackPress = () => {
-    router.back();
-  };
 
   // 은행 선택 처리
   const handleBankSelect = (bank: Bank) => {
@@ -35,13 +30,6 @@ export default function TransferScreen() {
   // 다음 단계로 이동
   const handleNextPress = () => {
     if (accountNumber && selectedBank) {
-      // 다음 단계(금액 입력 등)로 이동
-      // console.log('다음 단계로 이동', {
-      //   accountNumber,
-      //   bankId: selectedBank.id,
-      //   bankName: selectedBank.name,
-      //   bankCode: selectedBank.code,
-      // });
       router.push({
         pathname: '/transfer/amount',
         params: {
@@ -63,13 +51,7 @@ export default function TransferScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.black} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>어디로 보낼까요?</Text>
-        <View style={styles.rightPlaceholder} />
-      </View>
+      <Header title="어디로 보낼까요?" />
 
       <ScrollView style={styles.content}>
         {/* 계좌번호 입력 컴포넌트 */}

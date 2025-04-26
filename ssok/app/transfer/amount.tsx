@@ -18,7 +18,8 @@ export default function AmountScreen() {
 
   useEffect(() => {
     // 금액이 0보다 크면 다음 버튼 활성화
-    setBtnEnabled(parseInt(amount, 10) > 0);
+    const parsedAmount = parseInt(amount, 10);
+    setBtnEnabled(!isNaN(parsedAmount) && parsedAmount > 0);
   }, [amount]);
 
   const handleKeyPress = (key: string) => {
@@ -49,11 +50,17 @@ export default function AmountScreen() {
   };
 
   const handleNext = () => {
+    // 유효성 검사 추가
+    const parsedAmount = parseInt(amount, 10);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return; // 유효하지 않은 금액이면 다음 단계로 이동하지 않음
+    }
+
     // 다음 단계로 이동 (송금 확인 페이지)
     router.push({
       pathname: '/transfer/confirm' as any,
       params: {
-        amount,
+        amount: parsedAmount.toString(),
         accountNumber,
         bankName,
         userName,
@@ -61,14 +68,10 @@ export default function AmountScreen() {
     });
   };
 
-  const handleBackPress = () => {
-    router.back();
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-      <Header title="얼마를 보낼까요?" onBackPress={handleBackPress} />
+      <Header title="얼마를 보낼까요?" />
 
       <AnimatedLayout style={styles.content}>
         <AmountDisplay

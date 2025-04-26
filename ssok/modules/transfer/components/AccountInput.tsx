@@ -11,7 +11,9 @@ const AccountInput: React.FC<AccountInputProps> = ({ value, onChangeText }) => {
   // 숫자만 입력 가능하도록 필터링
   const handleChangeText = (text: string) => {
     const filtered = text.replace(/[^0-9]/g, '');
-    onChangeText(filtered);
+    if (filtered.length <= 14) {
+      onChangeText(filtered);
+    }
   };
 
   return (

@@ -14,22 +14,24 @@ import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
  */
 export default function ConfirmScreen() {
   const { accountNumber, bankName, userName, amount } = useLocalSearchParams();
-  const formattedAmount = parseInt(amount as string, 10).toLocaleString(
-    'ko-KR',
-  );
 
-  const handleBackPress = () => {
-    router.back();
-  };
+  // NaN 문제 해결: 유효한 숫자가 아닐 경우 기본값 사용
+  const parsedAmount = parseFloat(amount as string);
+  const formattedAmount = !isNaN(parsedAmount)
+    ? parsedAmount.toLocaleString('ko-KR')
+    : '0';
 
   const handleConfirm = () => {
-    router.push('/transfer/complete' as any);
+    router.push({
+      pathname: '/transfer/complete' as any,
+      params: { amount: parsedAmount },
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-      <Header title="송금 확인" onBackPress={handleBackPress} />
+      <Header title="송금 확인" />
 
       <AnimatedLayout style={styles.content}>
         {/* Top spacer to push content down */}

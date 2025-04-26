@@ -83,6 +83,3 @@ export const banks: Bank[] = [
     color: '#3182F6',
   },
 ];
-
-// 초기 표시할 은행 개수
-export const INITIAL_VISIBLE_BANKS = 3;

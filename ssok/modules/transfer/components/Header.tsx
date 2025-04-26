@@ -2,20 +2,22 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
+import { router } from 'expo-router';
 
 interface HeaderProps {
   title: string;
   onBackPress?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, onBackPress }) => {
+const Header: React.FC<HeaderProps> = ({ title }) => {
+  const handleBackPress = () => {
+    router.back();
+  };
   return (
     <View style={styles.header}>
-      {onBackPress && (
-        <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.black} />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color={colors.black} />
+      </TouchableOpacity>
       <Text style={styles.headerTitle}>{title}</Text>
       <View style={styles.rightPlaceholder} />
     </View>
