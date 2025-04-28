@@ -1,23 +1,31 @@
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
-  Text,
   View,
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  ViewToken,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
-import LottieView from 'lottie-react-native';
-import Button from '@/components/Button';
 import { usePin } from '@/contexts/PinContext';
-import { useEffect, useState } from 'react';
 import AuthStorage from '@/services/AuthStorage';
+import SlideShow from '@/modules/onboarding/components/SlideShow';
+import { onboardingSlides } from '@/modules/onboarding/data';
+
+type ViewableItemsChangedInfo = {
+  viewableItems: ViewToken[];
+  changed: ViewToken[];
+};
 
 export default function Index() {
   const { isLoggedIn, isLoading } = usePin();
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
 
   // 등록 상태 확인
   useEffect(() => {
@@ -25,23 +33,22 @@ export default function Index() {
       const registrationStatus = await AuthStorage.isUserRegistered();
       setIsRegistered(registrationStatus);
       setCheckingStatus(false);
+
+      // 등록된 사용자는 PIN 로그인 화면으로 바로 이동
+      // if (registrationStatus && !isLoggedIn) {
+      //   router.push('/auth/pin-login');
+      // }
     };
 
     checkStatus();
-  }, []);
+  }, [isLoggedIn]);
 
   const handleStart = () => {
     router.push('/auth/register');
   };
 
-  const handleLogin = () => {
-    router.push('/auth/pin-login');
-  };
-
-  // 이미 로그인되어 있다면 홈 탭으로 리다이렉트
   useEffect(() => {
     if (isLoggedIn) {
-      // 탭 화면으로 이동
       router.replace('/(tabs)');
     }
   }, [isLoggedIn]);
@@ -49,7 +56,7 @@ export default function Index() {
   // 로딩 상태 표시
   if (isLoading || checkingStatus) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.loadingWrapper}>
         <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.white} />
@@ -58,62 +65,52 @@ export default function Index() {
     );
   }
 
+  const handleSlideChange = (info: ViewableItemsChangedInfo) => {
+    const { viewableItems } = info;
+    if (
+      viewableItems &&
+      viewableItems.length > 0 &&
+      viewableItems[0].index !== null
+    ) {
+      setCurrentSlideIndex(viewableItems[0].index);
+    }
+  };
+
   return (
-    <View style={styles.mainContainer}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      <SafeAreaView style={styles.titleWrapper}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>SSOK 쏙</Text>
-          <Text style={styles.subtitle}>터치 한 번으로 완성되는</Text>
-          <Text style={styles.subtitle}>나만의 간편 송금 앱</Text>
-        </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <SafeAreaView style={styles.safeArea}>
+        <SlideShow
+          data={onboardingSlides}
+          showPagination={currentSlideIndex < onboardingSlides.length - 1}
+          EndComponent={
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={handleStart}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.startButtonText}>SSOK 시작하기</Text>
+              </TouchableOpacity>
+            </View>
+          }
+          onViewableItemsChanged={handleSlideChange}
+        />
       </SafeAreaView>
-
-      <View style={styles.contentContainer}>
-        <View style={styles.lottieContainer}>
-          <LottieView
-            source={require('@/assets/lottie/welcome.json')}
-            autoPlay
-            loop
-            style={styles.lottieAnimation}
-          />
-        </View>
-
-        {isRegistered ? (
-          <Button
-            title="SSOK 로그인하기"
-            variant="primary"
-            size="large"
-            onPress={handleLogin}
-            testID="login-button"
-            buttonStyle={styles.startButton}
-            fullWidth
-          />
-        ) : (
-          <Button
-            title="SSOK 시작하기"
-            variant="primary"
-            size="large"
-            onPress={handleStart}
-            testID="start-button"
-            buttonStyle={styles.startButton}
-            fullWidth
-          />
-        )}
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.white,
   },
-  titleWrapper: {
+  safeArea: {
+    flex: 1,
+  },
+  loadingWrapper: {
+    flex: 1,
     backgroundColor: colors.primary,
   },
   loadingContainer: {
@@ -121,46 +118,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  contentContainer: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    marginTop: -20,
-  },
-  titleContainer: {
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 100,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: colors.white,
-    marginBottom: 40,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: '200',
-    color: colors.white,
-    lineHeight: 30,
-  },
-  lottieContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  lottieAnimation: {
-    width: 250,
-    height: 250,
+  buttonContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    marginTop: 20,
   },
   startButton: {
-    marginVertical: 40,
+    backgroundColor: colors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  startButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
