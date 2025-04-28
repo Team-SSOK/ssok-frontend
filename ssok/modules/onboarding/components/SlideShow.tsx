@@ -45,6 +45,7 @@ const SlideShow: React.FC<SlideShowProps> = ({
   const flatListRef = useRef<FlatList>(null);
   const isLastSlide = currentIndex === data.length - 1;
 
+  // 스크롤 시 현재 인덱스 업데이트
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / width);
@@ -53,14 +54,7 @@ const SlideShow: React.FC<SlideShowProps> = ({
     }
   };
 
-  const handleDotPress = (index: number) => {
-    flatListRef.current?.scrollToIndex({
-      index,
-      animated: true,
-    });
-    setCurrentIndex(index);
-  };
-
+  // 화면에 보이는 아이템 변경 시 처리
   const handleViewableItemsChanged = useRef(
     (info: ViewableItemsChangedInfo) => {
       const { viewableItems } = info;
@@ -96,11 +90,7 @@ const SlideShow: React.FC<SlideShowProps> = ({
       <View style={styles.footerContainer}>
         {showPagination &&
           (PaginationComponent || (
-            <Pagination
-              totalSlides={data.length}
-              currentIndex={currentIndex}
-              onDotPress={handleDotPress}
-            />
+            <Pagination totalSlides={data.length} currentIndex={currentIndex} />
           ))}
 
         {showSkip && !isLastSlide && SkipComponent}

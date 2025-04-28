@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,10 +11,9 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
-import { usePin } from '@/contexts/PinContext';
-import AuthStorage from '@/services/AuthStorage';
 import SlideShow from '@/modules/onboarding/components/SlideShow';
 import { onboardingSlides } from '@/modules/onboarding/data';
+import { useAuthFlow } from '@/hooks/useAuthFlow';
 
 type ViewableItemsChangedInfo = {
   viewableItems: ViewToken[];
@@ -22,39 +21,21 @@ type ViewableItemsChangedInfo = {
 };
 
 export default function Index() {
-  const { isLoggedIn, isLoading } = usePin();
-  const [isRegistered, setIsRegistered] = useState<boolean>(false);
-  const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
+  const { checkingStatus } = useAuthFlow();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
-
-  // 등록 상태 확인
-  useEffect(() => {
-    const checkStatus = async () => {
-      const registrationStatus = await AuthStorage.isUserRegistered();
-      setIsRegistered(registrationStatus);
-      setCheckingStatus(false);
-
-      // 등록된 사용자는 PIN 로그인 화면으로 바로 이동
-      // if (registrationStatus && !isLoggedIn) {
-      //   router.push('/auth/pin-login');
-      // }
-    };
-
-    checkStatus();
-  }, [isLoggedIn]);
 
   const handleStart = () => {
     router.push('/auth/register');
   };
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.replace('/(tabs)');
+  const handleSlideChange = (info: ViewableItemsChangedInfo) => {
+    const { viewableItems } = info;
+    if (viewableItems?.length > 0 && viewableItems[0].index !== null) {
+      setCurrentSlideIndex(viewableItems[0].index);
     }
-  }, [isLoggedIn]);
+  };
 
-  // 로딩 상태 표시
-  if (isLoading || checkingStatus) {
+  if (checkingStatus) {
     return (
       <SafeAreaView style={styles.loadingWrapper}>
         <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
@@ -64,18 +45,6 @@ export default function Index() {
       </SafeAreaView>
     );
   }
-
-  const handleSlideChange = (info: ViewableItemsChangedInfo) => {
-    const { viewableItems } = info;
-    if (
-      viewableItems &&
-      viewableItems.length > 0 &&
-      viewableItems[0].index !== null
-    ) {
-      setCurrentSlideIndex(viewableItems[0].index);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />

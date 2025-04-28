@@ -32,6 +32,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/WooridaumB.ttf",
+            "./assets/fonts/WooridaumR.ttf"
+          ]
+        }
       ]
     ],
     "experiments": {

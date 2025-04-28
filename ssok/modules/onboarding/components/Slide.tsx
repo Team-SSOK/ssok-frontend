@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
 import LottieView from 'lottie-react-native';
 import { colors } from '@/constants/colors';
 
@@ -17,14 +17,14 @@ interface SlideProps {
   subtitle1: string;
   subtitle2?: string;
   imageSource?: ImageSourcePropType;
-  videoSource?: any; // Changed from string to any to handle require()
-  lottieSource?: any;
+  videoSource?: VideoSource;
+  lottieSource?: any; // Lottie source type
   containerStyle?: ViewStyle;
   titleStyle?: TextStyle;
   subtitleStyle?: TextStyle;
   imageContainerStyle?: ViewStyle;
-  isCard?: boolean; // Flag to determine if the slide content is a card (like KB Pay Money)
-  cardContent?: React.ReactNode; // Custom card content
+  isCard?: boolean;
+  cardContent?: React.ReactNode;
 }
 
 const Slide: React.FC<SlideProps> = ({
@@ -41,10 +41,31 @@ const Slide: React.FC<SlideProps> = ({
   isCard = false,
   cardContent,
 }) => {
-  const player = useVideoPlayer(videoSource, (player) => {
-    player.loop = true;
-    player.play();
-  });
+  // 비디오 소스가 제공된 경우 비디오 플레이어 초기화
+  const player = videoSource
+    ? useVideoPlayer(videoSource, (player) => {
+        player.loop = true;
+        player.play();
+      })
+    : null;
+
+  // 컨텐츠 렌더링
+  const renderContent = () => {
+    if (isCard && cardContent) {
+      return cardContent;
+    } else if (imageSource) {
+      return (
+        <Image source={imageSource} style={styles.image} resizeMode="contain" />
+      );
+    } else if (videoSource && player) {
+      return <VideoView player={player} style={styles.video} />;
+    } else if (lottieSource) {
+      return (
+        <LottieView source={lottieSource} style={styles.lottie} autoPlay loop />
+      );
+    }
+    return null;
+  };
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -60,24 +81,7 @@ const Slide: React.FC<SlideProps> = ({
       </View>
 
       <View style={[styles.imageContainer, imageContainerStyle]}>
-        {isCard && cardContent ? (
-          cardContent
-        ) : imageSource ? (
-          <Image
-            source={imageSource}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        ) : videoSource ? (
-          <VideoView player={player} style={styles.video} />
-        ) : lottieSource ? (
-          <LottieView
-            source={lottieSource}
-            style={styles.lottie}
-            autoPlay
-            loop
-          />
-        ) : null}
+        {renderContent()}
       </View>
     </View>
   );
@@ -100,6 +104,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 30,
+    fontFamily: 'WooridaumB',
   },
   subtitleContainer: {
     alignItems: 'center',
@@ -109,6 +114,7 @@ const styles = StyleSheet.create({
     color: colors.grey,
     textAlign: 'center',
     lineHeight: 24,
+    fontFamily: 'WooridaumR',
   },
   imageContainer: {
     flex: 1,

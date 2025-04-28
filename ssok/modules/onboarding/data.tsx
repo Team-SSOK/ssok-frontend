@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import Slide from './components/Slide';
 import { colors } from '@/constants/colors';
 
+// Styles for slides
 const styles = StyleSheet.create({
   slideContainer: {
     backgroundColor: colors.white,
@@ -28,7 +29,9 @@ const styles = StyleSheet.create({
   },
 });
 
+// Slide content and configuration
 export const onboardingSlides = [
+  // Slide 1: Account management
   <Slide
     key="slide1"
     title="모든 계좌를 한눈에 관리하세요"
@@ -41,6 +44,7 @@ export const onboardingSlides = [
     imageSource={require('@/assets/images/slide1.jpg')}
   />,
 
+  // Slide 2: Fast money transfer
   <Slide
     key="slide2"
     title="지금, 빠른 송금을 경험하세요"
@@ -53,6 +57,7 @@ export const onboardingSlides = [
     videoSource={require('@/assets/videos/slide2.mp4')}
   />,
 
+  // Slide 3: Bluetooth transfer feature
   <Slide
     key="slide3"
     title="SSOK만의 특별한 블루투스 송금"
@@ -65,6 +70,7 @@ export const onboardingSlides = [
     lottieSource={require('@/assets/lottie/slide3.json')}
   />,
 
+  // Slide 4: Final call to action
   <Slide
     key="slide4"
     title="지금 SSOK과 함께 시작하세요"
