@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '@/constants/colors';
 
 interface AmountDisplayProps {
-  amount: string;
+  amount: number;
   recipientName: string;
   bankName: string;
 }
@@ -13,8 +13,7 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
   recipientName,
   bankName,
 }) => {
-  // 금액을 한국어 표기법으로 포맷팅 (천 단위 콤마)
-  const formattedAmount = parseInt(amount, 10).toLocaleString('ko-KR');
+  const formattedAmount = amount.toLocaleString('ko-KR');
 
   return (
     <View style={styles.container}>

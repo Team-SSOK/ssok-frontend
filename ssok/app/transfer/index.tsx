@@ -16,7 +16,7 @@ import AccountInput from '@/modules/transfer/components/AccountInput';
 import BankSelector from '@/modules/transfer/components/BankSelector';
 import NextButton from '@/modules/transfer/components/NextButton';
 import { Bank } from '@/mock/bankData';
-import Header from '@/modules/transfer/components/Header';
+import Header from '@/components/Header';
 
 export default function TransferScreen() {
   const [accountNumber, setAccountNumber] = useState('');

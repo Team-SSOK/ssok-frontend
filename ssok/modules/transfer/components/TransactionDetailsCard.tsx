@@ -6,7 +6,7 @@ interface TransactionDetailsCardProps {
   recipientName: string;
   bankName: string;
   accountNumber: string;
-  amount: string;
+  amount: number;
 }
 
 /**
@@ -39,7 +39,7 @@ export default function TransactionDetailsCard({
       <View style={styles.detailRow}>
         <Text style={styles.amountLabel}>송금액</Text>
         <Text style={styles.amountValue}>
-          {amount}
+          {amount.toLocaleString('ko-KR')}
           <Text style={styles.wonSymbol}>원</Text>
         </Text>
       </View>

@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={colors.black} />
+        <Ionicons name="chevron-back" size={24} color="black" />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>{title}</Text>
       <View style={styles.rightPlaceholder} />

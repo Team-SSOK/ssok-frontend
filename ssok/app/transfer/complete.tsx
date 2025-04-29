@@ -13,11 +13,6 @@ import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
 export default function CompleteScreen() {
   const { amount } = useLocalSearchParams();
 
-  const parsedAmount = parseFloat(amount as string);
-  const formattedAmount = !isNaN(parsedAmount)
-    ? parsedAmount.toLocaleString('ko-KR')
-    : '0';
-
   const handleGoHome = () => {
     router.replace('/(tabs)' as any);
   };
@@ -28,7 +23,7 @@ export default function CompleteScreen() {
 
       <AnimatedLayout style={styles.content} duration={500}>
         {/* 송금 완료 메시지와 애니메이션 */}
-        <CompleteMessage amount={formattedAmount} />
+        <CompleteMessage amount={Number(amount)} />
 
         <View style={styles.spacer} />
 

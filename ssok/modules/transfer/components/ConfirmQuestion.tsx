@@ -4,7 +4,7 @@ import { colors } from '@/constants/colors';
 
 interface ConfirmQuestionProps {
   recipientName: string;
-  amount: string;
+  amount: number;
 }
 
 /**
@@ -21,7 +21,7 @@ export default function ConfirmQuestion({
         <Text style={styles.nim}>최지훈님에게</Text>
       </Text>
       <Text style={styles.amountText}>
-        {amount}
+        {amount.toLocaleString('ko-KR')}
         <Text style={styles.wonText}>원을</Text>
       </Text>
       <Text style={styles.questionText}>보낼까요?</Text>
@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
     color: colors.black,
-    marginBottom: 8,
   },
   nim: {
     fontWeight: 'normal',
@@ -46,7 +45,6 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 8,
   },
   wonText: {
     fontSize: 22,

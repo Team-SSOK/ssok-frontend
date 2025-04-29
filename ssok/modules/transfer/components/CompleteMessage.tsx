@@ -4,7 +4,7 @@ import LottieView from 'lottie-react-native';
 import { colors } from '@/constants/colors';
 
 interface CompleteMessageProps {
-  amount: string;
+  amount: number;
   message?: string;
 }
 
@@ -27,7 +27,7 @@ export default function CompleteMessage({
       </View>
 
       <Text style={styles.title}>송금 완료</Text>
-      <Text style={styles.amountText}>{amount}원</Text>
+      <Text style={styles.amountText}>{amount.toLocaleString('ko-KR')}원</Text>
       <Text style={styles.message}>{message}</Text>
     </View>
   );
