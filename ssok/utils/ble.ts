@@ -94,7 +94,6 @@ export const createIBeaconData = (
 
   return buffer.toString('hex');
 };
-
 /**
  * 고유 식별자 생성 함수
  *

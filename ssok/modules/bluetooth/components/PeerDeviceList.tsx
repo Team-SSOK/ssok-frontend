@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
@@ -38,7 +39,8 @@ const PeerDeviceList: React.FC<PeerDeviceListProps> = ({
           />
           <Text style={styles.emptyTitle}>기기 검색 중...</Text>
           <Text style={styles.emptySubtitle}>
-            근처에 있는 블루투스 기기를 찾고 있습니다.
+            주변에서 BLE 광고 신호를 찾고 있습니다.
+            {'\n'}(5초간 검색합니다)
           </Text>
         </View>
       );
@@ -48,7 +50,7 @@ const PeerDeviceList: React.FC<PeerDeviceListProps> = ({
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>발견된 기기가 없습니다</Text>
         <Text style={styles.emptySubtitle}>
-          다른 기기가 근처에 있고 블루투스가 활성화되어 있는지 확인하세요.
+          BLE 광고 기능이 활성화된 기기가 근처에 있는지 확인하세요.
         </Text>
       </View>
     );
@@ -57,9 +59,14 @@ const PeerDeviceList: React.FC<PeerDeviceListProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>주변 기기</Text>
+        <Text style={styles.title}>
+          주변 기기 {devices.length > 0 ? `(${devices.length})` : ''}
+        </Text>
         {isScanning && (
-          <ActivityIndicator color={colors.primary} size="small" />
+          <View style={styles.scanningContainer}>
+            <ActivityIndicator color={colors.primary} size="small" />
+            <Text style={styles.scanningText}>검색중...</Text>
+          </View>
         )}
       </View>
 
@@ -92,6 +99,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.black,
+  },
+  scanningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  scanningText: {
+    fontSize: 14,
+    color: colors.primary,
+    marginLeft: 8,
   },
   listContent: {
     flexGrow: 1,

@@ -620,6 +620,9 @@ class BleService {
       // 실제 구현에서는 react-native-ble-plx 사용
       console.log('[BLE Service] 스캔 시작');
 
+      // 스캔 시작 전에 발견된 기기 목록 초기화
+      this.discoveredPeers.clear();
+
       // 실제 앱에서 사용 시에는 아래 코드 활성화
       // 실제 사용 시 스캔 코드
       const { BleManager } = require('react-native-ble-plx');
@@ -645,6 +648,14 @@ class BleService {
 
       this.isScanning = true;
       this.notifyScanningStarted();
+
+      // 5초 후에 스캔 자동 중지 타이머 설정
+      setTimeout(() => {
+        if (this.isScanning) {
+          console.log('[BLE Service] 5초 스캔 제한 도달, 자동 중지');
+          this.stopScanning();
+        }
+      }, 5000);
 
       console.log('[BLE Service] 스캔 시작 성공');
       return true;
@@ -704,10 +715,10 @@ class BleService {
       // 제조사 데이터 파싱
       const iBeaconData = parseIBeaconData(device.manufacturerData);
 
-      // 파싱 실패 시 더미 데이터 사용 (테스트 환경에서만)
+      // iBeacon 데이터 파싱 실패 시 무시 (iBeacon 형식이 아닌 일반 BLE 기기)
       if (!iBeaconData) {
         console.warn(
-          `[BLE Service] iBeacon 데이터 파싱 실패, 제조사 데이터: ${device.manufacturerData}`,
+          `[BLE Service] iBeacon 데이터 파싱 실패, 일반 BLE 기기로 판단하여 무시`,
         );
         return;
       }
@@ -735,8 +746,7 @@ class BleService {
           minor: iBeaconData.minor,
         });
 
-        // 피어를 발견하면 스캔 중지 (요구사항에 따라)
-        this.stopScanning();
+        // 피어를 발견하면 스캔 중지 안함 - 5초간 계속 스캔
       } else {
         console.log('[BLE Service] 내 기기 신호 무시');
       }

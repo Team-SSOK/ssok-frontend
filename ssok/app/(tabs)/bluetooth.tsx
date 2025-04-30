@@ -54,15 +54,6 @@ const BluetoothScreen: React.FC = () => {
           // 새 기기 추가
           return [...prev, device];
         });
-
-        // 기기 발견 알림
-        if (device.iBeaconData) {
-          Alert.alert(
-            '기기 발견',
-            `주변에서 새로운 기기를 발견했습니다!\n\nUUID: ${device.iBeaconData.uuid.substring(0, 8)}...`,
-            [{ text: '확인', style: 'default' }],
-          );
-        }
       },
       onAdvertisingStarted: (uuid) => {
         console.log('광고 시작:', uuid);
@@ -75,6 +66,8 @@ const BluetoothScreen: React.FC = () => {
       onScanningStarted: () => {
         console.log('스캔 시작');
         setIsScanning(true);
+        // 스캔 시작 시 기존 발견 목록 초기화
+        setDiscoveredDevices([]);
       },
       onScanningStopped: () => {
         console.log('스캔 중지');
