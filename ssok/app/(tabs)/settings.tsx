@@ -11,18 +11,11 @@ import {
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { usePin } from '@/contexts/PinContext';
-import { router } from 'expo-router';
+// import { useBLE } from '@/hooks/useBLE';
 
 export default function SettingsScreen() {
-  const { logout } = usePin();
   const [notifications, setNotifications] = React.useState(true);
-  const [biometrics, setBiometrics] = React.useState(false);
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/');
-  };
+  // const { isBluetoothEnabled, toggleBluetooth } = useBLE();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,9 +63,9 @@ export default function SettingsScreen() {
             <Switch
               trackColor={{ false: colors.silver, true: colors.primary }}
               thumbColor={colors.white}
-              ios_backgroundColor={colors.silver}
-              onValueChange={setBiometrics}
-              value={biometrics}
+              // ios_backgroundColor={colors.silver}
+              // onValueChange={toggleBluetooth}
+              // value={isBluetoothEnabled}
             />
           </View>
         </View>
