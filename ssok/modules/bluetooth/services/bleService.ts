@@ -5,6 +5,9 @@ import { DiscoveredDevice } from '@/hooks/useBleScanner';
 // @ts-ignore
 import BleAdvertise from 'react-native-ble-advertise';
 
+// 로그 프리픽스 상수화
+const LOG_TAG = '[BleService]';
+
 // BLE 서비스 이벤트 리스너 타입
 export type BleServiceListener = {
   onPeerDiscovered?: (device: DiscoveredDevice) => void;
@@ -86,9 +89,9 @@ class BleService {
         try {
           // 권한 요청 - 여기서는 실패해도 진행 (일부 기능만 제한)
           await this.requestBluetoothPermissions();
-          console.log('[BLE Service] 권한 요청 완료');
+          console.log(`${LOG_TAG} 권한 요청 완료`);
         } catch (error) {
-          console.warn('[BLE Service] 권한 요청 중 오류:', error);
+          console.warn(`${LOG_TAG} 권한 요청 중 오류:`, error);
           // 권한이 없더라도 초기화는 계속 진행
         }
       }
@@ -106,7 +109,7 @@ class BleService {
         }
       }
 
-      console.log('[BLE Service] 초기화 완료:', {
+      console.log(`${LOG_TAG} 초기화 완료:`, {
         uuid: this.uuid,
         major: this.major,
         minor: this.minor,
@@ -124,7 +127,7 @@ class BleService {
 
       return true;
     } catch (error) {
-      console.error('[BLE Service] 초기화 오류:', error);
+      console.error(`${LOG_TAG} 초기화 오류:`, error);
       this.notifyError('BLE 서비스 초기화에 실패했습니다.');
       return false;
     }
@@ -137,11 +140,11 @@ class BleService {
     // Android SDK 버전 확인
     const sdkVersion = Platform.OS === 'android' ? Platform.Version : 0;
 
-    console.log(`[BLE Service] Android SDK Version: ${sdkVersion}`);
+    console.log(`${LOG_TAG} Android SDK Version: ${sdkVersion}`);
 
     // 안드로이드 12 (API 31) 이상
     if (Platform.OS === 'android' && sdkVersion >= 31) {
-      console.log('[BLE Service] 안드로이드 12+ 권한 요청');
+      console.log(`${LOG_TAG} 안드로이드 12+ 권한 요청`);
 
       // 블루투스 권한 요청
       const bluetoothPermissions = [
@@ -165,12 +168,12 @@ class BleService {
 
       // 권한 결과 로그
       Object.entries(bleResults).forEach(([permission, result]) => {
-        console.log(`[BLE Service] 권한 결과: ${permission} - ${result}`);
+        console.log(`${LOG_TAG} 권한 결과: ${permission} - ${result}`);
       });
     }
     // 안드로이드 11 (API 30) 이하
     else if (Platform.OS === 'android') {
-      console.log('[BLE Service] 안드로이드 11 이하 권한 요청');
+      console.log(`${LOG_TAG} 안드로이드 11 이하 권한 요청`);
 
       // 위치 권한만 요청 (블루투스 스캔에 필요)
       const locationResult = await PermissionsAndroid.request(
@@ -182,7 +185,7 @@ class BleService {
         },
       );
 
-      console.log(`[BLE Service] 위치 권한 결과: ${locationResult}`);
+      console.log(`${LOG_TAG} 위치 권한 결과: ${locationResult}`);
     }
   }
 
@@ -207,7 +210,7 @@ class BleService {
       }
 
       // 실제 구현에서는 react-native-ble-advertise 사용
-      console.log('[BLE Service] 광고 시작', this.uuid);
+      console.log(`${LOG_TAG} 광고 시작`, this.uuid);
 
       // 코드가 실행되는 환경이 실제 기기라면 광고 시작
       if (Platform.OS === 'android') {
@@ -219,7 +222,7 @@ class BleService {
           // 블루투스 권한 다시 확인
           const hasPermissions = await this.checkBlePermissions();
           if (!hasPermissions) {
-            console.warn('[BLE Service] 블루투스 광고 권한이 없습니다.');
+            console.warn(`${LOG_TAG} 블루투스 광고 권한이 없습니다.`);
 
             // 권한 재요청 - 사용자가 "다시 묻지 않음"을 선택했을 수 있으므로
             // 일반적인 권한 요청이 작동하지 않을 수 있음
@@ -240,10 +243,10 @@ class BleService {
           this.isAdvertising = true;
           this.notifyAdvertisingStarted(this.uuid);
 
-          console.log('[BLE Service] 광고 시작 성공');
+          console.log(`${LOG_TAG} 광고 시작 성공`);
           return true;
         } catch (error) {
-          console.error('[BLE Service] 광고 시작 오류:', error);
+          console.error(`${LOG_TAG} 광고 시작 오류:`, error);
 
           // 권한 오류인 경우 사용자에게 설정 화면으로 이동하는 안내 메시지 표시
           if (
@@ -261,7 +264,7 @@ class BleService {
         return false;
       }
     } catch (error) {
-      console.error('[BLE Service] 광고 시작 오류:', error);
+      console.error(`${LOG_TAG} 광고 시작 오류:`, error);
       this.notifyError('BLE 광고 시작에 실패했습니다.');
       return false;
     }
@@ -299,7 +302,7 @@ class BleService {
 
       return false;
     } catch (error) {
-      console.error('[BLE Service] 권한 요청 오류:', error);
+      console.error(`${LOG_TAG} 권한 요청 오류:`, error);
       return false;
     }
   }
@@ -359,7 +362,7 @@ class BleService {
         return hasLocationPermission;
       }
     } catch (error) {
-      console.error('[BLE Service] 권한 확인 오류:', error);
+      console.error(`${LOG_TAG} 권한 확인 오류:`, error);
       return false;
     }
   }
@@ -379,7 +382,7 @@ class BleService {
       }
 
       // 실제 구현에서는 react-native-ble-advertise 사용
-      console.log('[BLE Service] 광고 중지');
+      console.log(`${LOG_TAG} 광고 중지`);
 
       // 코드가 실행되는 환경이 실제 기기라면 광고 중지
       if (Platform.OS === 'android') {
@@ -390,10 +393,10 @@ class BleService {
           this.isAdvertising = false;
           this.notifyAdvertisingStopped();
 
-          console.log('[BLE Service] 광고 중지 성공');
+          console.log(`${LOG_TAG} 광고 중지 성공`);
           return true;
         } catch (error) {
-          console.error('[BLE Service] 광고 중지 오류:', error);
+          console.error(`${LOG_TAG} 광고 중지 오류:`, error);
           this.notifyError('BLE 광고 중지에 실패했습니다.');
           return false;
         }
@@ -402,7 +405,7 @@ class BleService {
         return false;
       }
     } catch (error) {
-      console.error('[BLE Service] 광고 중지 오류:', error);
+      console.error(`${LOG_TAG} 광고 중지 오류:`, error);
       this.notifyError('BLE 광고 중지에 실패했습니다.');
       return false;
     }
@@ -423,7 +426,7 @@ class BleService {
 
     try {
       // 실제 구현에서는 react-native-ble-plx 사용
-      console.log('[BLE Service] 스캔 시작');
+      console.log(`${LOG_TAG} 스캔 시작`);
 
       // 실제 앱에서 사용 시에는 아래 코드 활성화
       // 실제 사용 시 스캔 코드
@@ -436,7 +439,7 @@ class BleService {
         { allowDuplicates: false }, // 중복 장치 필터링
         (error: any, device: any) => {
           if (error) {
-            console.error('[BLE Service] 스캔 오류:', error);
+            console.error(`${LOG_TAG} 스캔 오류:`, error);
             this.notifyError(`스캔 중 오류 발생: ${error.message}`);
             this.isScanning = false;
             return;
@@ -451,10 +454,10 @@ class BleService {
       this.isScanning = true;
       this.notifyScanningStarted();
 
-      console.log('[BLE Service] 스캔 시작 성공');
+      console.log(`${LOG_TAG} 스캔 시작 성공`);
       return true;
     } catch (error) {
-      console.error('[BLE Service] 스캔 시작 오류:', error);
+      console.error(`${LOG_TAG} 스캔 시작 오류:`, error);
       this.notifyError('BLE 스캔 시작에 실패했습니다.');
       return false;
     }
@@ -470,7 +473,7 @@ class BleService {
 
     try {
       // 실제 구현에서는 react-native-ble-plx 사용
-      console.log('[BLE Service] 스캔 중지');
+      console.log(`${LOG_TAG} 스캔 중지`);
 
       // 실제 사용 시에는 아래 코드 활성화
       if (this.bleManager) {
@@ -481,10 +484,10 @@ class BleService {
       this.isScanning = false;
       this.notifyScanningStopped();
 
-      console.log('[BLE Service] 스캔 중지 성공');
+      console.log(`${LOG_TAG} 스캔 중지 성공`);
       return true;
     } catch (error) {
-      console.error('[BLE Service] 스캔 중지 오류:', error);
+      console.error(`${LOG_TAG} 스캔 중지 오류:`, error);
       this.notifyError('BLE 스캔 중지에 실패했습니다.');
       return false;
     }
@@ -498,7 +501,7 @@ class BleService {
   private handleDiscoveredDevice(device: any): void {
     try {
       console.log(
-        `[BLE Service] 장치 발견: ${device.id}, 제조사 데이터 있음: ${!!device.manufacturerData}`,
+        `${LOG_TAG} 장치 발견: ${device.id}, 제조사 데이터 있음: ${!!device.manufacturerData}`,
       );
 
       // 제조사 데이터가 없으면 처리하지 않음
@@ -512,7 +515,7 @@ class BleService {
       // 파싱 실패 시 더미 데이터 사용 (테스트 환경에서만)
       if (!iBeaconData) {
         console.warn(
-          `[BLE Service] iBeacon 데이터 파싱 실패, 제조사 데이터: ${device.manufacturerData}`,
+          `${LOG_TAG} iBeacon 데이터 파싱 실패, 제조사 데이터: ${device.manufacturerData}`,
         );
         return;
       }
@@ -525,15 +528,15 @@ class BleService {
         lastSeen: new Date(),
       };
 
-      console.log(`[BLE Service] 발견한 UUID: ${iBeaconData.uuid}`);
-      console.log(`[BLE Service] 내 UUID: ${this.uuid}`);
+      console.log(`${LOG_TAG} 발견한 UUID: ${iBeaconData.uuid}`);
+      console.log(`${LOG_TAG} 내 UUID: ${this.uuid}`);
 
       // UUID가 내 UUID와 다를 경우만 처리 (내 신호는 무시)
       if (iBeaconData.uuid !== this.uuid) {
         this.discoveredPeers.set(device.id, discoveredDevice);
         this.notifyPeerDiscovered(discoveredDevice);
 
-        console.log('[BLE Service] 상대방 기기 발견:', {
+        console.log(`${LOG_TAG} 상대방 기기 발견:`, {
           id: device.id,
           uuid: iBeaconData.uuid,
           major: iBeaconData.major,
@@ -543,10 +546,10 @@ class BleService {
         // 피어를 발견하면 스캔 중지 (요구사항에 따라)
         this.stopScanning();
       } else {
-        console.log('[BLE Service] 내 기기 신호 무시');
+        console.log(`${LOG_TAG} 내 기기 신호 무시`);
       }
     } catch (error) {
-      console.error('[BLE Service] 장치 처리 오류:', error);
+      console.error(`${LOG_TAG} 장치 처리 오류:`, error);
     }
   }
 
@@ -578,9 +581,9 @@ class BleService {
       this.discoveredPeers.clear();
       this.listeners = [];
       this.isInitialized = false;
-      console.log('[BLE Service] 정리 완료');
+      console.log(`${LOG_TAG} 정리 완료`);
     } catch (error) {
-      console.error('[BLE Service] 정리 중 오류:', error);
+      console.error(`${LOG_TAG} 정리 중 오류:`, error);
     }
   }
 
