@@ -7,10 +7,6 @@ import bleService from '@/modules/bluetooth/services/bleService';
 import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import { generateUUID } from '@/utils/ble';
 
-/**
- * 블루투스 통신 화면
- * BLE 광고 및 스캔을 통해 근처 기기 발견
- */
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
   const [isAdvertising, setIsAdvertising] = useState(false);
@@ -22,7 +18,6 @@ const BluetoothScreen: React.FC = () => {
 
   // BLE 서비스 초기화
   useEffect(() => {
-    // 컴포넌트 마운트 시 서비스 초기화
     const initService = async () => {
       const initialized = await bleService.initialize({
         advertisingUUID: myUUID,
@@ -30,11 +25,8 @@ const BluetoothScreen: React.FC = () => {
       });
 
       if (initialized) {
-        console.log('BLE 서비스 초기화 성공');
         // UUID 업데이트
         setMyUUID(bleService.getMyUUID());
-      } else {
-        console.error('BLE 서비스 초기화 실패');
       }
     };
 
@@ -43,7 +35,6 @@ const BluetoothScreen: React.FC = () => {
     // BLE 서비스 이벤트 리스너 등록
     const removeListener = bleService.addListener({
       onPeerDiscovered: (device) => {
-        console.log('새로운 기기 발견:', device.id);
         setDiscoveredDevices((prev) => {
           // 이미 있는 기기인지 확인
           const exists = prev.some((d) => d.id === device.id);
