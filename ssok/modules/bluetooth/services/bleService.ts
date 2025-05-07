@@ -448,7 +448,7 @@ class BleService {
   /**
    * 블루투스 설정 화면 열기
    */
-  private openBluetoothSettings(): void {
+  public openBluetoothSettings(): void {
     Alert.alert(
       '블루투스가 꺼져 있습니다',
       '블루투스 기능을 사용하려면 블루투스를 켜야 합니다.',
