@@ -18,7 +18,7 @@ export default function ConfirmQuestion({
     <View style={styles.container}>
       <Text style={styles.recipientText}>
         {recipientName ? recipientName : ''}
-        <Text style={styles.nim}>최지훈님에게</Text>
+        <Text style={styles.nim}>님에게</Text>
       </Text>
       <Text style={styles.amountText}>
         {amount.toLocaleString('ko-KR')}

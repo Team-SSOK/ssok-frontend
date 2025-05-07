@@ -7,6 +7,8 @@ interface TransactionDetailsCardProps {
   bankName: string;
   accountNumber: string;
   amount: number;
+  isBluetoothTransfer?: boolean;
+  userId?: string;
 }
 
 /**
@@ -17,6 +19,8 @@ export default function TransactionDetailsCard({
   bankName,
   accountNumber,
   amount,
+  isBluetoothTransfer = false,
+  userId,
 }: TransactionDetailsCardProps) {
   return (
     <View style={styles.container}>
@@ -27,12 +31,32 @@ export default function TransactionDetailsCard({
 
       <View style={styles.separator} />
 
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>받는 계좌</Text>
-        <Text style={styles.detailValue}>
-          {bankName} {accountNumber}
-        </Text>
-      </View>
+      {isBluetoothTransfer ? (
+        // 블루투스 송금인 경우 userId 표시
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>송금 방식</Text>
+          <Text style={styles.bluetoothValue}>블루투스 송금</Text>
+        </View>
+      ) : (
+        // 일반 계좌 송금인 경우 계좌번호 표시
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>받는 계좌</Text>
+          <Text style={styles.detailValue}>
+            {bankName} {accountNumber}
+          </Text>
+        </View>
+      )}
+
+      {/* 블루투스 송금인 경우 userId도 표시 */}
+      {isBluetoothTransfer && userId && (
+        <>
+          <View style={styles.separator} />
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>사용자 ID</Text>
+            <Text style={styles.detailValue}>{userId}</Text>
+          </View>
+        </>
+      )}
 
       <View style={styles.separator} />
 
@@ -73,6 +97,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: colors.black,
+  },
+  bluetoothValue: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.primary,
   },
   separator: {
     height: 1,

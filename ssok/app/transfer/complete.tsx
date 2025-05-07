@@ -11,7 +11,8 @@ import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
  * 송금이 성공적으로 완료되었음을 사용자에게 알리는 화면
  */
 export default function CompleteScreen() {
-  const { amount } = useLocalSearchParams();
+  const { amount, isBluetooth, userId } = useLocalSearchParams();
+  const isBluetoothTransfer = isBluetooth === 'true';
 
   const handleGoHome = () => {
     router.replace('/(tabs)' as any);
@@ -23,7 +24,11 @@ export default function CompleteScreen() {
 
       <AnimatedLayout style={styles.content} duration={500}>
         {/* 송금 완료 메시지와 애니메이션 */}
-        <CompleteMessage amount={Number(amount)} />
+        <CompleteMessage
+          amount={Number(amount)}
+          isBluetoothTransfer={isBluetoothTransfer}
+          userId={isBluetoothTransfer ? (userId as string) : undefined}
+        />
 
         <View style={styles.spacer} />
 

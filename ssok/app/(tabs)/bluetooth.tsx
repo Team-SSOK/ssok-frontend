@@ -6,6 +6,7 @@ import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import { generateUUID } from '@/utils/ble';
 import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
@@ -152,13 +153,38 @@ const BluetoothScreen: React.FC = () => {
 
   // 기기 선택 핸들러
   const handleDevicePress = (device: DiscoveredDevice) => {
-    if (device.iBeaconData) {
-      Alert.alert(
-        '기기 정보',
-        `ID: ${device.id}\nUUID: ${device.iBeaconData.uuid}\nMajor: ${device.iBeaconData.major}\nMinor: ${device.iBeaconData.minor}`,
-        [{ text: '확인', style: 'default' }],
-      );
+    if (!device.iBeaconData) {
+      Alert.alert('오류', '기기 정보를 불러올 수 없습니다.', [
+        { text: '확인', style: 'default' },
+      ]);
+      return;
     }
+
+    // 로딩 표시
+    Alert.alert('사용자 정보 확인 중', '상대방의 정보를 확인하고 있습니다...', [
+      { text: '확인', style: 'default' },
+    ]);
+
+    // 실제로는 API를 호출해야 하지만, 임시로 Mock 데이터 사용
+    setTimeout(() => {
+      // Mock API 응답 데이터
+      const mockResponse = {
+        userId: 101, // 사용자 ID (송금 요청 시 사용)
+        userName: '최*훈', // 마스킹된 사용자명
+        bankName: '신한은행',
+      };
+
+      // 송금 페이지로 이동 (userId 포함하여 전달)
+      router.push({
+        pathname: '/transfer/amount',
+        params: {
+          userId: mockResponse.userId.toString(),
+          userName: mockResponse.userName,
+          bankName: mockResponse.bankName,
+          isBluetooth: 'true', // 블루투스 송금 플래그
+        },
+      });
+    }, 1000); // 1초 지연으로 API 호출 시뮬레이션
   };
 
   return (
