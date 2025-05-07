@@ -59,6 +59,14 @@ class BleService {
   // BleManager 속성 추가
   private bleManager: any = null;
 
+  // 중복 로그 방지를 위한 마지막 로그 시간 확인
+  private loggedDevices: Map<string, number> = new Map();
+  private discoveredLogTimes: Map<string, number> = new Map();
+
+  // 클래스 상단에 속성 추가
+  private deviceLastSeen: Map<string, number> = new Map();
+  private deviceActivityCheck: NodeJS.Timeout | null = null;
+
   /**
    * 생성자 - 직접 호출하지 말고 getInstance() 사용
    */
@@ -587,10 +595,10 @@ class BleService {
     this.discoveredPeers.clear();
 
     try {
-      // 스캔 시작
+      // 스캔 시작 - 중지 시간 제한 없이 계속 실행
       this.bleManager.startDeviceScan(
         null, // 모든 서비스 UUID 스캔
-        { allowDuplicates: false }, // 중복 장치 필터링
+        { allowDuplicates: true }, // 중복 장치 허용 (신호 업데이트 위해)
         (error: any, device: any) => {
           if (error) {
             console.error('[BLE Service] 스캔 중 오류:', error);
@@ -608,15 +616,12 @@ class BleService {
       this.isScanning = true;
       this.notifyScanningStarted();
 
-      // 5초 후에 스캔 자동 중지 타이머 설정
-      setTimeout(() => {
-        if (this.isScanning) {
-          console.log('[BLE Service] 5초 스캔 제한 도달, 자동 중지');
-          this.stopScanning();
-        }
-      }, 5000);
+      // 기기 활동 감시 시작
+      this.startDeviceActivityMonitoring();
 
-      console.log('[BLE Service] 스캔 시작 성공');
+      // 5초 제한 타이머 제거 - 지속적으로 스캔하도록 변경
+      console.log('[BLE Service] 지속적 스캔 시작 (제한 없음)');
+
       return true;
     } catch (error) {
       return this.handleBleError('스캔 시작', error);
@@ -647,6 +652,9 @@ class BleService {
       this.isScanning = false;
       this.notifyScanningStopped();
 
+      // 기기 활동 감시 중지
+      this.stopDeviceActivityMonitoring();
+
       console.log('[BLE Service] 스캔 중지 성공');
       return true;
     } catch (error) {
@@ -669,9 +677,21 @@ class BleService {
 
       // iBeacon 데이터 파싱 실패 시 무시 (iBeacon 형식이 아닌 일반 BLE 기기)
       if (!iBeaconData) {
-        console.warn(
-          '[BLE Service] iBeacon 데이터 파싱 실패, 일반 BLE 기기로 판단하여 무시',
-        );
+        // 같은 기기에 대한 로그 반복 방지 (마지막 로그 시간 기록)
+        if (!this.loggedDevices) {
+          this.loggedDevices = new Map<string, number>();
+        }
+
+        const now = Date.now();
+        const lastLogTime = this.loggedDevices.get(device.id) || 0;
+
+        // 같은 기기에 대해 최소 5초 간격으로만 로그 출력
+        if (now - lastLogTime > 5000) {
+          console.warn(
+            '[BLE Service] iBeacon 데이터 파싱 실패, 일반 BLE 기기로 판단하여 무시',
+          );
+          this.loggedDevices.set(device.id, now);
+        }
         return;
       }
 
@@ -686,17 +706,39 @@ class BleService {
 
       // UUID가 내 UUID와 다를 경우만 처리 (내 신호는 무시)
       if (iBeaconData.uuid !== this.uuid) {
-        this.discoveredPeers.set(device.id, discoveredDevice);
-        this.notifyPeerDiscovered(discoveredDevice);
+        const isNewDevice = !this.discoveredPeers.has(device.id);
 
-        console.log('[BLE Service] 상대방 기기 발견:', {
-          id: device.id,
-          uuid: iBeaconData.uuid,
-          major: iBeaconData.major,
-          minor: iBeaconData.minor,
-        });
-      } else {
-        console.log('[BLE Service] 내 기기 신호 무시');
+        // 기기 마지막 발견 시간 업데이트
+        this.deviceLastSeen.set(device.id, Date.now());
+
+        // 중복 로그 방지를 위한 마지막 로그 시간 확인
+        if (!this.discoveredLogTimes) {
+          this.discoveredLogTimes = new Map<string, number>();
+        }
+
+        const now = Date.now();
+        const lastLogTime = this.discoveredLogTimes.get(device.id) || 0;
+
+        // 새 기기이거나 마지막 로그로부터 3초 이상 지났을 때만 로그
+        if (isNewDevice || now - lastLogTime > 3000) {
+          console.log('[BLE Service] 상대방 기기 발견:', {
+            id: device.id,
+            uuid: iBeaconData.uuid,
+            major: iBeaconData.major,
+            minor: iBeaconData.minor,
+            rssi: device.rssi,
+          });
+
+          // 로그 시간 업데이트
+          this.discoveredLogTimes.set(device.id, now);
+        }
+
+        // 기기 정보 저장
+        this.discoveredPeers.set(device.id, discoveredDevice);
+
+        // 중요: 기기가 발견될 때마다 항상 이벤트 발생
+        // RSSI 필터링을 제거하여 모든 업데이트가 UI에 반영되도록 함
+        this.notifyPeerDiscovered(discoveredDevice);
       }
     } catch (error) {
       console.warn('[BLE Service] 장치 처리 오류:', error);
@@ -917,6 +959,58 @@ class BleService {
     } catch (error) {
       console.error('[BLE Service] 권한 확인 오류:', error);
       return false;
+    }
+  }
+
+  /**
+   * 기기 활동 감시 시작 (주기적으로 비활성 기기 확인)
+   */
+  private startDeviceActivityMonitoring(): void {
+    // 이미 실행 중인 경우 중지
+    if (this.deviceActivityCheck) {
+      clearInterval(this.deviceActivityCheck);
+    }
+
+    // 2초마다 비활성 기기 확인
+    this.deviceActivityCheck = setInterval(() => {
+      if (!this.isScanning) return;
+
+      const now = Date.now();
+      const inactiveDeviceIds: string[] = [];
+
+      // 모든 발견된 기기 확인
+      this.deviceLastSeen.forEach((lastSeen, deviceId) => {
+        // 마지막으로 본 지 3초 이상 지난 기기는 비활성으로 간주
+        if (now - lastSeen > 3000) {
+          inactiveDeviceIds.push(deviceId);
+        }
+      });
+
+      // 비활성 기기 처리
+      inactiveDeviceIds.forEach((deviceId) => {
+        // 기기 정보 가져오기
+        const device = this.discoveredPeers.get(deviceId);
+
+        if (device) {
+          // 비활성 기기 제거
+          this.discoveredPeers.delete(deviceId);
+          this.deviceLastSeen.delete(deviceId);
+
+          // 기기 사라짐 이벤트 발생
+          console.log(`[BLE Service] 기기 광고 중단 감지: ${deviceId}`);
+          this.notifyPeerLost(deviceId);
+        }
+      });
+    }, 2000);
+  }
+
+  /**
+   * 기기 활동 감시 중지
+   */
+  private stopDeviceActivityMonitoring(): void {
+    if (this.deviceActivityCheck) {
+      clearInterval(this.deviceActivityCheck);
+      this.deviceActivityCheck = null;
     }
   }
 }
