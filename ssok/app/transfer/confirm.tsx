@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -7,6 +7,7 @@ import ConfirmQuestion from '../../modules/transfer/components/ConfirmQuestion';
 import TransactionDetailsCard from '../../modules/transfer/components/TransactionDetailsCard';
 import ConfirmButton from '../../modules/transfer/components/ConfirmButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
+import Loading from '@/components/Loading';
 
 /**
  * 송금 확인 화면
@@ -16,13 +17,14 @@ export default function ConfirmScreen() {
   // useLocalSearchParams의 반환 타입은 기본적으로 string, string[], undefined 입니다
   const { accountNumber, bankName, userName, amount, userId, isBluetooth } =
     useLocalSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   const isBluetoothTransfer = isBluetooth === 'true';
 
   const handleConfirm = async () => {
     try {
-      // 로딩 표시
-      Alert.alert('송금 처리 중', '송금을 처리하고 있습니다...');
+      // 로딩 상태 활성화
+      setIsLoading(true);
 
       // 블루투스 송금인 경우 (userId로 송금)
       if (isBluetoothTransfer && userId) {
@@ -60,6 +62,9 @@ export default function ConfirmScreen() {
         console.log('계좌 송금 완료:', { accountNumber, bankName, amount });
       }
 
+      // 로딩 상태 비활성화
+      setIsLoading(false);
+
       // 송금 완료 페이지로 이동
       router.push({
         pathname: '/transfer/complete' as any,
@@ -70,6 +75,9 @@ export default function ConfirmScreen() {
         },
       });
     } catch (error) {
+      // 로딩 상태 비활성화
+      setIsLoading(false);
+
       console.error('송금 처리 중 오류:', error);
       Alert.alert(
         '송금 실패',
@@ -110,6 +118,9 @@ export default function ConfirmScreen() {
         {/* Confirm button */}
         <ConfirmButton onPress={handleConfirm} />
       </AnimatedLayout>
+
+      {/* 로딩 컴포넌트 - 단순 Lottie 애니메이션만 표시 */}
+      <Loading visible={isLoading} />
     </SafeAreaView>
   );
 }

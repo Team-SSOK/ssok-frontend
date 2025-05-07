@@ -7,6 +7,7 @@ import { generateUUID } from '@/utils/ble';
 import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import Loading from '@/components/Loading';
 
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
@@ -16,6 +17,7 @@ const BluetoothScreen: React.FC = () => {
   const [discoveredDevices, setDiscoveredDevices] = useState<
     DiscoveredDevice[]
   >([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // 기기 활성 상태 정리 함수
   const cleanupInactiveDevices = useCallback(() => {
@@ -160,10 +162,8 @@ const BluetoothScreen: React.FC = () => {
       return;
     }
 
-    // 로딩 표시
-    Alert.alert('사용자 정보 확인 중', '상대방의 정보를 확인하고 있습니다...', [
-      { text: '확인', style: 'default' },
-    ]);
+    // 로딩 상태 활성화
+    setIsLoading(true);
 
     // 실제로는 API를 호출해야 하지만, 임시로 Mock 데이터 사용
     setTimeout(() => {
@@ -173,6 +173,9 @@ const BluetoothScreen: React.FC = () => {
         userName: '최*훈', // 마스킹된 사용자명
         bankName: '신한은행',
       };
+
+      // 로딩 상태 비활성화
+      setIsLoading(false);
 
       // 송금 페이지로 이동 (userId 포함하여 전달)
       router.push({
@@ -197,6 +200,9 @@ const BluetoothScreen: React.FC = () => {
           onDevicePress={handleDevicePress}
         />
       </View>
+
+      {/* 로딩 컴포넌트 - 단순 Lottie 애니메이션만 표시 */}
+      <Loading visible={isLoading} />
     </SafeAreaView>
   );
 };
