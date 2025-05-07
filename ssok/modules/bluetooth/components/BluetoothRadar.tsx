@@ -23,13 +23,13 @@ const { width } = Dimensions.get('window');
 const RADAR_SIZE = width * 0.9;
 const CENTER_POINT = RADAR_SIZE / 2;
 
-// 레이더 내 기기 고정 위치 (5개)
+// 레이더 내 기기 고정 위치 (5개) - 반경을 약간 늘려 더 큰 기기 크기에 맞게 조정
 const FIXED_POSITIONS = [
-  { angle: 0, distance: 0.55 }, // 우측
-  { angle: 72, distance: 0.55 }, // 우측 상단
-  { angle: 144, distance: 0.55 }, // 좌측 상단
-  { angle: 216, distance: 0.55 }, // 좌측 하단
-  { angle: 288, distance: 0.55 }, // 우측 하단
+  { angle: 0, distance: 0.65 }, // 우측
+  { angle: 72, distance: 0.65 }, // 우측 상단
+  { angle: 144, distance: 0.65 }, // 좌측 상단
+  { angle: 216, distance: 0.65 }, // 좌측 하단
+  { angle: 288, distance: 0.65 }, // 우측 하단
 ];
 
 const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
@@ -108,31 +108,16 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
         <View style={[styles.radarCircle, styles.radarCircle2]} />
         <View style={[styles.radarCircle, styles.radarCircle3]} />
 
-        {/* 레이더 배경 방사형 라인 */}
-        {/* <View style={styles.radarLines}>
-          <View
-            style={[styles.radarLine, { transform: [{ rotate: '0deg' }] }]}
-          />
-          <View
-            style={[styles.radarLine, { transform: [{ rotate: '45deg' }] }]}
-          />
-          <View
-            style={[styles.radarLine, { transform: [{ rotate: '90deg' }] }]}
-          />
-          <View
-            style={[styles.radarLine, { transform: [{ rotate: '135deg' }] }]}
-          />
-        </View> */}
-
         {/* 중앙 내 프로필 */}
         <View style={styles.myProfileContainer}>
           <View style={styles.myProfile}>
+            <Image
+              source={require('@/assets/images/profile.webp')}
+              style={styles.profileImage}
+              resizeMode="cover"
+            />
             <Text style={styles.myInitial}>나</Text>
           </View>
-          {isScanning && <View style={styles.scanningIndicator} />}
-          <Text style={styles.myUUID} numberOfLines={1}>
-            {myUUID.substring(0, 8)}...
-          </Text>
         </View>
 
         {/* 발견된 기기들 (레이더 위에 표시) - 고정 위치 사용 */}
@@ -151,11 +136,6 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
             />
           );
         })}
-
-        {/* 스캔 중 상태 표시 */}
-        {isScanning && (
-          <Text style={styles.scanningText}>주변 기기 스캔 중...</Text>
-        )}
 
         {/* 추가 기기 버튼 (5개 초과 시) */}
         {listDevices.length > 0 && (
@@ -230,16 +210,16 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30, // 늘려서 기기 이름 표시에 더 공간 확보
   },
   scanEffect: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     borderRadius: RADAR_SIZE / 2,
-    backgroundColor: 'rgba(82, 145, 255, 0.03)',
+    backgroundColor: 'rgba(82, 145, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(82, 145, 255, 0.1)',
+    borderColor: 'rgba(82, 145, 255, 0.2)',
   },
   radarCircle: {
     position: 'absolute',
@@ -264,19 +244,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(82, 145, 255, 0.6)',
     backgroundColor: 'rgba(82, 145, 255, 0.05)',
   },
-  // radarLines: {
-  //   position: 'absolute',
-  //   width: '100%',
-  //   height: '100%',
-  // },
-  // radarLine: {
-  //   position: 'absolute',
-  //   width: '100%',
-  //   height: 1,
-  //   backgroundColor: 'rgba(82, 145, 255, 0.1)',
-  //   top: '50%',
-  //   left: 0,
-  // },
   myProfileContainer: {
     position: 'absolute',
     alignItems: 'center',
@@ -286,46 +253,30 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
+    borderWidth: 3,
+    borderColor: colors.primary,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
   },
   myInitial: {
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  scanningIndicator: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 2,
-    borderColor: 'rgba(82, 145, 255, 0.6)',
-    top: -5,
-    left: -5,
-    opacity: 0.7,
-  },
-  myUUID: {
-    fontSize: 12,
-    color: colors.grey,
-    marginTop: 4,
-    maxWidth: 100,
-    textAlign: 'center',
-  },
-  scanningText: {
-    position: 'absolute',
-    bottom: 10,
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
+    zIndex: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   moreDevicesButton: {
     position: 'absolute',

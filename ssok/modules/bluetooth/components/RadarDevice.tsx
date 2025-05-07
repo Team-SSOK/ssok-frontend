@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Image,
 } from 'react-native';
 import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
@@ -82,8 +83,8 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
       style={[
         styles.deviceContainer,
         {
-          left: position.x - 20, // 가운데 정렬을 위해 기기 너비의 절반만큼 조정
-          top: position.y - 20,
+          left: position.x - 30, // 가운데 정렬을 위해 기기 너비의 절반만큼 조정 (60/2)
+          top: position.y - 30,
         },
       ]}
       onPress={onPress}
@@ -97,14 +98,21 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
             {
               transform: [{ scale: pulseAnim }],
               opacity: opacityAnim,
-              backgroundColor: signalColor,
+              borderColor: signalColor,
+              backgroundColor: 'transparent',
             },
           ]}
         />
       )}
 
       {/* 기기 표시 */}
-      <View style={[styles.device, { backgroundColor: signalColor }]} />
+      <View style={[styles.device, { borderColor: signalColor }]}>
+        <Image
+          source={require('@/assets/images/profile.webp')}
+          style={styles.profileImage}
+          resizeMode="cover"
+        />
+      </View>
 
       {/* 기기 이름 */}
       <Text style={styles.deviceName} numberOfLines={1}>
@@ -117,41 +125,46 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
 const styles = StyleSheet.create({
   deviceContainer: {
     position: 'absolute',
-    width: 40,
-    height: 40,
+    width: 60,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
   },
   device: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'white',
-    elevation: 2,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 3,
+    overflow: 'hidden',
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 1,
+    shadowRadius: 2,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
   },
   pulse: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     opacity: 0.6,
+    borderWidth: 2,
   },
   deviceName: {
     position: 'absolute',
-    bottom: -18,
+    bottom: -24,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontSize: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 5,
+    fontSize: 12,
     color: colors.black,
-    maxWidth: 80,
+    maxWidth: 100,
     textAlign: 'center',
     overflow: 'hidden',
     elevation: 1,
