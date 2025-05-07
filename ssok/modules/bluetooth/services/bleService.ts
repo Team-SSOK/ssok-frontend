@@ -271,44 +271,44 @@ class BleService {
       }
     }
     // 안드로이드 12-13 (API 31-33)
-    // else if (Platform.OS === 'android' && sdkVersion >= 31 && sdkVersion < 34) {
-    //   console.log(`${this.LOG_TAG}-${FUNC_NAME} 안드로이드 12-13 권한 요청`);
+    else if (Platform.OS === 'android' && sdkVersion >= 31 && sdkVersion < 34) {
+      console.log(`${this.LOG_TAG}-${FUNC_NAME} 안드로이드 12-13 권한 요청`);
 
-    //   // 블루투스 권한 요청
-    //   const bluetoothPermissions = [
-    //     PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-    //     PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-    //     PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
-    //   ];
+      // 블루투스 권한 요청
+      const bluetoothPermissions = [
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+      ];
 
-    //   const bleResults =
-    //     await PermissionsAndroid.requestMultiple(bluetoothPermissions);
+      const bleResults =
+        await PermissionsAndroid.requestMultiple(bluetoothPermissions);
 
-    //   // 위치 권한도 요청 (일부 기기에서 필요)
-    //   await PermissionsAndroid.request(
-    //     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    //     {
-    //       title: '위치 접근 권한',
-    //       message: '블루투스 기기를 검색하기 위해 위치 접근 권한이 필요합니다.',
-    //       buttonPositive: '확인',
-    //     },
-    //   );
+      // 위치 권한도 요청 (일부 기기에서 필요)
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: '위치 접근 권한',
+          message: '블루투스 기기를 검색하기 위해 위치 접근 권한이 필요합니다.',
+          buttonPositive: '확인',
+        },
+      );
 
-    //   // 권한 결과 로그
-    //   Object.entries(bleResults).forEach(([permission, result]) => {
-    //     console.log(
-    //       `${this.LOG_TAG}-${FUNC_NAME} 권한 결과: ${permission} - ${result}`,
-    //     );
+      // 권한 결과 로그
+      Object.entries(bleResults).forEach(([permission, result]) => {
+        console.log(
+          `${this.LOG_TAG}-${FUNC_NAME} 권한 결과: ${permission} - ${result}`,
+        );
 
-    //     // 광고 권한이 'never_ask_again'인 경우
-    //     if (
-    //       permission === PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE &&
-    //       result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
-    //     ) {
-    //       this.showPermissionSettings('블루투스 광고');
-    //     }
-    //   });
-    // }
+        // 광고 권한이 'never_ask_again'인 경우
+        if (
+          permission === PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE &&
+          result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+        ) {
+          this.showPermissionSettings('블루투스 광고');
+        }
+      });
+    }
     // 안드로이드 11 (API 30) 이하
     else if (Platform.OS === 'android') {
       console.log(`${this.LOG_TAG}-${FUNC_NAME} 안드로이드 11 이하 권한 요청`);
@@ -448,7 +448,8 @@ class BleService {
         { text: '취소', style: 'cancel' },
         {
           text: '블루투스 설정',
-          onPress: () => Linking.openSettings(),
+          onPress: () =>
+            Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS'),
         },
       ],
     );
