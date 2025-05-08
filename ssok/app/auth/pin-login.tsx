@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { usePin } from '@/contexts/PinContext';
 import PinDots from '@/modules/auth/components/PinDots';
 import PinKeypad from '@/modules/auth/components/PinKeypad';
 import usePinInput from '@/modules/auth/hooks/usePin';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 export default function PinLogin() {
   const { verifyAndLogin } = usePin();
@@ -43,7 +45,7 @@ export default function PinLogin() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.content}>
-        <Text style={styles.title}>PIN 번호 로그인</Text>
+        <Text style={[typography.h1, styles.title]}>PIN 번호 로그인</Text>
 
         <View style={styles.pinSection}>
           <PinDots
@@ -81,7 +83,6 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
   },
   title: {
-    fontSize: 35,
     color: colors.black,
     marginBottom: 50,
   },

@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Alert,
-} from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { usePin } from '@/contexts/PinContext';
@@ -15,6 +7,8 @@ import PinDots from '@/modules/auth/components/PinDots';
 import PinKeypad from '@/modules/auth/components/PinKeypad';
 import usePinInput from '@/modules/auth/hooks/usePin';
 import AuthStorage from '@/services/AuthStorage';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 export default function PinConfirm() {
   const { pin: savedPin, saveUserRegistration } = usePin();
@@ -63,7 +57,7 @@ export default function PinConfirm() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.content}>
-        <Text style={styles.title}>PIN번호 확인</Text>
+        <Text style={[typography.h1, styles.title]}>PIN번호 확인</Text>
 
         <View style={styles.pinSection}>
           <PinDots

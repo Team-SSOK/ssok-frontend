@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { usePin } from '@/contexts/PinContext';
 import PinDots from '@/modules/auth/components/PinDots';
 import PinKeypad from '@/modules/auth/components/PinKeypad';
 import usePinInput from '@/modules/auth/hooks/usePin';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 export default function PinSetup() {
   const { setPin: setContextPin } = usePin();
@@ -29,7 +31,7 @@ export default function PinSetup() {
       <StatusBar barStyle="dark-content" />
 
       <View style={styles.content}>
-        <Text style={styles.title}>PIN번호 설정</Text>
+        <Text style={[typography.h1, styles.title]}>PIN번호 설정</Text>
 
         <PinDots
           inputLength={inputPin.length}
