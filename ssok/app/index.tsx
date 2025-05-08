@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
-  Text,
   TouchableOpacity,
   ViewToken,
 } from 'react-native';
@@ -14,6 +13,8 @@ import { colors } from '@/constants/colors';
 import SlideShow from '@/modules/onboarding/components/SlideShow';
 import { onboardingSlides } from '@/modules/onboarding/data';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 type ViewableItemsChangedInfo = {
   viewableItems: ViewToken[];
@@ -59,7 +60,9 @@ export default function Index() {
                 onPress={handleStart}
                 activeOpacity={0.8}
               >
-                <Text style={styles.startButtonText}>SSOK 시작하기</Text>
+                <Text style={[typography.button, styles.startButtonText]}>
+                  SSOK 시작하기
+                </Text>
               </TouchableOpacity>
             </View>
           }
@@ -106,7 +109,5 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });

@@ -25,6 +25,16 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Project Guidelines
+
+### Font Usage
+
+This project uses the Kakao font family globally. To maintain consistent typography:
+
+- Always use the custom `Text` component from `@/components/TextProvider` instead of React Native's default Text.
+- Use predefined typography styles from `@/theme/typography` for consistent text styling.
+- See the [Font Guide](docs/FontGuide.md) for detailed instructions on using fonts in this project.
+
 ## Get a fresh project
 
 When you're ready, run:

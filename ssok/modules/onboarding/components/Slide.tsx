@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   StyleSheet,
-  Text,
   View,
   Image,
   ImageSourcePropType,
@@ -11,6 +10,8 @@ import {
 import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
 import LottieView from 'lottie-react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface SlideProps {
   title: string;
@@ -70,12 +71,16 @@ const Slide: React.FC<SlideProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={styles.textContainer}>
-        <Text style={[styles.title, titleStyle]}>{title}</Text>
+        <Text style={[typography.h2, styles.title, titleStyle]}>{title}</Text>
 
         <View style={styles.subtitleContainer}>
-          <Text style={[styles.subtitle, subtitleStyle]}>{subtitle1}</Text>
+          <Text style={[typography.body1, styles.subtitle, subtitleStyle]}>
+            {subtitle1}
+          </Text>
           {subtitle2 && (
-            <Text style={[styles.subtitle, subtitleStyle]}>{subtitle2}</Text>
+            <Text style={[typography.body1, styles.subtitle, subtitleStyle]}>
+              {subtitle2}
+            </Text>
           )}
         </View>
       </View>
@@ -98,23 +103,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
     color: colors.black,
     textAlign: 'center',
     marginBottom: 20,
-    lineHeight: 30,
-    fontFamily: 'WooridaumB',
   },
   subtitleContainer: {
     alignItems: 'center',
   },
   subtitle: {
-    fontSize: 16,
     color: colors.grey,
     textAlign: 'center',
     lineHeight: 24,
-    fontFamily: 'WooridaumR',
   },
   imageContainer: {
     flex: 1,

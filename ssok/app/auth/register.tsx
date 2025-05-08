@@ -15,7 +15,6 @@ import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
-import AuthStorage from '@/services/AuthStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Register() {

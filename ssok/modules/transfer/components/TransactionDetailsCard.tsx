@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface TransactionDetailsCardProps {
   recipientName: string;
@@ -25,8 +27,10 @@ export default function TransactionDetailsCard({
   return (
     <View style={styles.container}>
       <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>받는 분</Text>
-        <Text style={styles.detailValue}>{recipientName}</Text>
+        <Text style={[typography.caption, styles.detailLabel]}>받는 분</Text>
+        <Text style={[typography.body1, styles.detailValue]}>
+          {recipientName}
+        </Text>
       </View>
 
       <View style={styles.separator} />
@@ -34,14 +38,20 @@ export default function TransactionDetailsCard({
       {isBluetoothTransfer ? (
         // 블루투스 송금인 경우 userId 표시
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>송금 방식</Text>
-          <Text style={styles.bluetoothValue}>블루투스 송금</Text>
+          <Text style={[typography.caption, styles.detailLabel]}>
+            송금 방식
+          </Text>
+          <Text style={[typography.body1, styles.bluetoothValue]}>
+            블루투스 송금
+          </Text>
         </View>
       ) : (
         // 일반 계좌 송금인 경우 계좌번호 표시
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>받는 계좌</Text>
-          <Text style={styles.detailValue}>
+          <Text style={[typography.caption, styles.detailLabel]}>
+            받는 계좌
+          </Text>
+          <Text style={[typography.body1, styles.detailValue]}>
             {bankName} {accountNumber}
           </Text>
         </View>
@@ -52,8 +62,10 @@ export default function TransactionDetailsCard({
         <>
           <View style={styles.separator} />
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>사용자 ID</Text>
-            <Text style={styles.detailValue}>{userId}</Text>
+            <Text style={[typography.caption, styles.detailLabel]}>
+              사용자 ID
+            </Text>
+            <Text style={[typography.body1, styles.detailValue]}>{userId}</Text>
           </View>
         </>
       )}
@@ -61,10 +73,10 @@ export default function TransactionDetailsCard({
       <View style={styles.separator} />
 
       <View style={styles.detailRow}>
-        <Text style={styles.amountLabel}>송금액</Text>
-        <Text style={styles.amountValue}>
+        <Text style={[typography.caption, styles.amountLabel]}>송금액</Text>
+        <Text style={[typography.body1, styles.amountValue]}>
           {amount.toLocaleString('ko-KR')}
-          <Text style={styles.wonSymbol}>원</Text>
+          <Text style={[typography.body1, styles.wonSymbol]}>원</Text>
         </Text>
       </View>
     </View>
@@ -90,17 +102,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   detailLabel: {
-    fontSize: 15,
     color: colors.lGrey,
   },
   detailValue: {
-    fontSize: 15,
-    fontWeight: '500',
     color: colors.black,
   },
   bluetoothValue: {
-    fontSize: 15,
-    fontWeight: '500',
     color: colors.primary,
   },
   separator: {
@@ -109,13 +116,11 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   amountLabel: {
-    fontSize: 15,
     color: colors.lGrey,
   },
   amountValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: colors.primary,
+    fontWeight: 'bold',
   },
   wonSymbol: {
     fontWeight: 'normal',

@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface NextButtonProps {
   onPress: () => void;
@@ -25,6 +27,7 @@ const NextButton: React.FC<NextButtonProps> = ({
     >
       <Text
         style={[
+          typography.button,
           styles.buttonText,
           enabled ? styles.enabledText : styles.disabledText,
         ]}
@@ -49,10 +52,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: colors.disabled,
   },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  buttonText: {},
   enabledText: {
     color: colors.white,
   },

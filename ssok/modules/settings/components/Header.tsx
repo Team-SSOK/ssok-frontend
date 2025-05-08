@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 type HeaderProps = {
   title: string;
@@ -25,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
       ) : (
         <View style={styles.emptySpace} />
       )}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[typography.h3, styles.title]}>{title}</Text>
       <View style={styles.rightSpace} />
     </View>
   );
@@ -38,8 +40,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.silver,
   },
   backButton: {
     padding: 5,
@@ -51,8 +51,6 @@ const styles = StyleSheet.create({
     width: 34,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
     color: colors.black,
   },
 });

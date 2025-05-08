@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
 import { AccountData, getBankName, getAccountType } from '@/mock/accountData';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface AccountCardProps {
   account: AccountData;
@@ -21,18 +23,24 @@ export default function AccountCard({
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.cardHeader}>
-        <Text style={styles.bankName}>{bankName}</Text>
-        <Text style={styles.accountType}>{accountType}</Text>
+        <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
+        <Text style={[typography.caption, styles.accountType]}>
+          {accountType}
+        </Text>
       </View>
 
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>잔액</Text>
-        <Text style={styles.balance}>{formatNumber(balance)}원</Text>
+        <Text style={[typography.caption, styles.balanceLabel]}>잔액</Text>
+        <Text style={[typography.h2, styles.balance]}>
+          {formatNumber(balance)}원
+        </Text>
       </View>
 
       <View style={styles.accountInfoContainer}>
-        <Text style={styles.accountAlias}>{account.accountAlias}</Text>
-        <Text style={styles.accountNumber}>
+        <Text style={[typography.body1, styles.accountAlias]}>
+          {account.accountAlias}
+        </Text>
+        <Text style={[typography.caption, styles.accountNumber]}>
           {maskAccountNumber(account.accountNumber)}
         </Text>
       </View>
@@ -60,25 +68,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   bankName: {
-    fontSize: 18,
-    fontWeight: 'bold',
     color: colors.primary,
   },
   accountType: {
-    fontSize: 14,
     color: colors.mGrey,
   },
   balanceContainer: {
     marginBottom: 20,
   },
   balanceLabel: {
-    fontSize: 14,
     color: colors.mGrey,
     marginBottom: 4,
   },
   balance: {
-    fontSize: 24,
-    fontWeight: 'bold',
     color: colors.black,
   },
   accountInfoContainer: {
@@ -87,13 +89,10 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   accountAlias: {
-    fontSize: 16,
-    fontWeight: '600',
     color: colors.black,
     marginBottom: 4,
   },
   accountNumber: {
-    fontSize: 14,
     color: colors.mGrey,
   },
 });

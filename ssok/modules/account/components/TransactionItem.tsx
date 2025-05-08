@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import { formatNumber, formatDate } from '@/utils/formatters';
 import { Transaction } from '@/utils/types';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -14,16 +16,17 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
   return (
     <View style={styles.transactionItem}>
       <View style={styles.transactionInfo}>
-        <Text style={styles.transactionName}>
+        <Text style={[typography.body1, styles.transactionName]}>
           {transaction.counterpartName}
         </Text>
-        <Text style={styles.transactionDate}>
+        <Text style={[typography.caption, styles.transactionDate]}>
           {formatDate(transaction.createdAt)}
         </Text>
       </View>
       <View style={styles.transactionAmountContainer}>
         <Text
           style={[
+            typography.body1,
             styles.transactionAmount,
             { color: isDeposit ? colors.primary : colors.black },
           ]}
@@ -31,7 +34,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
           {isDeposit ? '' : '-'}
           {formatNumber(transaction.transferMoney)}원
         </Text>
-        <Text style={styles.currentBalance}>
+        <Text style={[typography.caption, styles.currentBalance]}>
           잔액 {formatNumber(transaction.balanceAfterTransaction)}원
         </Text>
       </View>
@@ -49,24 +52,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionName: {
-    fontSize: 16,
-    fontWeight: '500',
     marginBottom: 4,
   },
   transactionDate: {
-    fontSize: 14,
     color: colors.mGrey,
   },
   transactionAmountContainer: {
     alignItems: 'flex-end',
   },
   transactionAmount: {
-    fontSize: 16,
-    fontWeight: '500',
     marginBottom: 4,
   },
   currentBalance: {
-    fontSize: 14,
     color: colors.mGrey,
   },
 });

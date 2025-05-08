@@ -21,7 +21,8 @@ type SettingsRoute =
   | '/(tabs)/settings/profile'
   | '/(tabs)/settings/help'
   | '/(tabs)/settings/privacy'
-  | '/(tabs)/settings/support';
+  | '/(tabs)/settings/support'
+  | '/(tabs)/settings/app-intro';
 
 export default function SettingsScreen() {
   const [isBluetoothEnabled, setIsBluetoothEnabled] = useState<boolean>(false);
@@ -132,6 +133,13 @@ export default function SettingsScreen() {
               value={isBluetoothEnabled}
             />
           </View>
+          <SettingItem
+            icon="information-circle-outline"
+            label="앱 소개"
+            onPress={() =>
+              navigateTo('/(tabs)/settings/app-intro' as SettingsRoute)
+            }
+          />
         </Section>
 
         {/* 지원 섹션 */}

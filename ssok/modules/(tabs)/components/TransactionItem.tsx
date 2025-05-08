@@ -1,8 +1,10 @@
 import React, { memo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import { formatNumber, formatDate } from '@/utils/formatters';
 import { Transaction } from '@/utils/types';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -12,15 +14,16 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
   return (
     <View style={styles.transactionItem}>
       <View style={styles.transactionInfo}>
-        <Text style={styles.transactionDescription}>
+        <Text style={[typography.body1, styles.transactionDescription]}>
           {transaction.counterpartName}
         </Text>
-        <Text style={styles.transactionDate}>
+        <Text style={[typography.caption, styles.transactionDate]}>
           {formatDate(transaction.createdAt)}
         </Text>
       </View>
       <Text
         style={[
+          typography.body1,
           styles.transactionAmount,
           {
             color:
@@ -48,16 +51,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionDescription: {
-    fontSize: 16,
     color: colors.black,
     marginBottom: 4,
   },
   transactionDate: {
-    fontSize: 14,
     color: colors.mGrey,
   },
   transactionAmount: {
-    fontSize: 16,
     fontWeight: '600',
   },
 });

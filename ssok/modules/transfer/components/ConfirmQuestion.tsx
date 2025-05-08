@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface ConfirmQuestionProps {
   recipientName: string;
@@ -16,15 +18,15 @@ export default function ConfirmQuestion({
 }: ConfirmQuestionProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.recipientText}>
+      <Text style={[typography.h3, styles.recipientText]}>
         {recipientName ? recipientName : '홍길동'}
-        <Text style={styles.nim}>님에게</Text>
+        <Text style={[typography.body1, styles.nim]}>님에게</Text>
       </Text>
-      <Text style={styles.amountText}>
+      <Text style={[typography.h1, styles.amountText]}>
         {amount.toLocaleString('ko-KR')}
-        <Text style={styles.wonText}>원을</Text>
+        <Text style={[typography.h3, styles.wonText]}>원을</Text>
       </Text>
-      <Text style={styles.questionText}>보낼까요?</Text>
+      <Text style={[typography.h3, styles.questionText]}>보낼까요?</Text>
     </View>
   );
 }
@@ -34,26 +36,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recipientText: {
-    fontSize: 22,
-    fontWeight: '600',
     color: colors.black,
   },
   nim: {
     fontWeight: 'normal',
   },
   amountText: {
-    fontSize: 32,
-    fontWeight: 'bold',
     color: colors.primary,
   },
   wonText: {
-    fontSize: 22,
-    fontWeight: 'normal',
     color: colors.black,
   },
   questionText: {
-    fontSize: 22,
-    fontWeight: '600',
     color: colors.black,
   },
 });

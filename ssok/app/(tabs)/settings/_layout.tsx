@@ -35,6 +35,12 @@ export default function SettingsLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="app-intro"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

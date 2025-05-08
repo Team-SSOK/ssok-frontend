@@ -17,6 +17,7 @@ import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
 
 // Mock data
 import { mockAccount, getAccountBalance } from '@/mock/accountData';
+import Button from '@/components/Button';
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);

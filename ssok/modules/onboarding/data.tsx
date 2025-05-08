@@ -10,14 +10,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   slideTitle: {
-    fontSize: 24,
-    lineHeight: 32,
     color: colors.black,
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   slideSubtitle: {
-    fontSize: 16,
     color: colors.grey,
     textAlign: 'center',
   },

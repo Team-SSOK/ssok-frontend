@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextInput } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import CustomTextInput from '@/components/CustomTextInput';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface AccountInputProps {
   value: string;
@@ -32,20 +34,6 @@ const AccountInput: React.FC<AccountInputProps> = ({ value, onChangeText }) => {
 const styles = StyleSheet.create({
   container: {
     marginTop: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: colors.black,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.silver,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: colors.black,
   },
 });
 

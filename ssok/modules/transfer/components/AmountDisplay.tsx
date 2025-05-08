@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface AmountDisplayProps {
   amount: number;
@@ -22,12 +24,18 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
       {/* 받는 분 정보 카드 */}
       <View style={styles.recipientCard}>
         <View style={styles.recipientHeader}>
-          <Text style={styles.recipientLabel}>받는 분</Text>
+          <Text style={[typography.button, styles.recipientLabel]}>
+            받는 분
+          </Text>
           <View style={styles.bankBadge}>
-            <Text style={styles.bankBadgeText}>{bankName}</Text>
+            <Text style={[typography.caption, styles.bankBadgeText]}>
+              {bankName}
+            </Text>
           </View>
         </View>
-        <Text style={styles.recipientName}>홍길동{recipientName}</Text>
+        <Text style={[typography.h3, styles.recipientName]}>
+          {recipientName}
+        </Text>
       </View>
 
       {/* 금액 표시 섹션 */}
@@ -36,12 +44,16 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
           {isZero ? (
             <View style={styles.placeholderContainer}>
               <Ionicons name="wallet-outline" size={24} color={colors.lGrey} />
-              <Text style={styles.placeholderText}>금액을 입력해주세요</Text>
+              <Text style={[typography.h3, styles.placeholderText]}>
+                금액을 입력해주세요
+              </Text>
             </View>
           ) : (
             <View style={styles.amountWrapper}>
-              <Text style={styles.currency}>{formattedAmount}</Text>
-              <Text style={styles.currencyUnit}>원</Text>
+              <Text style={[typography.h1, styles.currency]}>
+                {formattedAmount}
+              </Text>
+              <Text style={[typography.h2, styles.currencyUnit]}>원</Text>
             </View>
           )}
         </View>
@@ -76,9 +88,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   recipientLabel: {
-    fontSize: 14,
     color: colors.lGrey,
-    fontWeight: '500',
   },
   bankBadge: {
     paddingHorizontal: 10,
@@ -87,13 +97,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   bankBadgeText: {
-    fontSize: 12,
     color: colors.grey,
-    fontWeight: '600',
   },
   recipientName: {
-    fontSize: 20,
-    fontWeight: 'bold',
     color: colors.black,
   },
   amountSection: {
@@ -112,8 +118,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   placeholderText: {
-    fontSize: 20,
-    fontWeight: '500',
     color: colors.lGrey,
     marginLeft: 8,
   },
@@ -122,13 +126,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   currency: {
-    fontSize: 36,
-    fontWeight: 'bold',
     color: colors.black,
   },
   currencyUnit: {
-    fontSize: 24,
-    fontWeight: 'bold',
     color: colors.black,
     marginLeft: 4,
     marginBottom: 4,

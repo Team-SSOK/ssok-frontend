@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 export type PeriodFilterType = '1주일' | '1개월' | '3개월';
 
@@ -28,6 +30,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({
         >
           <Text
             style={[
+              typography.caption,
               styles.periodButtonText,
               selectedPeriod === period && styles.selectedPeriodButtonText,
             ]}
@@ -56,7 +59,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   periodButtonText: {
-    fontSize: 14,
     color: colors.black,
   },
   selectedPeriodButtonText: {

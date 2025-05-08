@@ -14,6 +14,8 @@ import PeriodFilter, {
 import TransactionList from '@/modules/account/components/TransactionList';
 import { Transaction } from '@/utils/types';
 import Header from '@/components/Header';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -114,8 +116,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   headerText: {
-    fontSize: 18,
-    fontWeight: '600',
+    color: colors.black,
   },
   settingsButton: {
     padding: 4,

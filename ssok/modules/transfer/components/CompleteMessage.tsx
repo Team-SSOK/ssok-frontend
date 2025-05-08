@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface CompleteMessageProps {
   amount: number;
@@ -37,17 +39,21 @@ export default function CompleteMessage({
         />
       </View>
 
-      <Text style={styles.title}>송금 완료</Text>
-      <Text style={styles.amountText}>{amount.toLocaleString('ko-KR')}원</Text>
+      <Text style={[typography.h1, styles.title]}>송금 완료</Text>
+      <Text style={[typography.h1, styles.amountText]}>
+        {amount.toLocaleString('ko-KR')}원
+      </Text>
 
       {isBluetoothTransfer && userId && (
-        <Text style={styles.bluetoothInfo}>
-          <Text style={styles.bluetoothLabel}>Bluetooth 송금 | </Text>
-          <Text style={styles.userId}>ID: {userId}</Text>
+        <Text style={[typography.body1, styles.bluetoothInfo]}>
+          <Text style={[typography.body1, styles.bluetoothLabel]}>
+            Bluetooth 송금 |{' '}
+          </Text>
+          <Text style={[typography.body1, styles.userId]}>ID: {userId}</Text>
         </Text>
       )}
 
-      <Text style={styles.message}>{displayMessage}</Text>
+      <Text style={[typography.body1, styles.message]}>{displayMessage}</Text>
     </View>
   );
 }
@@ -66,31 +72,25 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
     color: colors.black,
     marginBottom: 16,
   },
   amountText: {
-    fontSize: 36,
-    fontWeight: 'bold',
     color: colors.primary,
     marginBottom: 20,
   },
   bluetoothInfo: {
-    fontSize: 16,
     marginBottom: 16,
     color: colors.black,
   },
   bluetoothLabel: {
-    fontWeight: '500',
     color: colors.primary,
+    fontWeight: '500',
   },
   userId: {
     fontWeight: 'normal',
   },
   message: {
-    fontSize: 16,
     color: colors.grey,
     textAlign: 'center',
     marginHorizontal: 20,

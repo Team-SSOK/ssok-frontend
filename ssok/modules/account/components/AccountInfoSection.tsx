@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
-import { Ionicons } from '@expo/vector-icons';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
 import { router } from 'expo-router';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface AccountInfoSectionProps {
   accountNumber: string;
@@ -22,19 +23,23 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.accountType}>{accountType}</Text>
-      <Text style={styles.accountNumber}>
+      <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
+      <Text style={[typography.caption, styles.accountNumber]}>
         {maskAccountNumber(accountNumber)}
       </Text>
 
       <View style={styles.balanceRow}>
-        <Text style={styles.balance}>{formatNumber(balance)}원</Text>
+        <Text style={[typography.h1, styles.balance]}>
+          {formatNumber(balance)}원
+        </Text>
         <TouchableOpacity
           style={styles.transferButton}
           onPress={handleTransferPress}
           activeOpacity={0.7}
         >
-          <Text style={styles.transferButtonText}>송금</Text>
+          <Text style={[typography.button, styles.transferButtonText]}>
+            송금
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -46,12 +51,9 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   accountType: {
-    fontSize: 16,
-    fontWeight: '500',
     marginBottom: 8,
   },
   accountNumber: {
-    fontSize: 14,
     color: colors.mGrey,
     marginBottom: 16,
   },
@@ -61,10 +63,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  balance: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
+  balance: {},
   transferButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
@@ -77,8 +76,6 @@ const styles = StyleSheet.create({
   transferButtonText: {
     margin: 4,
     color: colors.white,
-    fontSize: 13,
-    fontWeight: '600',
   },
 });
 

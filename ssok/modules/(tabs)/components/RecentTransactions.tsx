@@ -1,14 +1,10 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { StyleSheet, View, TouchableOpacity, FlatList } from 'react-native';
 import { colors } from '@/constants/colors';
 import TransactionItem from './TransactionItem';
 import { transactions } from '@/mock/transactionData';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface RecentTransactionsProps {
   limit?: number;
@@ -23,7 +19,7 @@ export default function RecentTransactions({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>최근 거래내역</Text>
+        <Text style={[typography.h3, styles.sectionTitle]}>최근 거래내역</Text>
       </View>
 
       <FlatList
@@ -49,12 +45,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
     color: colors.black,
   },
   viewAllButton: {
-    fontSize: 14,
     color: colors.primary,
   },
   separator: {

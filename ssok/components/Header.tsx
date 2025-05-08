@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface HeaderProps {
   title: string;
@@ -18,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
       <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
         <Ionicons name="chevron-back" size={24} color="black" />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>{title}</Text>
+      <Text style={[typography.h3, styles.headerTitle]}>{title}</Text>
       <View style={styles.rightPlaceholder} />
     </View>
   );
@@ -36,8 +38,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
     color: colors.black,
   },
   rightPlaceholder: {

@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 interface ConfirmButtonProps {
   onPress: () => void;
@@ -20,7 +22,7 @@ export default function ConfirmButton({
       activeOpacity={0.8}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>{title}</Text>
+      <Text style={[typography.button, styles.buttonText]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -35,7 +37,5 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
