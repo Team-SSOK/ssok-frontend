@@ -96,11 +96,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 26,
   },
   footer: {
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.silver,
   },
 });

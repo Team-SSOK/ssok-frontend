@@ -17,7 +17,7 @@ export default function ConfirmQuestion({
   return (
     <View style={styles.container}>
       <Text style={styles.recipientText}>
-        {recipientName ? recipientName : ''}
+        {recipientName ? recipientName : '홍길동'}
         <Text style={styles.nim}>님에게</Text>
       </Text>
       <Text style={styles.amountText}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '@/constants/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 interface AmountDisplayProps {
   amount: number;
@@ -14,17 +15,39 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
   bankName,
 }) => {
   const formattedAmount = amount.toLocaleString('ko-KR');
+  const isZero = amount === 0;
 
   return (
     <View style={styles.container}>
-      <View style={styles.recipientInfo}>
-        <Text style={styles.recipientLabel}>받는 분</Text>
-        <Text style={styles.recipientText}>{recipientName}</Text>
-        <Text style={styles.bankNameText}>{bankName}</Text>
+      {/* 받는 분 정보 카드 */}
+      <View style={styles.recipientCard}>
+        <View style={styles.recipientHeader}>
+          <Text style={styles.recipientLabel}>받는 분</Text>
+          <View style={styles.bankBadge}>
+            <Text style={styles.bankBadgeText}>{bankName}</Text>
+          </View>
+        </View>
+        <Text style={styles.recipientName}>홍길동{recipientName}</Text>
       </View>
 
-      <View style={styles.amountContainer}>
-        <Text style={styles.currency}>{formattedAmount}원</Text>
+      {/* 금액 표시 섹션 */}
+      <View style={styles.amountSection}>
+        <View style={styles.amountContainer}>
+          {isZero ? (
+            <View style={styles.placeholderContainer}>
+              <Ionicons name="wallet-outline" size={24} color={colors.lGrey} />
+              <Text style={styles.placeholderText}>금액을 입력해주세요</Text>
+            </View>
+          ) : (
+            <View style={styles.amountWrapper}>
+              <Text style={styles.currency}>{formattedAmount}</Text>
+              <Text style={styles.currencyUnit}>원</Text>
+            </View>
+          )}
+        </View>
+
+        {/* 하단 구분선 */}
+        <View style={styles.divider} />
       </View>
     </View>
   );
@@ -33,40 +56,88 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
+    marginBottom: 20,
   },
-  recipientInfo: {
-    padding: 16,
-    backgroundColor: colors.silver,
-    borderRadius: 12,
-    marginBottom: 40,
+  recipientCard: {
+    padding: 20,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    marginBottom: 32,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  recipientHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   recipientLabel: {
     fontSize: 14,
-    color: colors.grey,
-    marginBottom: 8,
+    color: colors.lGrey,
+    fontWeight: '500',
   },
-  recipientText: {
-    fontSize: 18,
+  bankBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: colors.silver,
+    borderRadius: 12,
+  },
+  bankBadgeText: {
+    fontSize: 12,
+    color: colors.grey,
+    fontWeight: '600',
+  },
+  recipientName: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.black,
-    marginBottom: 4,
   },
-  bankNameText: {
-    fontSize: 14,
-    color: colors.black,
+  amountSection: {
+    alignItems: 'center',
+    paddingVertical: 16,
   },
   amountContainer: {
     alignItems: 'center',
-  },
-  amountLabel: {
-    fontSize: 18,
-    color: colors.black,
+    justifyContent: 'center',
+    minHeight: 60,
     marginBottom: 16,
   },
+  placeholderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: colors.lGrey,
+    marginLeft: 8,
+  },
+  amountWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
   currency: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
+    color: colors.black,
+  },
+  currencyUnit: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.black,
     marginLeft: 4,
+    marginBottom: 4,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.silver,
+    width: '40%',
+    marginTop: 8,
   },
 });
 

@@ -10,7 +10,7 @@ export const colors = {
   grey: '#717171',
   lGrey: '#8F98AE',
   greyBlue: '#A8BED1',
-  silver: '#F5F7FA',
+  silver: '#EBEDF3',
   white: '#FFFFFF',
 
   // Color Shade

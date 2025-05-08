@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { TextInput, HelperText, useTheme, Text } from 'react-native-paper';
-import type { TextInputProps } from 'react-native-paper';
 import type { IconSource } from 'react-native-paper/lib/typescript/components/Icon';
 import { colors } from '@/constants/colors';
 
@@ -20,6 +19,7 @@ interface CustomTextInputProps {
   maxLength?: number;
   style?: any;
   containerStyle?: any;
+  contentStyle?: any;
   dense?: boolean;
   required?: boolean;
   labelColor?: string;
@@ -58,7 +58,8 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   dense = false,
   required = false,
   keyboardType = 'default',
-  mode = 'outlined',
+  mode = 'flat',
+  contentStyle,
   placeholder,
   placeholderTextColor,
   ...rest
@@ -103,7 +104,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
     <View style={[styles.container, containerStyle]}>
       {/* 라벨이 있고 required인 경우 별표 표시 */}
       {required && (
-        <Text style={[styles.requiredLabel, { color: colors.lGrey }]}>
+        <Text style={styles.requiredLabel}>
           {label} <Text style={styles.requiredStar}>*</Text>
         </Text>
       )}
@@ -140,13 +141,13 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           isFocused && styles.focusedOutline,
           error && styles.errorOutline,
         ]}
-        contentStyle={styles.contentStyle}
         dense={dense}
         keyboardType={keyboardType}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
+        contentStyle={contentStyle}
         theme={{
           colors: {
             primary: colors.primary,
@@ -154,6 +155,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
             onSurfaceVariant: colors.lGrey, // 라벨 색상
           },
         }}
+        underlineColor={colors.silver}
       />
 
       {/* 에러 또는 도움말 텍스트 */}
@@ -185,6 +187,9 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.white,
     fontSize: 18,
+    paddingHorizontal: 0,
+    borderBottomWidth: 1,
+    borderColor: colors.silver,
   },
   focusedInput: {
     borderColor: colors.primary,
@@ -198,7 +203,6 @@ const styles = StyleSheet.create({
   outline: {
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.silver,
   },
   focusedOutline: {
     borderColor: colors.primary,
@@ -206,10 +210,6 @@ const styles = StyleSheet.create({
   },
   errorOutline: {
     borderColor: colors.error,
-    borderWidth: 1,
-  },
-  contentStyle: {
-    paddingHorizontal: 10,
   },
   helperText: {
     marginTop: 4,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   requiredLabel: {
     fontSize: 14,
     marginBottom: 4,
-    color: colors.black, // 기본 색상 설정
+    color: colors.silver,
   },
   requiredStar: {
     color: colors.error,
