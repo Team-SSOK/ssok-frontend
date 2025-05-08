@@ -8,6 +8,7 @@ import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import Loading from '@/components/Loading';
+import Header from '@/components/Header';
 
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
@@ -192,6 +193,7 @@ const BluetoothScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header title="블루투스 송금" />
       <View style={styles.container}>
         <BluetoothRadar
           devices={discoveredDevices}

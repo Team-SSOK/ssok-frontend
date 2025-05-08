@@ -20,16 +20,16 @@ interface BluetoothRadarProps {
 }
 
 const { width } = Dimensions.get('window');
-const RADAR_SIZE = width * 0.9;
+const RADAR_SIZE = width * 1.2;
 const CENTER_POINT = RADAR_SIZE / 2;
 
 // 레이더 내 기기 고정 위치 (5개) - 반경을 약간 늘려 더 큰 기기 크기에 맞게 조정
 const FIXED_POSITIONS = [
   { angle: 0, distance: 0.65 }, // 우측
-  { angle: 72, distance: 0.65 }, // 우측 상단
-  { angle: 144, distance: 0.65 }, // 좌측 상단
-  { angle: 216, distance: 0.65 }, // 좌측 하단
-  { angle: 288, distance: 0.65 }, // 우측 하단
+  { angle: 70, distance: 0.65 }, // 우측 상단
+  { angle: 120, distance: 0.65 }, // 좌측 상단
+  { angle: 188, distance: 0.65 }, // 좌측 하단
+  { angle: 248, distance: 0.65 }, // 우측 하단
 ];
 
 const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
@@ -89,13 +89,13 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
   };
 
   // 신호 강도(RSSI)에 따른 색상 그라데이션
-  const getRadarGradientStyle = () => {
-    return {
-      backgroundColor: 'transparent',
-      borderColor: 'rgba(82, 145, 255, 0.6)',
-      borderWidth: 1,
-    };
-  };
+  // const getRadarGradientStyle = () => {
+  //   return {
+  //     backgroundColor: 'transparent',
+  //     borderColor: 'rgba(82, 145, 255, 0.6)',
+  //     borderWidth: 1,
+  //   };
+  // };
 
   return (
     <View style={styles.container}>
@@ -116,7 +116,7 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
               style={styles.profileImage}
               resizeMode="cover"
             />
-            <Text style={styles.myInitial}>나</Text>
+            <Text style={styles.myInitial}></Text>
           </View>
         </View>
 
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30, // 늘려서 기기 이름 표시에 더 공간 확보
+    marginBottom: 30,
   },
   scanEffect: {
     position: 'absolute',
@@ -218,30 +218,26 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: RADAR_SIZE / 2,
     backgroundColor: 'rgba(82, 145, 255, 0.05)',
-    borderWidth: 1,
     borderColor: 'rgba(82, 145, 255, 0.2)',
   },
   radarCircle: {
     position: 'absolute',
     borderRadius: RADAR_SIZE / 2,
-    borderWidth: 1,
   },
   radarCircle1: {
     width: '100%',
     height: '100%',
-    borderColor: 'rgba(82, 145, 255, 0.2)',
+
     backgroundColor: 'rgba(82, 145, 255, 0.02)',
   },
   radarCircle2: {
     width: '66%',
     height: '66%',
-    borderColor: 'rgba(82, 145, 255, 0.4)',
     backgroundColor: 'rgba(82, 145, 255, 0.03)',
   },
   radarCircle3: {
     width: '33%',
     height: '33%',
-    borderColor: 'rgba(82, 145, 255, 0.6)',
     backgroundColor: 'rgba(82, 145, 255, 0.05)',
   },
   myProfileContainer: {
