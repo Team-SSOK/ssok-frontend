@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TextInput } from 'react-native';
 import { colors } from '@/constants/colors';
+import CustomTextInput from '@/components/CustomTextInput';
 
 interface AccountInputProps {
   value: string;
@@ -18,15 +19,11 @@ const AccountInput: React.FC<AccountInputProps> = ({ value, onChangeText }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>계좌번호</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="'-' 없이 입력해주세요"
-        placeholderTextColor={colors.lGrey}
+      <CustomTextInput
+        label="계좌번호 입력"
         value={value}
         onChangeText={handleChangeText}
         keyboardType="number-pad"
-        autoFocus
       />
     </View>
   );
