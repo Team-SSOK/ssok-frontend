@@ -136,11 +136,6 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           error && styles.errorInput,
           style,
         ]}
-        outlineStyle={[
-          styles.outline,
-          isFocused && styles.focusedOutline,
-          error && styles.errorOutline,
-        ]}
         dense={dense}
         keyboardType={keyboardType}
         onFocus={() => setIsFocused(true)}

@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
   SafeAreaView,
   StatusBar,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';

@@ -14,8 +14,6 @@ import PeriodFilter, {
 import TransactionList from '@/modules/account/components/TransactionList';
 import { Transaction } from '@/utils/types';
 import Header from '@/components/Header';
-import { Text } from '@/components/TextProvider';
-import { typography } from '@/theme/typography';
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams();
