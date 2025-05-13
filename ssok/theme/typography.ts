@@ -10,7 +10,7 @@ export const typography = StyleSheet.create({
     lineHeight: 34,
   },
   h2: {
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.extraBold,
     fontSize: 24,
     lineHeight: 30,
   },
