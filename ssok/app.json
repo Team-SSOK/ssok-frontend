@@ -24,8 +24,7 @@
         "android.permission.BLUETOOTH_ADVERTISE",
         "android.permission.ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.jaehongpark.ssok",
-      "foregroundServiceType": ["connectedDevice"]
+      "package": "com.jaehongpark.ssok"
     },
     "web": {
       "bundler": "metro",
@@ -61,12 +60,10 @@
         }
       ],
       [
-        "react-native-ble-manager",
+        "expo-notifications",
         {
-          "isBleRequired": true,
-          "neverForLocation": true,
-          "companionDeviceEnabled": false,
-          "bluetoothAlwaysPermission": "$(PRODUCT_NAME)이(가) 블루투스 기기에 연결하는 것을 허용하시겠습니까?"
+          "icon": "./assets/images/adaptive-icon.png",
+          "defaultChannel": "default"
         }
       ]
     ],

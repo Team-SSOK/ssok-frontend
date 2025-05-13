@@ -27,7 +27,7 @@ export const colors = {
   next: '#E6E6E6',
 
   // 기능성 색상
-  background: '#FFFFFF',
+  background: 'rgb(250,250,250)',
   card: '#F9F9F9',
   text: '#000000',
   border: '#E1E1E1',

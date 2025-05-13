@@ -17,7 +17,6 @@ import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
 
 // Mock data
 import { mockAccount, getAccountBalance } from '@/mock/accountData';
-import Button from '@/components/Button';
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +52,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <AccountHeader onSettingsPress={handleSettingsPress} />
 
@@ -82,7 +81,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,

@@ -65,7 +65,7 @@ class BleService {
 
   // 클래스 상단에 속성 추가
   private deviceLastSeen: Map<string, number> = new Map();
-  private deviceActivityCheck: NodeJS.Timeout | null = null;
+  private deviceActivityCheck: number | null = null;
 
   /**
    * 생성자 - 직접 호출하지 말고 getInstance() 사용
@@ -687,9 +687,9 @@ class BleService {
 
         // 같은 기기에 대해 최소 5초 간격으로만 로그 출력
         if (now - lastLogTime > 5000) {
-          console.warn(
-            '[BLE Service] iBeacon 데이터 파싱 실패, 일반 BLE 기기로 판단하여 무시',
-          );
+          // console.warn(
+          //   '[BLE Service] iBeacon 데이터 파싱 실패, 일반 BLE 기기로 판단하여 무시',
+          // );
           this.loggedDevices.set(device.id, now);
         }
         return;

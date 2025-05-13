@@ -47,9 +47,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.black,
   },
-  viewAllButton: {
-    color: colors.primary,
-  },
   separator: {
     height: 1,
     backgroundColor: colors.silver,
