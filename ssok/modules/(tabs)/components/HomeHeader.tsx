@@ -2,14 +2,12 @@ import React from 'react';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Text } from '@/components/TextProvider';
-import { typography } from '@/theme/typography';
 
-interface AccountHeaderProps {
+interface HomeHeaderProps {
   onSettingsPress?: () => void;
 }
 
-export default function AccountHeader({ onSettingsPress }: AccountHeaderProps) {
+export default function HomeHeader({ onSettingsPress }: HomeHeaderProps) {
   return (
     <View style={styles.header}>
       <View>
@@ -33,9 +31,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
-  },
-  title: {
-    color: colors.primary,
   },
   logo: {
     width: 80,

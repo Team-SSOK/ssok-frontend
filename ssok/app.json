@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#FCFCFC"
       },
       "permissions": [
@@ -46,8 +46,11 @@
         "expo-font",
         {
           "fonts": [
-            "./assets/fonts/WooridaumB.ttf",
-            "./assets/fonts/WooridaumR.ttf"
+            "./assets/fonts/KakaoBigSans-Bold.ttf",
+            "./assets/fonts/KakaoBigSans-ExtraBold.ttf",
+            "./assets/fonts/KakaoSmallSans-Bold.ttf",
+            "./assets/fonts/KakaoBigSans-Regular.ttf",
+            "./assets/fonts/KakaoSmallSans-Light.ttf"
           ]
         }
       ],
@@ -62,7 +65,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/adaptive-icon.png",
+          "icon": "./assets/images/icon.png",
           "defaultChannel": "default"
         }
       ]

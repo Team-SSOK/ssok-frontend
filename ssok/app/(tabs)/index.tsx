@@ -7,11 +7,12 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
 
 // Components
-import AccountHeader from '@/modules/(tabs)/components/AccountHeader';
+import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
 import AccountCard from '@/modules/(tabs)/components/AccountCard';
 import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
 
@@ -52,9 +53,13 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={[colors.background, colors.primary]}
+        style={styles.background}
+      />
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <AccountHeader onSettingsPress={handleSettingsPress} />
+      <HomeHeader onSettingsPress={handleSettingsPress} />
 
       <ScrollView
         style={styles.scrollView}
@@ -82,6 +87,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 300,
   },
   scrollView: {
     flex: 1,
