@@ -10,7 +10,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Components
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
@@ -28,7 +27,6 @@ export default function HomeScreen() {
   useEffect(() => {
     const balance = getAccountBalance();
     setAccountBalance(balance);
-    AsyncStorage.clear();
   }, []);
 
   // 새로고침 처리
@@ -49,14 +47,13 @@ export default function HomeScreen() {
   };
 
   const handleAccountPress = () => {
-    // @ts-ignore - Expo Router typing issue
     router.push(`/account/${mockAccount.accountID}`);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[colors.background, colors.primary]}
+        colors={[colors.background, colors.disabled]}
         style={styles.background}
       />
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -94,7 +91,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
-    height: 300,
+    height: '100%',
   },
   scrollView: {
     flex: 1,
