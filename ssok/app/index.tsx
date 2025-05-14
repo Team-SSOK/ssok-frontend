@@ -16,6 +16,7 @@ import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLoadingStore } from '@/stores/loadingStore';
 
 type ViewableItemsChangedInfo = {
   viewableItems: ViewToken[];
@@ -25,10 +26,16 @@ type ViewableItemsChangedInfo = {
 export default function Index() {
   const { checkingStatus } = useAuthFlow();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
+  const { startLoading, stopLoading } = useLoadingStore();
 
-  // useEffect(() => {
-  //   AsyncStorage.clear();
-  // });
+  // 인증 상태 확인 중일 때 전역 로딩 상태 사용
+  useEffect(() => {
+    if (checkingStatus) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [checkingStatus, startLoading, stopLoading]);
 
   const handleStart = () => {
     router.push('/auth/register');
@@ -42,15 +49,9 @@ export default function Index() {
   };
 
   if (checkingStatus) {
-    return (
-      <SafeAreaView style={styles.loadingWrapper}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.white} />
-        </View>
-      </SafeAreaView>
-    );
+    return null; // 전역 로딩 인디케이터가 표시되므로 아무것도 렌더링하지 않음
   }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
@@ -85,15 +86,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  loadingWrapper: {
-    flex: 1,
-    backgroundColor: colors.primary,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonContainer: {
     paddingHorizontal: 24,

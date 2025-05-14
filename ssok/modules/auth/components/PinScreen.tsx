@@ -6,9 +6,9 @@ import PinKeypad from '@/modules/auth/components/PinKeypad';
 import usePinInput from '@/modules/auth/hooks/usePin';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
-import { useAppLoading } from '@/contexts/LoadingContext';
+import { useLoadingStore } from '@/stores/loadingStore';
 import useDialog from '@/modules/auth/hooks/useDialog';
-import DialogProvider from '@/modules/auth/components/DialogProvider';
+import DialogProvider from '@/components/DialogProvider';
 
 interface PinScreenProps {
   title: string;
@@ -22,7 +22,7 @@ const PinScreen: React.FC<PinScreenProps> = ({
   onComplete,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { isLoading, startLoading, stopLoading } = useAppLoading();
+  const { startLoading, stopLoading } = useLoadingStore();
   const { dialogState, showDialog, hideDialog, handleConfirm, handleCancel } =
     useDialog();
 

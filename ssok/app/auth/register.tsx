@@ -17,7 +17,7 @@ import Button from '@/components/Button';
 import Header from '@/components/Header';
 import CustomTextInput from '@/components/CustomTextInput';
 import { Text } from '@/components/TextProvider';
-import { useAppLoading } from '@/contexts/LoadingContext';
+import { useLoadingStore } from '@/stores/loadingStore';
 
 // Auth 모듈 임포트
 import { authApi } from '@/modules/auth/api';
@@ -33,7 +33,7 @@ import {
   ERROR_MESSAGES,
 } from '@/modules/auth/utils/constants';
 import useDialog from '@/modules/auth/hooks/useDialog';
-import DialogProvider from '@/modules/auth/components/DialogProvider';
+import DialogProvider from '@/components/DialogProvider';
 
 export default function Register() {
   // 폼 상태 및 유효성 검증 관리
@@ -57,9 +57,9 @@ export default function Register() {
     setVerificationConfirmed,
   } = useRegisterState();
 
-  // 전역 로딩 상태 관리
+  // 전역 로딩 상태 관리 - Zustand 사용
   const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } =
-    useAppLoading();
+    useLoadingStore();
 
   // Dialog 상태 관리
   const { dialogState, showDialog, hideDialog, handleConfirm, handleCancel } =
