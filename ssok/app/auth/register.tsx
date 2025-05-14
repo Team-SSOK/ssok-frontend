@@ -177,7 +177,7 @@ export default function Register() {
       await AsyncStorage.setItem(STORAGE_KEYS.PHONE_NUMBER, form.phoneNumber);
 
       // PIN 설정 화면으로 이동
-      router.push('/auth/pin');
+      router.push('/auth/pin-setup');
     } catch (error) {
       console.error('Error in registration process:', error);
       showDialog({

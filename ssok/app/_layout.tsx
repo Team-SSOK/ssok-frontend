@@ -18,7 +18,10 @@ export default function RootLayout() {
               name="auth/register"
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="auth/pin" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="auth/pin-setup"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="auth/pin-confirm"
               options={{ headerShown: false }}
