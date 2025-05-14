@@ -7,7 +7,7 @@ import ConfirmQuestion from '../../modules/transfer/components/ConfirmQuestion';
 import TransactionDetailsCard from '../../modules/transfer/components/TransactionDetailsCard';
 import ConfirmButton from '../../modules/transfer/components/ConfirmButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
-import Loading from '@/components/Loading';
+import LoadingIndicator from '@/components/LoadingIndicator';
 
 /**
  * 송금 확인 화면
@@ -120,7 +120,7 @@ export default function ConfirmScreen() {
       </AnimatedLayout>
 
       {/* 로딩 컴포넌트 - 단순 Lottie 애니메이션만 표시 */}
-      <Loading visible={isLoading} />
+      <LoadingIndicator visible={isLoading} />
     </SafeAreaView>
   );
 }

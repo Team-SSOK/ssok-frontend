@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import LottieView from 'lottie-react-native';
 
-type LoadingProps = {
+type LoadingIndicatorProps = {
   visible: boolean;
   style?: ViewStyle;
   loop?: boolean;
@@ -14,7 +14,7 @@ type LoadingProps = {
  * 간단한 로딩 컴포넌트
  * Lottie 애니메이션만 표시합니다.
  */
-const Loading: React.FC<LoadingProps> = ({
+const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   visible,
   style,
   loop = true,
@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Loading;
+export default LoadingIndicator;

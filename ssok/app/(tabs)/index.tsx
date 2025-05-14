@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Components
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const balance = getAccountBalance();
     setAccountBalance(balance);
+    AsyncStorage.clear();
   }, []);
 
   // 새로고침 처리
@@ -86,7 +88,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   background: {
     position: 'absolute',

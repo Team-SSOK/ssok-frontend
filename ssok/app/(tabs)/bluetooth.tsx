@@ -7,7 +7,7 @@ import { generateUUID } from '@/utils/ble';
 import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import Loading from '@/components/Loading';
+import Loading from '@/components/LoadingIndicator';
 import Header from '@/components/Header';
 
 const BluetoothScreen: React.FC = () => {

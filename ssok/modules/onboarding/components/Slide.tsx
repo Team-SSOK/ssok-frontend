@@ -59,7 +59,13 @@ const Slide: React.FC<SlideProps> = ({
         <Image source={imageSource} style={styles.image} resizeMode="contain" />
       );
     } else if (videoSource && player) {
-      return <VideoView player={player} style={styles.video} />;
+      return (
+        <VideoView
+          player={player}
+          style={styles.video}
+          nativeControls={false}
+        />
+      );
     } else if (lottieSource) {
       return (
         <LottieView source={lottieSource} style={styles.lottie} autoPlay loop />
