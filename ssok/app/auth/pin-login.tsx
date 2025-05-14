@@ -1,13 +1,14 @@
 import React from 'react';
 import { router } from 'expo-router';
-import { usePin } from '@/contexts/PinContext';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 import { authApi } from '@/modules/auth/api/auth';
-import { getUserId, saveAuthTokens } from '@/modules/auth/utils/authUtils';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
 
 export default function PinLogin() {
-  const { verifyAndLogin } = usePin();
+  const verifyAndLogin = useAuthStore((state) => state.verifyAndLogin);
+  const userId = useAuthStore((state) => state.userId);
+  const login = useAuthStore((state) => state.login);
   const { showDialog } = useDialog();
 
   const handleComplete = async (inputPin: string) => {
@@ -18,8 +19,7 @@ export default function PinLogin() {
         return false;
       }
 
-      // 사용자 ID 가져오기
-      const userId = await getUserId();
+      // 사용자 ID 확인
       if (!userId) {
         showDialog({
           title: '오류',
@@ -41,9 +41,9 @@ export default function PinLogin() {
       if (response.data.isSuccess && response.data.result) {
         console.log('[LOG] 로그인 성공');
 
-        // 토큰 저장
+        // 토큰 저장 및 로그인 상태 업데이트
         const { accessToken, refreshToken } = response.data.result;
-        await saveAuthTokens(accessToken, refreshToken);
+        login(userId, accessToken, refreshToken);
 
         // 로그인 성공 시 탭 화면으로 이동
         router.replace('/(tabs)');

@@ -1,18 +1,22 @@
 import React from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { usePin } from '@/contexts/PinContext';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 import { authApi } from '@/modules/auth/api/auth';
 import { STORAGE_KEYS } from '@/modules/auth/utils/constants';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
 
 export default function PinConfirm() {
-  const { pin: savedPin, saveUserRegistration } = usePin();
+  const pin = useAuthStore((state) => state.pin);
+  const saveUserRegistration = useAuthStore(
+    (state) => state.saveUserRegistration,
+  );
+  const setUserId = useAuthStore((state) => state.setUserId);
   const { showDialog } = useDialog();
 
   const handleComplete = async (inputPin: string) => {
-    if (inputPin === savedPin) {
+    if (inputPin === pin) {
       try {
         // 필요한 회원 정보 가져오기
         const phoneNumber =
@@ -41,16 +45,14 @@ export default function PinConfirm() {
 
         console.log('[LOG] 회원가입 요청:', signupData);
         const response = await authApi.signup(signupData);
-
+        console.log('[LOG] 회원가입 응답:', response.data);
         if (response.data.isSuccess) {
           console.log('[LOG] 회원가입 성공:', response.data);
 
           // 사용자 ID 저장
           if (response.data.result?.userId) {
-            await AsyncStorage.setItem(
-              STORAGE_KEYS.USER_ID,
-              response.data.result.userId.toString(),
-            );
+            const userId = response.data.result.userId;
+            setUserId(userId);
           }
 
           // 사용자 정보 등록 (전화번호, PIN)

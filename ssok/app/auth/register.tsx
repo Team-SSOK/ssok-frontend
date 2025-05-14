@@ -57,7 +57,7 @@ export default function Register() {
     setVerificationConfirmed,
   } = useRegisterState();
 
-  // 전역 로딩 상태 관리 - Zustand 사용
+  // 전역 로딩 상태 관리
   const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } =
     useLoadingStore();
 
@@ -171,9 +171,12 @@ export default function Register() {
       // 로딩 상태 시작
       startGlobalLoading();
 
-      // 휴대폰 번호 저장 (PIN 설정 후 완전히 등록됨)
-      await AsyncStorage.setItem(STORAGE_KEYS.USERNAME, form.username);
-      await AsyncStorage.setItem(STORAGE_KEYS.BIRTH_DATE, form.birthDate);
+      // 휴대폰 번호 저장 - 하이픈 포함된 형태 그대로 저장
+      await AsyncStorage.setItem(STORAGE_KEYS.USERNAME, form.username.trim());
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.BIRTH_DATE,
+        form.birthDate.trim(),
+      );
       await AsyncStorage.setItem(STORAGE_KEYS.PHONE_NUMBER, form.phoneNumber);
 
       // PIN 설정 화면으로 이동

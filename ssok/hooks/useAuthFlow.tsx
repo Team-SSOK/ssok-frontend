@@ -1,31 +1,25 @@
 import { useEffect, useState } from 'react';
-import { router } from 'expo-router';
-import { usePin } from '@/contexts/PinContext';
-import AuthStorage from '@/services/AuthStorage';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 
 export function useAuthFlow() {
-  const { isLoggedIn } = usePin();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const navigateAfterAuthCheck = useAuthStore(
+    (state) => state.navigateAfterAuthCheck,
+  );
   const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect(() => {
-    const verifyUserStatus = async () => {
+    const checkAuth = async () => {
       try {
-        const isRegistered = await AuthStorage.isUserRegistered();
-
-        if (isRegistered && !isLoggedIn) {
-          router.replace('/auth/pin-login');
-        } else if (isLoggedIn) {
-          router.replace('/(tabs)');
-        }
-      } catch (error) {
-        console.error('[Error]:', error);
+        await navigateAfterAuthCheck();
       } finally {
         setCheckingStatus(false);
       }
     };
 
-    verifyUserStatus();
-  }, [isLoggedIn]);
+    checkAuth();
+  }, [isLoggedIn, navigateAfterAuthCheck]);
 
   return { checkingStatus };
 }

@@ -41,7 +41,23 @@ export const useRegisterForm = () => {
     key: keyof RegisterFormData,
     value: string | boolean,
   ) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    if (key === 'phoneNumber' && typeof value === 'string') {
+      // 숫자만 추출하고 하이픈 포맷팅
+      const digits = value.replace(/[^0-9]/g, '');
+      let formattedPhoneNumber = '';
+
+      if (digits.length <= 3) {
+        formattedPhoneNumber = digits;
+      } else if (digits.length <= 7) {
+        formattedPhoneNumber = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+      } else {
+        formattedPhoneNumber = `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+      }
+
+      setForm((prev) => ({ ...prev, phoneNumber: formattedPhoneNumber }));
+    } else {
+      setForm((prev) => ({ ...prev, [key]: value }));
+    }
 
     // 입력 시 해당 필드 에러 초기화
     if (errors[key as keyof FormErrors]) {
@@ -53,13 +69,15 @@ export const useRegisterForm = () => {
    * 휴대폰 번호 유효성 검증
    */
   const validatePhone = (): boolean => {
-    if (!form.phoneNumber.trim()) {
+    const digits = form.phoneNumber.replace(/[^0-9]/g, '');
+
+    if (!digits) {
       setErrors((prev) => ({
         ...prev,
         phoneNumber: ERROR_MESSAGES.REQUIRED_PHONE,
       }));
       return false;
-    } else if (!REGEX.PHONE_NUMBER.test(form.phoneNumber)) {
+    } else if (!REGEX.PHONE_NUMBER.test(digits)) {
       setErrors((prev) => ({
         ...prev,
         phoneNumber: ERROR_MESSAGES.INVALID_PHONE,
@@ -88,6 +106,7 @@ export const useRegisterForm = () => {
    */
   const validateForm = (requireVerification: boolean = true): boolean => {
     const newErrors: FormErrors = {};
+    const phoneDigits = form.phoneNumber.replace(/[^0-9]/g, '');
 
     // 이름 검증
     if (!form.username.trim()) {
@@ -101,10 +120,10 @@ export const useRegisterForm = () => {
       newErrors.birthDate = ERROR_MESSAGES.INVALID_BIRTH_DATE;
     }
 
-    // 휴대폰 번호 검증
-    if (!form.phoneNumber.trim()) {
+    // 휴대폰 번호 검증 (숫자만으로 유효성 검사)
+    if (!phoneDigits) {
       newErrors.phoneNumber = ERROR_MESSAGES.REQUIRED_PHONE;
-    } else if (!REGEX.PHONE_NUMBER.test(form.phoneNumber)) {
+    } else if (!REGEX.PHONE_NUMBER.test(phoneDigits)) {
       newErrors.phoneNumber = ERROR_MESSAGES.INVALID_PHONE;
     }
 
