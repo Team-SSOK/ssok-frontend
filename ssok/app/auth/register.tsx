@@ -172,6 +172,12 @@ export default function Register() {
     Keyboard.dismiss();
   };
 
+  // 어떤 로딩 상태라도 있으면 로딩 인디케이터 표시
+  const isAnyLoading =
+    state.loading.registering ||
+    state.loading.sendingCode ||
+    state.loading.verifyingCode;
+
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
       <SafeAreaView style={styles.container}>
@@ -247,10 +253,12 @@ export default function Register() {
             disabled={isDisabled}
             fullWidth
           />
-
-          {/* 전체 로딩 표시 */}
         </View>
-        {state.loading.registering && <LoadingIndicator visible={true} />}
+
+        {/* 로딩 인디케이터 */}
+        {isAnyLoading && (
+          <LoadingIndicator visible={true} style={styles.loadingOverlay} />
+        )}
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -275,5 +283,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: colors.black,
+  },
+  loadingOverlay: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
 });

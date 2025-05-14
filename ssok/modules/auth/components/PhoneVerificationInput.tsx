@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/TextProvider';
 import CustomTextInput from '@/components/CustomTextInput';
-import LoadingIndicator from '@/components/LoadingIndicator';
 import { colors } from '@/constants/colors';
 
 interface PhoneVerificationInputProps {
@@ -42,19 +41,15 @@ const PhoneVerificationInput: React.FC<PhoneVerificationInputProps> = ({
       <TouchableOpacity
         style={[
           styles.button,
-          (verificationSent || !phoneNumber || disabled) &&
+          (verificationSent || !phoneNumber || disabled || isLoading) &&
             styles.disabledButton,
         ]}
         onPress={onSendVerification}
         disabled={verificationSent || !phoneNumber || disabled || isLoading}
       >
-        {isLoading ? (
-          <LoadingIndicator visible={true} />
-        ) : (
-          <Text style={styles.buttonText}>
-            {verificationSent ? '재발송' : '인증번호 발송'}
-          </Text>
-        )}
+        <Text style={styles.buttonText}>
+          {verificationSent ? '재발송' : '인증번호 발송'}
+        </Text>
       </TouchableOpacity>
     </View>
   );

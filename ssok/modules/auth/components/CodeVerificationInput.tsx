@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/TextProvider';
 import CustomTextInput from '@/components/CustomTextInput';
-import LoadingIndicator from '@/components/LoadingIndicator';
 import { colors } from '@/constants/colors';
 
 interface CodeVerificationInputProps {
@@ -42,7 +41,10 @@ const CodeVerificationInput: React.FC<CodeVerificationInputProps> = ({
       <TouchableOpacity
         style={[
           styles.button,
-          (verificationConfirmed || !verificationCode || disabled) &&
+          (verificationConfirmed ||
+            !verificationCode ||
+            disabled ||
+            isLoading) &&
             styles.disabledButton,
         ]}
         onPress={onVerifyCode}
@@ -50,13 +52,9 @@ const CodeVerificationInput: React.FC<CodeVerificationInputProps> = ({
           verificationConfirmed || !verificationCode || disabled || isLoading
         }
       >
-        {isLoading ? (
-          <LoadingIndicator visible={true} />
-        ) : (
-          <Text style={styles.buttonText}>
-            {verificationConfirmed ? '인증완료' : '인증확인'}
-          </Text>
-        )}
+        <Text style={styles.buttonText}>
+          {verificationConfirmed ? '인증완료' : '인증확인'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
