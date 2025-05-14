@@ -76,6 +76,6 @@ export const onboardingSlides = [
     titleStyle={styles.slideTitle}
     subtitleStyle={styles.slideSubtitle}
     imageContainerStyle={styles.slideImageContainer}
-    lottieSource={require('@/assets/lottie/slide4.json')}
+    videoSource={require('@/assets/videos/ssok.mp4')}
   />,
 ];

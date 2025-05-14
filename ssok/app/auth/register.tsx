@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
+import Header from '@/components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Register() {
@@ -27,10 +28,6 @@ export default function Register() {
 
   const handleChange = (key: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleGoBack = () => {
-    router.back();
   };
 
   const handleRegister = async () => {
@@ -65,13 +62,7 @@ export default function Register() {
         <StatusBar barStyle="dark-content" />
 
         {/* 헤더 */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={colors.black} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>회원가입</Text>
-          <View style={styles.headerRightPlaceholder} />
-        </View>
+        <Header title="회원가입" />
 
         <View style={styles.content}>
           {/* 이름 입력 */}
@@ -149,20 +140,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.silver,
-  },
-  backButton: {
-    padding: 8,
-    width: 40,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.black,
-    textAlign: 'center',
-    flex: 1,
-  },
-  headerRightPlaceholder: {
-    width: 40,
   },
   content: {
     flex: 1,
