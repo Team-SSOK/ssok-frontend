@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,6 +15,7 @@ import { onboardingSlides } from '@/modules/onboarding/slides';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ViewableItemsChangedInfo = {
   viewableItems: ViewToken[];
@@ -24,6 +25,10 @@ type ViewableItemsChangedInfo = {
 export default function Index() {
   const { checkingStatus } = useAuthFlow();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
+
+  // useEffect(() => {
+  //   AsyncStorage.clear();
+  // });
 
   const handleStart = () => {
     router.push('/auth/register');

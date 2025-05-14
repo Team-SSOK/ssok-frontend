@@ -63,7 +63,7 @@ const PinScreen: React.FC<PinScreenProps> = ({
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.content}>
-        <Text style={[typography.h1, styles.title]}>{title}</Text>
+        <Text style={[typography.h2, styles.title]}>{title}</Text>
 
         <View style={styles.pinSection}>
           <PinDots
@@ -112,8 +112,6 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
   },
   title: {
-    fontSize: 35,
-    color: colors.black,
     marginBottom: 50,
   },
   pinSection: {
