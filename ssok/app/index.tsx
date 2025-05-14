@@ -11,7 +11,7 @@ import {
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import SlideShow from '@/modules/onboarding/components/SlideShow';
-import { onboardingSlides } from '@/modules/onboarding/data';
+import { onboardingSlides } from '@/modules/onboarding/slides';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';

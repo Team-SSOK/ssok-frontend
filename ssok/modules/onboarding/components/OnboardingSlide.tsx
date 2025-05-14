@@ -6,7 +6,6 @@ import {
   ImageSourcePropType,
   ViewStyle,
   TextStyle,
-  ImageStyle,
 } from 'react-native';
 import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
 import LottieView from 'lottie-react-native';
@@ -25,25 +24,9 @@ interface SlideProps {
   titleStyle?: TextStyle;
   subtitleStyle?: TextStyle;
   imageContainerStyle?: ViewStyle;
-  isLast?: boolean;
   isCard?: boolean;
   cardContent?: React.ReactNode;
 }
-
-const mediaCard: ViewStyle & ImageStyle = {
-  height: 420,
-  width: 220,
-  borderRadius: 10,
-
-  // iOS 그림자
-  shadowColor: colors.black,
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.15,
-  shadowRadius: 3,
-
-  // Android 그림자
-  elevation: 4,
-};
 
 const Slide: React.FC<SlideProps> = ({
   title,
@@ -57,7 +40,6 @@ const Slide: React.FC<SlideProps> = ({
   subtitleStyle,
   imageContainerStyle,
   isCard = false,
-  isLast = false,
   cardContent,
 }) => {
   // 비디오 소스가 제공된 경우 비디오 플레이어 초기화
@@ -80,9 +62,8 @@ const Slide: React.FC<SlideProps> = ({
       return (
         <VideoView
           player={player}
-          style={isLast ? styles.lastVideo : styles.video}
+          style={styles.video}
           nativeControls={false}
-          pointerEvents="none"
         />
       );
     } else if (lottieSource) {
@@ -145,15 +126,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    position: 'relative',
   },
   image: {
-    ...mediaCard,
+    height: '70%',
   },
   video: {
-    ...mediaCard,
-  },
-  lastVideo: {
     width: '100%',
     height: '70%',
   },

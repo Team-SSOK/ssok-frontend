@@ -1,19 +1,19 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
   ViewStyle,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
+import { OnboardingCardData } from '../utils/types';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
-interface OnboardingCardProps {
-  title: string;
-  description: string;
-  onPress: () => void;
-  buttonText: string;
+interface OnboardingCardProps extends OnboardingCardData {
+  buttonText?: string;
   containerStyle?: ViewStyle;
   active?: boolean;
 }
@@ -23,6 +23,9 @@ const windowWidth = Dimensions.get('window').width;
 const OnboardingCard: React.FC<OnboardingCardProps> = ({
   title,
   description,
+  iconName,
+  iconColor,
+  backgroundColor,
   onPress,
   buttonText,
   containerStyle,
@@ -32,25 +35,39 @@ const OnboardingCard: React.FC<OnboardingCardProps> = ({
     <View
       style={[
         styles.container,
+        { backgroundColor: backgroundColor || colors.white },
         active ? styles.activeContainer : {},
         containerStyle,
       ]}
     >
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        {iconName && (
+          <View style={styles.iconContainer}>
+            <Ionicons
+              name={iconName as any}
+              size={24}
+              color={iconColor || colors.primary}
+            />
+          </View>
+        )}
+        <Text style={[typography.h2, styles.title]}>{title}</Text>
+        <Text style={[typography.body1, styles.description]}>
+          {description}
+        </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.button, active ? styles.activeButton : {}]}
-        onPress={onPress}
-      >
-        <Text
-          style={[styles.buttonText, active ? styles.activeButtonText : {}]}
+      {buttonText && onPress && (
+        <TouchableOpacity
+          style={[styles.button, active ? styles.activeButton : {}]}
+          onPress={onPress}
         >
-          {buttonText}
-        </Text>
-      </TouchableOpacity>
+          <Text
+            style={[styles.buttonText, active ? styles.activeButtonText : {}]}
+          >
+            {buttonText}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -77,6 +94,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     marginBottom: 20,
+  },
+  iconContainer: {
+    marginBottom: 16,
   },
   title: {
     fontSize: 18,

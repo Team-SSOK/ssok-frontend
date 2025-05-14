@@ -1,27 +1,24 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View, TouchableOpacity, ViewStyle } from 'react-native';
 import { colors } from '@/constants/colors';
+import { PaginationProps } from '../utils/types';
 
-interface PaginationProps {
-  totalSlides: number;
-  currentIndex: number;
+interface ExtendedPaginationProps extends PaginationProps {
   containerStyle?: ViewStyle;
   dotStyle?: ViewStyle;
   activeDotStyle?: ViewStyle;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  totalSlides,
-  currentIndex,
+const Pagination: React.FC<ExtendedPaginationProps> = ({
+  total,
+  current,
+  onPageChange,
   containerStyle,
   dotStyle,
   activeDotStyle,
 }) => {
   // Create array of dots based on total slides
-  const dots = useMemo(
-    () => Array.from({ length: totalSlides }),
-    [totalSlides],
-  );
+  const dots = useMemo(() => Array.from({ length: total }), [total]);
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -31,13 +28,14 @@ const Pagination: React.FC<PaginationProps> = ({
           style={[
             styles.dot,
             dotStyle,
-            currentIndex === index && styles.activeDot,
-            currentIndex === index && activeDotStyle,
+            current === index && styles.activeDot,
+            current === index && activeDotStyle,
           ]}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel={`Go to slide ${index + 1}`}
-          accessibilityState={{ selected: currentIndex === index }}
+          accessibilityState={{ selected: current === index }}
+          onPress={() => onPageChange && onPageChange(index)}
         />
       ))}
     </View>
