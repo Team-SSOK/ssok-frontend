@@ -7,18 +7,17 @@ import {
   StatusBar,
   Keyboard,
   TouchableWithoutFeedback,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import LoadingIndicator from '@/components/LoadingIndicator';
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button';
 import Header from '@/components/Header';
 import CustomTextInput from '@/components/CustomTextInput';
 import { Text } from '@/components/TextProvider';
+import { useAppLoading } from '@/contexts/LoadingContext';
 
 // Auth 모듈 임포트
 import { authApi } from '@/modules/auth/api';
@@ -33,6 +32,8 @@ import {
   SUCCESS_MESSAGES,
   ERROR_MESSAGES,
 } from '@/modules/auth/utils/constants';
+import useDialog from '@/modules/auth/hooks/useDialog';
+import DialogProvider from '@/modules/auth/components/DialogProvider';
 
 export default function Register() {
   // 폼 상태 및 유효성 검증 관리
@@ -56,6 +57,14 @@ export default function Register() {
     setVerificationConfirmed,
   } = useRegisterState();
 
+  // 전역 로딩 상태 관리
+  const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } =
+    useAppLoading();
+
+  // Dialog 상태 관리
+  const { dialogState, showDialog, hideDialog, handleConfirm, handleCancel } =
+    useDialog();
+
   // 인증번호 발송
   const sendVerificationCode = useCallback(async () => {
     if (!validatePhone()) return;
@@ -71,16 +80,25 @@ export default function Register() {
 
       if (response.data.isSuccess) {
         setVerificationSent(true);
-        Alert.alert('인증번호 발송', SUCCESS_MESSAGES.CODE_SENT);
+        showDialog({
+          title: '인증번호 발송',
+          content: SUCCESS_MESSAGES.CODE_SENT,
+          confirmText: '확인',
+        });
       } else {
-        Alert.alert(
-          '오류',
-          response.data.message || ERROR_MESSAGES.SEND_CODE_ERROR,
-        );
+        showDialog({
+          title: '오류',
+          content: response.data.message || ERROR_MESSAGES.SEND_CODE_ERROR,
+          confirmText: '확인',
+        });
       }
     } catch (error) {
       console.error('Error sending verification code:', error);
-      Alert.alert('오류', ERROR_MESSAGES.SEND_CODE_ERROR);
+      showDialog({
+        title: '오류',
+        content: ERROR_MESSAGES.SEND_CODE_ERROR,
+        confirmText: '확인',
+      });
     } finally {
       // 로딩 상태 종료
       stopLoading('sendingCode');
@@ -91,6 +109,7 @@ export default function Register() {
     startLoading,
     stopLoading,
     setVerificationSent,
+    showDialog,
   ]);
 
   // 인증번호 확인
@@ -109,7 +128,11 @@ export default function Register() {
 
       if (response.data.isSuccess) {
         setVerificationConfirmed(true);
-        Alert.alert('인증 성공', SUCCESS_MESSAGES.CODE_VERIFIED);
+        showDialog({
+          title: '인증 성공',
+          content: SUCCESS_MESSAGES.CODE_VERIFIED,
+          confirmText: '확인',
+        });
       } else {
         setErrors((prev) => ({
           ...prev,
@@ -118,7 +141,11 @@ export default function Register() {
       }
     } catch (error) {
       console.error('Error verifying code:', error);
-      Alert.alert('오류', ERROR_MESSAGES.VERIFY_CODE_ERROR);
+      showDialog({
+        title: '오류',
+        content: ERROR_MESSAGES.VERIFY_CODE_ERROR,
+        confirmText: '확인',
+      });
     } finally {
       // 로딩 상태 종료
       stopLoading('verifyingCode');
@@ -131,6 +158,7 @@ export default function Register() {
     stopLoading,
     setVerificationConfirmed,
     setErrors,
+    showDialog,
   ]);
 
   // 회원가입 처리
@@ -141,7 +169,7 @@ export default function Register() {
 
     try {
       // 로딩 상태 시작
-      startLoading('registering');
+      startGlobalLoading();
 
       // 휴대폰 번호 저장 (PIN 설정 후 완전히 등록됨)
       await AsyncStorage.setItem(STORAGE_KEYS.USERNAME, form.username);
@@ -152,17 +180,22 @@ export default function Register() {
       router.push('/auth/pin');
     } catch (error) {
       console.error('Error in registration process:', error);
-      Alert.alert('오류', ERROR_MESSAGES.REGISTRATION_ERROR);
+      showDialog({
+        title: '오류',
+        content: ERROR_MESSAGES.REGISTRATION_ERROR,
+        confirmText: '확인',
+      });
     } finally {
       // 로딩 상태 종료
-      stopLoading('registering');
+      stopGlobalLoading();
     }
   }, [
     form,
     state.verificationConfirmed,
     validateForm,
-    startLoading,
-    stopLoading,
+    startGlobalLoading,
+    stopGlobalLoading,
+    showDialog,
   ]);
 
   const isDisabled =
@@ -171,12 +204,6 @@ export default function Register() {
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
-
-  // 어떤 로딩 상태라도 있으면 로딩 인디케이터 표시
-  const isAnyLoading =
-    state.loading.registering ||
-    state.loading.sendingCode ||
-    state.loading.verifyingCode;
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -251,14 +278,22 @@ export default function Register() {
             size="large"
             onPress={handleRegister}
             disabled={isDisabled}
+            loading={state.loading.registering}
             fullWidth
           />
         </View>
 
-        {/* 로딩 인디케이터 */}
-        {isAnyLoading && (
-          <LoadingIndicator visible={true} style={styles.loadingOverlay} />
-        )}
+        {/* Dialog 컴포넌트 */}
+        <DialogProvider
+          visible={dialogState.visible}
+          title={dialogState.title}
+          content={dialogState.content}
+          confirmText={dialogState.confirmText}
+          cancelText={dialogState.cancelText}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+          onDismiss={hideDialog}
+        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -283,8 +318,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: colors.black,
-  },
-  loadingOverlay: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
 });

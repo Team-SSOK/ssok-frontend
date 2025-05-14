@@ -6,6 +6,7 @@ import {
   TouchableOpacityProps,
   TextStyle,
   ViewStyle,
+  ActivityIndicator,
 } from 'react-native';
 import { colors } from '@/constants/colors';
 
@@ -16,6 +17,7 @@ interface ButtonProps extends TouchableOpacityProps {
   textStyle?: TextStyle;
   buttonStyle?: ViewStyle;
   fullWidth?: boolean;
+  loading?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -26,6 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   buttonStyle,
   fullWidth = false,
+  loading = false,
   ...props
 }) => {
   // 버튼 스타일 계산
@@ -70,7 +73,7 @@ export const Button: React.FC<ButtonProps> = ({
     }
 
     // 비활성화 상태 스타일
-    if (disabled) {
+    if (disabled || loading) {
       baseStyle = {
         ...baseStyle,
         backgroundColor: colors.disabled,
@@ -137,7 +140,7 @@ export const Button: React.FC<ButtonProps> = ({
     }
 
     // 비활성화 상태 텍스트 스타일
-    if (disabled) {
+    if (disabled || loading) {
       baseStyle = {
         ...baseStyle,
         color: colors.white,
@@ -173,13 +176,33 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  // 로딩 인디케이터 색상 계산
+  const getLoaderColor = () => {
+    switch (variant) {
+      case 'primary':
+        return colors.white;
+      case 'secondary':
+      case 'outline':
+        return colors.primary;
+      default:
+        return colors.white;
+    }
+  };
+
   return (
     <TouchableOpacity
       {...props}
-      disabled={disabled || variant === 'disabled'}
+      disabled={disabled || variant === 'disabled' || loading}
       style={[getButtonStyles(), buttonStyle]}
     >
-      <Text style={[getTextStyles(), textStyle]}>{title}</Text>
+      {loading ? (
+        <ActivityIndicator
+          color={getLoaderColor()}
+          size={size === 'small' ? 'small' : 'small'}
+        />
+      ) : (
+        <Text style={[getTextStyles(), textStyle]}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
 };
