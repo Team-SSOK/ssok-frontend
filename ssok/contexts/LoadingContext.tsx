@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import useLoading from '@/hooks/useLoading';
-import LoadingOverlay from '@/components/LoadingOverlay';
+import LoadingIndicator from '@/components/LoadingIndicator';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -28,7 +28,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
       value={{ isLoading, startLoading, stopLoading, withLoading }}
     >
       {children}
-      <LoadingOverlay visible={isLoading} />
+      <LoadingIndicator visible={isLoading} />
     </LoadingContext.Provider>
   );
 };
