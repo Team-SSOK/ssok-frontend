@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -129,13 +128,8 @@ export default function TransferScreen() {
       {/* 하단 버튼 */}
       <View style={styles.footer}>
         <NextButton onPress={handleNextPress} enabled={isNextButtonEnabled} />
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator color={colors.primary} size="large" />
-            <Text style={styles.loadingText}>계좌 정보 확인 중...</Text>
-          </View>
-        )}
       </View>
+      {isLoading && <View style={styles.loadingOverlay}></View>}
     </SafeAreaView>
   );
 }

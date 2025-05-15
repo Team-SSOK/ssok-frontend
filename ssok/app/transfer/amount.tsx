@@ -72,13 +72,6 @@ export default function AmountScreen() {
       <Header title="얼마를 보낼까요?" />
 
       <AnimatedLayout style={styles.content}>
-        {/* <View style={styles.recipientInfo}>
-          <Text style={styles.recipientName}>{userName as string}</Text>
-          <Text style={styles.recipientAccount}>
-            {bankName as string} {accountNumber as string}
-          </Text>
-        </View> */}
-
         <AmountDisplay
           amount={amount}
           recipientName={userName as string}
