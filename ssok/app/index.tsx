@@ -4,7 +4,6 @@ import {
   View,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
   TouchableOpacity,
   ViewToken,
 } from 'react-native';

@@ -16,8 +16,8 @@ export const banks: Bank[] = [
     id: 'ssok',
     name: 'SSOK뱅크',
     code: '001',
+    logoSource: require('@/assets/banks/ssokbank.png'),
     color: '#3386FF',
-    icon: 'wallet-outline',
   },
   {
     id: 'kakao',

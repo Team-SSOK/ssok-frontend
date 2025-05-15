@@ -104,34 +104,13 @@ function BankLogo({ bank, bankName }: { bank?: any; bankName?: string }) {
       />
     );
   }
-
-  return (
-    <View
-      style={[
-        styles.bankBadge,
-        bank?.color ? { backgroundColor: bank.color } : null,
-      ]}
-    >
-      {bank?.icon ? (
-        <Ionicons name={bank.icon} size={20} color="white" />
-      ) : (
-        <Text style={styles.bankInitial}>{bankName?.charAt(0) || 'B'}</Text>
-      )}
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 16,
     marginVertical: 8,
-    borderRadius: 12,
-    backgroundColor: colors.white,
-    ...Platform.select({
-      android: {
-        elevation: 4,
-      },
-    }),
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
   contentContainer: {
@@ -175,7 +154,6 @@ const styles = StyleSheet.create({
   accountType: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: colors.background,
     borderRadius: 4,
   },
   accountTypeText: {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View, SafeAreaView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import {
@@ -43,7 +44,7 @@ export default function RegisterAccountScreen() {
       bankCode: account.bankCode,
       accountTypeCode:
         typeof account.accountTypeCode === 'string'
-          ? 1 // Default value - consider adding a mapping function
+          ? 1
           : Number(account.accountTypeCode),
     };
 
@@ -59,6 +60,10 @@ export default function RegisterAccountScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={[colors.background, colors.disabled]}
+        style={styles.background}
+      />
       <Header title="연동할 계좌 선택" />
 
       {isLoading && candidates.length === 0 ? (
@@ -92,6 +97,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '100%',
   },
   listContainer: {
     paddingVertical: 8,
