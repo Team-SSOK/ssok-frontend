@@ -130,3 +130,63 @@
     ]
   }
   ```
+
+---
+
+## 4. 연동 계좌 상세 조회
+
+### 개요
+
+사용자가 특정 계좌의 상세 정보(잔액 포함)를 조회합니다.
+
+### 요청
+
+#### API URL
+
+```
+GET {PORT}/api/accounts/{id}
+```
+
+#### Path Variable
+
+| 변수명 | 설명        |
+| ------ | ----------- |
+| id     | 계좌 식별자 |
+
+#### Query
+
+없음
+
+#### Headers
+
+| 헤더명        | 설명               |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+| X-User-Id     | 사용자 ID          |
+
+#### Request Body
+
+없음
+
+### 응답
+
+#### 성공 (200)
+
+```json
+{
+  "isSuccess": true,
+  "code": 200,
+  "message": "연동 계좌 조회를 완료했습니다.",
+  "result": {
+    "accountId": 2,
+    "accountNumber": "111111-1111",
+    "bankCode": 2,
+    "bankName": "카카오뱅크",
+    "accountAlias": "모임계좌",
+    "isPrimaryAccount": true,
+    "accountTypeCode": "예금",
+    "balance": 10000
+  }
+}
+```
