@@ -1,15 +1,7 @@
 import React, { useEffect } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-  Image,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Account, RegisteredAccount } from '../api/accountApi';
-import { Ionicons } from '@expo/vector-icons';
 import { findBank } from '@/modules/account/utils/bankUtils';
 import Animated, {
   useSharedValue,
@@ -94,7 +86,7 @@ export default function AccountListItem({
 }
 
 // 은행 로고 컴포넌트
-function BankLogo({ bank, bankName }: { bank?: any; bankName?: string }) {
+function BankLogo({ bank }: { bank?: any; bankName?: string }) {
   if (bank?.logoSource) {
     return (
       <Image
@@ -109,8 +101,10 @@ function BankLogo({ bank, bankName }: { bank?: any; bankName?: string }) {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
-    paddingHorizontal: 16,
+    marginHorizontal: 16,
     backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.silver,
     overflow: 'hidden',
   },
   contentContainer: {

@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,10 +35,11 @@ export default function HomeScreen() {
     router.push(`/account/${accountId}`);
   };
 
-  const hasAccounts = accounts && accounts.length > 1;
+  const hasAccounts = accounts && accounts.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <LinearGradient
         colors={[colors.background, colors.disabled]}
         style={styles.background}

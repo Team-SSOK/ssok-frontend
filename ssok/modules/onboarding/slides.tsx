@@ -1,5 +1,4 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import Slide from './components/Slide';
 import { colors } from '@/constants/colors';
 import { SlideData, SlideStyles } from './utils/types';

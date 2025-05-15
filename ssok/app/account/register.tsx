@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View, SafeAreaView } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  StatusBar,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
@@ -9,6 +16,7 @@ import {
   AccountRequest,
 } from '@/modules/account/api/accountApi';
 import AccountListItem from '@/modules/account/components/AccountListItem';
+import LoadingModal from '@/modules/account/components/LoadingModal';
 import Header from '@/components/Header';
 import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
@@ -18,6 +26,8 @@ export default function RegisterAccountScreen() {
   const { registerAccount } = useAccountStore();
   const [candidates, setCandidates] = useState<Account[]>([]);
   const { isLoading, withLoading } = useLoadingStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
   useEffect(() => {
     loadCandidates();
@@ -39,27 +49,36 @@ export default function RegisterAccountScreen() {
   };
 
   const handleSelectAccount = async (account: Account) => {
-    const accountRequest: AccountRequest = {
-      accountNumber: account.accountNumber,
-      bankCode: account.bankCode,
-      accountTypeCode:
-        typeof account.accountTypeCode === 'string'
-          ? 1
-          : Number(account.accountTypeCode),
-    };
+    setSelectedAccount(account);
+    setModalVisible(true);
+  };
 
-    await withLoading(async () => {
-      try {
-        await registerAccount(accountRequest);
-        router.replace('/(tabs)');
-      } catch (error) {
-        console.error('계좌 등록에 실패했습니다.');
-      }
-    });
+  const handleModalFinish = async () => {
+    if (selectedAccount) {
+      const accountRequest: AccountRequest = {
+        accountNumber: selectedAccount.accountNumber,
+        bankCode: selectedAccount.bankCode,
+        accountTypeCode:
+          typeof selectedAccount.accountTypeCode === 'string'
+            ? 1
+            : Number(selectedAccount.accountTypeCode),
+      };
+
+      await withLoading(async () => {
+        try {
+          await registerAccount(accountRequest);
+          router.replace('/(tabs)');
+        } catch (error) {
+          console.error('계좌 등록에 실패했습니다.');
+          setModalVisible(false);
+        }
+      });
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <LinearGradient
         colors={[colors.background, colors.disabled]}
         style={styles.background}
@@ -84,11 +103,13 @@ export default function RegisterAccountScreen() {
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={() => (
             <View style={styles.emptyList}>
-              <Text>연동 가능한 계좌가 없습니다.</Text>
+              <Text></Text>
             </View>
           )}
         />
       )}
+
+      <LoadingModal visible={modalVisible} onFinish={handleModalFinish} />
     </SafeAreaView>
   );
 }
