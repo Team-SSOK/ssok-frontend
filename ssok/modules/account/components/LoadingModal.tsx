@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
-import { Portal, Modal, Text } from 'react-native-paper';
+import { Portal, Modal } from 'react-native-paper';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { Text } from '@/components/TextProvider';
 
 interface LoadingModalProps {
   visible: boolean;
@@ -31,7 +32,7 @@ export default function LoadingModal({ visible, onFinish }: LoadingModalProps) {
 
       timer = setTimeout(() => {
         onFinish();
-      }, 2000);
+      }, 3000);
     } else {
       videoPlayer.pause();
     }
@@ -56,9 +57,7 @@ export default function LoadingModal({ visible, onFinish }: LoadingModalProps) {
             nativeControls={false}
             pointerEvents="none"
           />
-          <Text variant="bodyLarge" style={styles.loadingText}>
-            계좌 불러오는 중...
-          </Text>
+          <Text style={styles.loadingText}>계좌 불러오는 중...</Text>
         </View>
       </Modal>
     </Portal>
@@ -67,7 +66,7 @@ export default function LoadingModal({ visible, onFinish }: LoadingModalProps) {
 
 const styles = StyleSheet.create({
   dialog: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -84,8 +83,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   video: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     marginBottom: 20,
   },
   loadingText: {

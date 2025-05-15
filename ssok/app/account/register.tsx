@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   StyleSheet,
-  Text,
   View,
   SafeAreaView,
   StatusBar,
@@ -20,6 +19,7 @@ import LoadingModal from '@/modules/account/components/LoadingModal';
 import Header from '@/components/Header';
 import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
+import { Text } from '@/components/TextProvider';
 
 export default function RegisterAccountScreen() {
   const router = useRouter();

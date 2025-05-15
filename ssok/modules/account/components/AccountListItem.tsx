@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Account, RegisteredAccount } from '../api/accountApi';
 import { findBank } from '@/modules/account/utils/bankUtils';
+import { Text } from '@/components/TextProvider';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,

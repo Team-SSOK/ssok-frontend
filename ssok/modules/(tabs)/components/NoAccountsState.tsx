@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Button from '@/components/Button';
 import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
+import { Text } from '@/components/TextProvider';
 
 interface NoAccountsStateProps {
   onRegisterPress: () => void;
