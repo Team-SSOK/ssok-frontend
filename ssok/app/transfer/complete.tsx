@@ -5,6 +5,7 @@ import { colors } from '@/constants/colors';
 import NextButton from '../../modules/transfer/components/NextButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
 import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
+import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
 
 /**
  * 송금 완료 화면
@@ -13,6 +14,7 @@ import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
 export default function CompleteScreen() {
   const { amount, isBluetooth, userId } = useLocalSearchParams();
   const isBluetoothTransfer = isBluetooth === 'true';
+  const { lastTransfer } = useTransferStore();
 
   const handleGoHome = () => {
     router.replace('/(tabs)' as any);
@@ -28,6 +30,12 @@ export default function CompleteScreen() {
           amount={Number(amount)}
           isBluetoothTransfer={isBluetoothTransfer}
           userId={isBluetoothTransfer ? (userId as string) : undefined}
+          recipientName={
+            isBluetoothTransfer ? undefined : lastTransfer?.recvName
+          }
+          accountNumber={
+            isBluetoothTransfer ? undefined : lastTransfer?.recvAccountNumber
+          }
         />
 
         <View style={styles.spacer} />

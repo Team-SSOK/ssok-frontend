@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -8,6 +8,12 @@ import TransactionDetailsCard from '../../modules/transfer/components/Transactio
 import ConfirmButton from '../../modules/transfer/components/ConfirmButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
 import LoadingIndicator from '@/components/LoadingIndicator';
+import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
+import { TransferRequest } from '@/modules/transfer/api/transferApi';
+import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { getBankCodeByName } from '@/modules/transfer/utils/bankUtils';
+import { useProfileStore } from '@/modules/settings/store/profileStore';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 
 /**
  * 송금 확인 화면
@@ -18,6 +24,17 @@ export default function ConfirmScreen() {
   const { accountNumber, bankName, userName, amount, userId, isBluetooth } =
     useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const { sendMoney } = useTransferStore();
+  const { accounts } = useAccountStore();
+  const { username, fetchProfile } = useProfileStore();
+  const { userId: authUserId } = useAuthStore();
+
+  // 프로필 정보 로드
+  useEffect(() => {
+    if (authUserId) {
+      fetchProfile(authUserId);
+    }
+  }, [authUserId, fetchProfile]);
 
   const isBluetoothTransfer = isBluetooth === 'true';
 
@@ -26,40 +43,47 @@ export default function ConfirmScreen() {
       // 로딩 상태 활성화
       setIsLoading(true);
 
+      // 사용자의 출금 계좌 (기본 계좌 또는 첫 번째 계좌)
+      const sendAccount =
+        accounts.find((acc) => acc.isPrimaryAccount) || accounts[0];
+
+      if (!sendAccount) {
+        Alert.alert('출금 계좌 없음', '송금할 출금 계좌가 존재하지 않습니다.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 사용자 이름이 없는 경우 대체 값 사용
+      const senderName = username || '사용자';
+
       // 블루투스 송금인 경우 (userId로 송금)
       if (isBluetoothTransfer && userId) {
-        // 블루투스 송금 API 호출 (userId 기반)
-        // 실제 구현 시에는 아래 주석을 해제하고 API를 호출
-        // const response = await fetch('/api/transfer/bluetooth', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     userId: userId,
-        //     amount: Number(amount)
-        //   }),
-        // });
-
+        // TODO: 블루투스 송금 API 구현
         // 임시 구현: 송금 성공 가정 (2초 지연)
         await new Promise((resolve) => setTimeout(resolve, 2000));
         console.log('블루투스 송금 완료:', { userId, amount });
       }
       // 일반 계좌 송금인 경우
       else {
-        // 기존 계좌 기반 송금 API 호출
-        // 실제 구현 시에는 아래 주석을 해제하고 API를 호출
-        // const response = await fetch('/api/transfer/account', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     accountNumber: accountNumber,
-        //     bankCode: getBankCode(bankName as string),
-        //     amount: Number(amount)
-        //   }),
-        // });
+        // 송금 요청 데이터 구성
+        const transferData: TransferRequest = {
+          sendAccountId: sendAccount.accountId,
+          sendBankCode: sendAccount.bankCode,
+          sendName: senderName,
+          recvAccountNumber: accountNumber as string,
+          recvBankCode: getBankCodeByName(bankName as string),
+          recvName: userName as string,
+          amount: Number(amount),
+        };
 
-        // 임시 구현: 송금 성공 가정 (2초 지연)
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log('계좌 송금 완료:', { accountNumber, bankName, amount });
+        console.log('Sending transfer with username:', senderName);
+
+        // API 호출
+        const response = await sendMoney(transferData);
+
+        if (!response) {
+          throw new Error('송금 요청이 실패했습니다.');
+        }
       }
 
       // 로딩 상태 비활성화
@@ -81,7 +105,9 @@ export default function ConfirmScreen() {
       console.error('송금 처리 중 오류:', error);
       Alert.alert(
         '송금 실패',
-        '송금 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+        error instanceof Error
+          ? error.message
+          : '송금 처리 중 오류가 발생했습니다. 다시 시도해주세요.',
         [{ text: '확인', style: 'default' }],
       );
     }

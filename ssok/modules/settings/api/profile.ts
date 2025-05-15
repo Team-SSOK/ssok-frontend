@@ -1,5 +1,4 @@
 import api from '@/api/ApiInstance';
-import axios from 'axios';
 
 // 인터페이스 정의
 interface UserInfoResponse {

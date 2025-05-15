@@ -10,6 +10,8 @@ interface CompleteMessageProps {
   message?: string;
   isBluetoothTransfer?: boolean;
   userId?: string;
+  recipientName?: string;
+  accountNumber?: string;
 }
 
 /**
@@ -20,6 +22,8 @@ export default function CompleteMessage({
   message,
   isBluetoothTransfer = false,
   userId,
+  recipientName,
+  accountNumber,
 }: CompleteMessageProps) {
   // 송금 방식에 따른 메시지 생성
   const defaultMessage = isBluetoothTransfer
@@ -51,6 +55,17 @@ export default function CompleteMessage({
           </Text>
           <Text style={[typography.body1, styles.userId]}>ID: {userId}</Text>
         </Text>
+      )}
+
+      {!isBluetoothTransfer && recipientName && accountNumber && (
+        <View style={styles.recipientInfo}>
+          <Text style={[typography.body1, styles.recipientName]}>
+            {recipientName}
+          </Text>
+          <Text style={[typography.body2, styles.accountNumber]}>
+            {accountNumber}
+          </Text>
+        </View>
       )}
 
       <Text style={[typography.body1, styles.message]}>{displayMessage}</Text>
@@ -89,6 +104,18 @@ const styles = StyleSheet.create({
   },
   userId: {
     fontWeight: 'normal',
+  },
+  recipientInfo: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  recipientName: {
+    color: colors.black,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  accountNumber: {
+    color: colors.grey,
   },
   message: {
     color: colors.grey,
