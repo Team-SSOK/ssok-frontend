@@ -14,10 +14,12 @@ import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
 import AccountCard from '@/modules/(tabs)/components/AccountCard';
 import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
 import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
+import { useLoadingStore } from '@/stores/loadingStore';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { accounts, fetchAccounts } = useAccountStore();
+  const { accounts, fetchAccounts, getAccountDetail } = useAccountStore();
+  const { withLoading } = useLoadingStore();
 
   useEffect(() => {
     fetchAccounts();
@@ -31,8 +33,11 @@ export default function HomeScreen() {
     router.push('/settings');
   };
 
-  const handleAccountPress = (accountId: number) => {
-    router.push(`/account/${accountId}`);
+  const handleAccountPress = async (accountId: number) => {
+    await withLoading(async () => {
+      await getAccountDetail(accountId);
+      router.push(`/account/${accountId}`);
+    });
   };
 
   const hasAccounts = accounts && accounts.length > 0;

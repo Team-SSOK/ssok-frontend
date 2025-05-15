@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
-import { mockAccount, getAccountBalance } from '@/mock/accountData';
 import { transactions } from '@/mock/transactionData';
 import { filterTransactionsByPeriod } from '@/utils/dateUtils';
+import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 
 // 컴포넌트 임포트
 import AccountInfoSection from '@/modules/account/components/AccountInfoSection';
@@ -17,15 +17,21 @@ import Header from '@/components/Header';
 
 export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams();
-  const accountId = id ? Number(id) : mockAccount.accountID;
-  const account = mockAccount; // 실제로는 accountId로 계좌 정보를 가져옴
-  const balance = getAccountBalance();
+  const accountId = id ? Number(id) : 0;
+  const { currentAccount, getAccountDetail } = useAccountStore();
 
   const [selectedPeriod, setSelectedPeriod] =
     useState<PeriodFilterType>('1주일');
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
+
+  // 계좌 정보 로드
+  useEffect(() => {
+    if (accountId > 0 && !currentAccount) {
+      getAccountDetail(accountId);
+    }
+  }, [accountId, getAccountDetail, currentAccount]);
 
   // 기간이 변경될 때마다 거래내역 필터링
   useEffect(() => {
@@ -38,11 +44,6 @@ export default function AccountDetailScreen() {
     router.back();
   };
 
-  const handleSettingsPress = () => {
-    // 계좌 설정 페이지로 이동
-    console.log('계좌 설정');
-  };
-
   const handlePeriodChange = (period: PeriodFilterType) => {
     setSelectedPeriod(period);
   };
@@ -50,6 +51,10 @@ export default function AccountDetailScreen() {
   const handleViewAllPress = () => {
     console.log('거래내역 전체보기');
   };
+
+  if (!currentAccount) {
+    return null; // 계좌 정보가 로드되기 전에는 아무것도 렌더링하지 않음
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,9 +66,11 @@ export default function AccountDetailScreen() {
       <ScrollView style={styles.scrollView}>
         {/* 계좌 정보 섹션 */}
         <AccountInfoSection
-          accountNumber={account.accountNumber}
-          accountType={account.accountAlias}
-          balance={balance}
+          accountNumber={currentAccount.accountNumber}
+          accountType={
+            currentAccount.accountAlias || currentAccount.accountTypeCode
+          }
+          balance={currentAccount.balance || 0}
         />
 
         {/* 기간 필터 */}

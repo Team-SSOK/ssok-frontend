@@ -190,3 +190,55 @@ GET {PORT}/api/accounts/{id}
   }
 }
 ```
+
+
+---
+
+## 5. 계좌 실명 조회
+
+### 요청
+
+#### API URL
+
+```
+POST {PORT}/api/accounts/verify-name
+```
+
+#### Path Variable
+
+없음
+
+#### Query
+
+없음
+
+#### Headers
+
+| 헤더명        | 설명                             |
+| ------------- | -------------------------------- |
+| Content-Type  | `application/json`               |
+| Authorization | `Bearer <token>`                 |
+| X-User-Id     | 사용자 ID                        |
+
+#### Request Body
+
+| 항목            | 타입   | 필수 여부 | 설명                         | 비고                              |
+| --------------- | ------ | --------- | ---------------------------- | --------------------------------- |
+| accountNumber   | String | Y         | 하이픈(-) 없는 계좌번호      | `"-"` 없이 전송                   |
+| bankCode        | int    | Y         | 은행 코드                    | 연동된 은행 식별자                |
+
+### 응답
+
+#### 성공 (200)
+
+```json
+{
+  "isSuccess": true,
+  "code": 200,
+  "message": "계좌 실명 조회가 완료되었습니다.",
+  "result": {
+    "username": "최지훈",
+    "accountNumber": "111111111121212"
+  }
+}
+```

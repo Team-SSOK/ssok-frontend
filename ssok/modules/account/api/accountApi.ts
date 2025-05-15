@@ -54,4 +54,13 @@ export const accountApi = {
   getAccountsWithBalance: async () => {
     return api.get<ApiResponse<RegisteredAccount[]>>('/api/accounts');
   },
+
+  /**
+   * 연동 계좌 상세 조회
+   */
+  getAccountDetail: async (accountId: number) => {
+    return api.get<ApiResponse<RegisteredAccount>>(
+      `/api/accounts/${accountId}`,
+    );
+  },
 };
