@@ -2,6 +2,25 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+
+// 토큰 키 이름 - ApiInstance.ts와 일치시키기
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+
+// SecureStore에 토큰 저장 헬퍼 함수
+const storeTokensInSecureStore = async (
+  accessToken: string,
+  refreshToken: string,
+) => {
+  try {
+    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
+    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+    console.log('[LOG] 토큰 SecureStore 저장 완료');
+  } catch (error) {
+    console.error('[ERROR] SecureStore 토큰 저장 실패:', error);
+  }
+};
 
 // 인증 상태 타입 정의
 interface AuthState {
@@ -39,8 +58,12 @@ interface AuthState {
   saveUserRegistration: (phoneNumber: string, pin: string) => Promise<void>;
   verifyPin: (inputPin: string) => boolean;
   verifyAndLogin: (inputPin: string) => Promise<boolean>;
-  login: (userId: number, accessToken: string, refreshToken: string) => void;
-  logout: () => void;
+  login: (
+    userId: number,
+    accessToken: string,
+    refreshToken: string,
+  ) => Promise<void>;
+  logout: () => Promise<void>;
 
   // 네비게이션 액션
   navigateAfterAuthCheck: () => Promise<void>;
@@ -125,18 +148,36 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      login: (userId, accessToken, refreshToken) => {
-        console.log('[LOG] 로그인 성공');
+      login: async (userId, accessToken, refreshToken) => {
+        console.log('[LOG] 로그인 성공, 토큰 저장 시작');
+
+        // SecureStore에 토큰 저장
+        await storeTokensInSecureStore(accessToken, refreshToken);
+
+        // Zustand 상태 업데이트
         set({
           userId,
           accessToken,
           refreshToken,
           isLoggedIn: true,
         });
+
+        console.log('[LOG] 로그인 완료 (Zustand 및 SecureStore에 토큰 저장됨)');
       },
 
-      logout: () => {
+      logout: async () => {
         console.log('[LOG] 로그아웃');
+
+        // SecureStore에서 토큰 제거
+        try {
+          await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+          await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+          console.log('[LOG] SecureStore 토큰 제거 완료');
+        } catch (error) {
+          console.error('[ERROR] SecureStore 토큰 제거 실패:', error);
+        }
+
+        // Zustand 상태 업데이트
         set({
           accessToken: null,
           refreshToken: null,
@@ -195,3 +236,34 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
+// 정적 메서드 추가 (API 인터셉터에서 호출할 수 있도록)
+export const authStoreActions = {
+  resetAuth: async () => {
+    try {
+      // SecureStore에서 토큰 제거
+      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+
+      // 스토어 상태 초기화
+      useAuthStore.setState({
+        accessToken: null,
+        refreshToken: null,
+        isLoggedIn: false,
+      });
+
+      console.log('[LOG] 토큰 만료로 인한 강제 로그아웃 처리 완료');
+
+      // 다음 렌더링 사이클에서 라우팅이 동작하도록 setTimeout 사용
+      setTimeout(() => {
+        // 세션 만료 파라미터를 포함하여 로그인 화면으로 리디렉션
+        router.replace({
+          pathname: '/auth/pin-login',
+          params: { sessionExpired: 'true' },
+        });
+      }, 100);
+    } catch (error) {
+      console.error('[Error] 강제 로그아웃 처리 중 오류:', error);
+    }
+  },
+};

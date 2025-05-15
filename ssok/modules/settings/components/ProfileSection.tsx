@@ -1,18 +1,26 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 
 // 프로필 이미지 컴포넌트
 type ProfileImageProps = {
   onEditPress?: () => void;
+  imageUrl?: string | null;
 };
 
-export const ProfileImage: React.FC<ProfileImageProps> = ({ onEditPress }) => {
+export const ProfileImage: React.FC<ProfileImageProps> = ({
+  onEditPress,
+  imageUrl,
+}) => {
   return (
     <View style={styles.profileImageContainer}>
       <View style={styles.profileImage}>
-        <Ionicons name="person" size={50} color={colors.white} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} />
+        ) : (
+          <Ionicons name="person" size={50} color={colors.white} />
+        )}
       </View>
       {onEditPress && (
         <TouchableOpacity style={styles.editImageButton} onPress={onEditPress}>
@@ -27,12 +35,16 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({ onEditPress }) => {
 type InfoItemProps = {
   label: string;
   value: string;
+  icon?: React.ReactNode;
 };
 
-export const InfoItem: React.FC<InfoItemProps> = ({ label, value }) => {
+export const InfoItem: React.FC<InfoItemProps> = ({ label, value, icon }) => {
   return (
     <View style={styles.infoItem}>
-      <Text style={styles.infoLabel}>{label}</Text>
+      <View style={styles.infoLabelContainer}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <Text style={styles.infoLabel}>{label}</Text>
+      </View>
       <View style={styles.infoValueContainer}>
         <Text style={styles.infoValue}>{value}</Text>
       </View>
@@ -68,6 +80,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   editImageButton: {
     position: 'absolute',
@@ -98,6 +116,13 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.silver,
+  },
+  infoLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginRight: 8,
   },
   infoLabel: {
     fontSize: 16,

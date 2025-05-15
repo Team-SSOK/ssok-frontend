@@ -15,7 +15,6 @@ import { onboardingSlides } from '@/modules/onboarding/slides';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLoadingStore } from '@/stores/loadingStore';
 
 type ViewableItemsChangedInfo = {
@@ -49,7 +48,7 @@ export default function Index() {
   };
 
   if (checkingStatus) {
-    return null; // 전역 로딩 인디케이터가 표시되므로 아무것도 렌더링하지 않음
+    return null;
   }
 
   return (

@@ -6,6 +6,7 @@ import { authApi } from '@/modules/auth/api/auth';
 import { STORAGE_KEYS } from '@/modules/auth/utils/constants';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
+import * as SecureStore from 'expo-secure-store';
 
 export default function PinConfirm() {
   const pin = useAuthStore((state) => state.pin);
@@ -13,6 +14,7 @@ export default function PinConfirm() {
     (state) => state.saveUserRegistration,
   );
   const setUserId = useAuthStore((state) => state.setUserId);
+  const login = useAuthStore((state) => state.login);
   const { showDialog } = useDialog();
 
   const handleComplete = async (inputPin: string) => {
@@ -53,6 +55,26 @@ export default function PinConfirm() {
           if (response.data.result?.userId) {
             const userId = response.data.result.userId;
             setUserId(userId);
+
+            // 회원가입 후 바로 로그인 요청
+            try {
+              console.log('[LOG] 회원가입 후 자동 로그인 시도');
+              const loginResponse = await authApi.login({
+                userId,
+                pinCode: Number(inputPin),
+              });
+
+              if (loginResponse.data.isSuccess && loginResponse.data.result) {
+                const { accessToken, refreshToken } = loginResponse.data.result;
+
+                console.log('[LOG] 자동 로그인 성공, 토큰 저장 시작');
+                // 로그인 처리 (토큰 저장 및 상태 업데이트)
+                await login(userId, accessToken, refreshToken);
+              }
+            } catch (loginError) {
+              console.error('[ERROR] 자동 로그인 실패:', loginError);
+              // 로그인 실패해도 회원가입은 성공했으므로 계속 진행
+            }
           }
 
           // 사용자 정보 등록 (전화번호, PIN)

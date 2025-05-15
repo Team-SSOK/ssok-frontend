@@ -1,65 +1,70 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { authStoreActions } from '@/modules/auth/store/authStore';
 
 const BASE_URL = 'http://kudong.kr:55030/';
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
-// API 인스턴스 생성
 const api = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
 });
 
-// 요청 인터셉터 - 토큰 주입
-api.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+async function getTokens() {
+  const [accessToken, refreshToken] = await Promise.all([
+    SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
+    SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
+  ]);
+  return { accessToken, refreshToken };
+}
 
-// 응답 인터셉터 - 에러 처리
+async function saveTokens(accessToken: string, refreshToken: string) {
+  await Promise.all([
+    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
+    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
+  ]);
+}
+
+// 요청 인터셉터: accessToken이 있으면 헤더에 붙임
+api.interceptors.request.use(async (config) => {
+  const { accessToken } = await getTokens();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
+
+// 응답 인터셉터: 401 → 토큰 갱신 → 원래 요청 재시도
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // 토큰 만료 시 토큰 갱신 시도 (401 에러)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = await AsyncStorage.getItem('refresh_token');
-        if (!refreshToken) throw new Error('No refresh token available');
-
-        const response = await axios.post(`${BASE_URL}api/auth/refresh`, {
-          refreshToken,
-        });
-
-        const { accessToken, refreshToken: newRefreshToken } =
-          response.data.result;
-
-        await AsyncStorage.setItem('access_token', accessToken);
-        await AsyncStorage.setItem('refresh_token', newRefreshToken);
-
-        // 새 토큰으로 원래 요청 재시도
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        // 토큰 갱신 실패 시 로그아웃 처리
-        await AsyncStorage.removeItem('access_token');
-        await AsyncStorage.removeItem('refresh_token');
-        return Promise.reject(refreshError);
-      }
+  (res) => res,
+  async (err) => {
+    const { response, config } = err;
+    if (response?.status !== 401 || (config as any)._retry) {
+      return Promise.reject(err);
     }
 
-    return Promise.reject(error);
+    (config as any)._retry = true;
+
+    try {
+      const { refreshToken } = await getTokens();
+      if (!refreshToken) throw new Error('No refresh token');
+
+      const { data } = await axios.post(`${BASE_URL}api/auth/refresh`, {
+        refreshToken,
+      });
+
+      const { accessToken: newAccess, refreshToken: newRefresh } = data.result;
+      await saveTokens(newAccess, newRefresh);
+
+      config.headers.Authorization = `Bearer ${newAccess}`;
+      return api(config);
+    } catch (refreshError) {
+      // 갱신 실패 시 상태 초기화
+      authStoreActions.resetAuth();
+      return Promise.reject(refreshError);
+    }
   },
 );
 
