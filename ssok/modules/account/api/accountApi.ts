@@ -25,6 +25,16 @@ export interface RegisteredAccount {
   balance?: number;
 }
 
+export interface NameVerificationRequest {
+  accountNumber: string;
+  bankCode: number;
+}
+
+export interface NameVerificationResponse {
+  username: string;
+  accountNumber: string;
+}
+
 interface ApiResponse<T = any> {
   isSuccess: boolean;
   code: number;
@@ -61,6 +71,16 @@ export const accountApi = {
   getAccountDetail: async (accountId: number) => {
     return api.get<ApiResponse<RegisteredAccount>>(
       `/api/accounts/${accountId}`,
+    );
+  },
+
+  /**
+   * 계좌 실명 조회
+   */
+  verifyAccountName: async (data: NameVerificationRequest) => {
+    return api.post<ApiResponse<NameVerificationResponse>>(
+      '/api/accounts/openbank/verify-name',
+      data,
     );
   },
 };

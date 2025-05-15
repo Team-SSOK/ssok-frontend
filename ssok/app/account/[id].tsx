@@ -53,7 +53,7 @@ export default function AccountDetailScreen() {
   };
 
   if (!currentAccount) {
-    return null; // 계좌 정보가 로드되기 전에는 아무것도 렌더링하지 않음
+    return null;
   }
 
   return (

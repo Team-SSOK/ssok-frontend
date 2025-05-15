@@ -191,7 +191,6 @@ GET {PORT}/api/accounts/{id}
 }
 ```
 
-
 ---
 
 ## 5. 계좌 실명 조회
@@ -201,7 +200,7 @@ GET {PORT}/api/accounts/{id}
 #### API URL
 
 ```
-POST {PORT}/api/accounts/verify-name
+POST {PORT}/api/accounts/openbank/verify-name
 ```
 
 #### Path Variable
@@ -214,18 +213,18 @@ POST {PORT}/api/accounts/verify-name
 
 #### Headers
 
-| 헤더명        | 설명                             |
-| ------------- | -------------------------------- |
-| Content-Type  | `application/json`               |
-| Authorization | `Bearer <token>`                 |
-| X-User-Id     | 사용자 ID                        |
+| 헤더명        | 설명               |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+| X-User-Id     | 사용자 ID          |
 
 #### Request Body
 
-| 항목            | 타입   | 필수 여부 | 설명                         | 비고                              |
-| --------------- | ------ | --------- | ---------------------------- | --------------------------------- |
-| accountNumber   | String | Y         | 하이픈(-) 없는 계좌번호      | `"-"` 없이 전송                   |
-| bankCode        | int    | Y         | 은행 코드                    | 연동된 은행 식별자                |
+| 항목          | 타입   | 필수 여부 | 설명                    | 비고               |
+| ------------- | ------ | --------- | ----------------------- | ------------------ |
+| accountNumber | String | Y         | 하이픈(-) 없는 계좌번호 | `"-"` 없이 전송    |
+| bankCode      | int    | Y         | 은행 코드               | 연동된 은행 식별자 |
 
 ### 응답
 

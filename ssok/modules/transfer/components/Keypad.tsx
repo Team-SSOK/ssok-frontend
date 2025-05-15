@@ -58,12 +58,12 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, containerStyle }) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   keypadButton: {
     width: '30%',

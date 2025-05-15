@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
-import { formatNumber, maskAccountNumber } from '@/utils/formatters';
+import { formatNumber } from '@/utils/formatters';
 import { router } from 'expo-router';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
@@ -25,7 +25,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
     <View style={styles.container}>
       <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
       <Text style={[typography.caption, styles.accountNumber]}>
-        {maskAccountNumber(accountNumber)}
+        {accountNumber}
       </Text>
 
       <View style={styles.balanceRow}>

@@ -9,12 +9,14 @@ interface AmountDisplayProps {
   amount: number;
   recipientName: string;
   bankName: string;
+  accountNumber: string;
 }
 
 const AmountDisplay: React.FC<AmountDisplayProps> = ({
   amount,
   recipientName,
   bankName,
+  accountNumber,
 }) => {
   const formattedAmount = amount.toLocaleString('ko-KR');
   const isZero = amount === 0;
@@ -35,6 +37,9 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
         </View>
         <Text style={[typography.h3, styles.recipientName]}>
           {recipientName}
+        </Text>
+        <Text style={[typography.body1, styles.recipientName]}>
+          {accountNumber}
         </Text>
       </View>
 
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: colors.white,
     borderRadius: 16,
-    marginBottom: 32,
+    marginBottom: 28,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -85,7 +90,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   recipientLabel: {
     color: colors.lGrey,
@@ -104,7 +109,7 @@ const styles = StyleSheet.create({
   },
   amountSection: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   amountContainer: {
     alignItems: 'center',

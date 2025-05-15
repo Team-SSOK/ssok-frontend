@@ -1,9 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { colors } from '@/constants/colors';
 import CustomTextInput from '@/components/CustomTextInput';
-import { Text } from '@/components/TextProvider';
-import { typography } from '@/theme/typography';
 
 interface AccountInputProps {
   value: string;
@@ -14,7 +11,7 @@ const AccountInput: React.FC<AccountInputProps> = ({ value, onChangeText }) => {
   // 숫자만 입력 가능하도록 필터링
   const handleChangeText = (text: string) => {
     const filtered = text.replace(/[^0-9]/g, '');
-    if (filtered.length <= 14) {
+    if (filtered.length <= 15) {
       onChangeText(filtered);
     }
   };

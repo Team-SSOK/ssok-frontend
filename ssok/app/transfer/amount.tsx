@@ -7,6 +7,7 @@ import AmountDisplay from '../../modules/transfer/components/AmountDisplay';
 import Keypad from '../../modules/transfer/components/Keypad';
 import NextButton from '../../modules/transfer/components/NextButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
+import { Text } from '@/components/TextProvider';
 
 /**
  * 송금 금액 입력 화면
@@ -71,10 +72,18 @@ export default function AmountScreen() {
       <Header title="얼마를 보낼까요?" />
 
       <AnimatedLayout style={styles.content}>
+        {/* <View style={styles.recipientInfo}>
+          <Text style={styles.recipientName}>{userName as string}</Text>
+          <Text style={styles.recipientAccount}>
+            {bankName as string} {accountNumber as string}
+          </Text>
+        </View> */}
+
         <AmountDisplay
           amount={amount}
           recipientName={userName as string}
           bankName={bankName as string}
+          accountNumber={accountNumber as string}
         />
 
         <View style={styles.spacer} />
@@ -102,5 +111,22 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingBottom: 24,
+  },
+  recipientInfo: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.silver,
+    marginBottom: 20,
+  },
+  recipientName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.black,
+    marginBottom: 8,
+  },
+  recipientAccount: {
+    fontSize: 14,
+    color: colors.grey,
   },
 });
