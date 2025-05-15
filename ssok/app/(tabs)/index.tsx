@@ -1,53 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  RefreshControl,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, SafeAreaView, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
-import { router } from 'expo-router';
-
-// Components
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
 import AccountCard from '@/modules/(tabs)/components/AccountCard';
 import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
-
-// Mock data
-import { mockAccount, getAccountBalance } from '@/mock/accountData';
+import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
 
 export default function HomeScreen() {
-  const [refreshing, setRefreshing] = useState(false);
-  const [accountBalance, setAccountBalance] = useState<number>(0);
+  const router = useRouter();
+  const { accounts, isLoading, fetchAccounts } = useAccountStore();
 
-  // 계좌 잔액 정보 로드
   useEffect(() => {
-    const balance = getAccountBalance();
-    setAccountBalance(balance);
-  }, []);
+    fetchAccounts();
+  }, [fetchAccounts]);
 
-  // 새로고침 처리
-  const onRefresh = () => {
-    setRefreshing(true);
-
-    // 새로고침 시 데이터를 다시 불러오는 로직
-    setTimeout(() => {
-      const updatedBalance = getAccountBalance();
-      setAccountBalance(updatedBalance);
-      setRefreshing(false);
-    }, 1000);
+  const handleRegisterAccount = () => {
+    router.push('/account/register');
   };
 
-  // 설정 버튼 클릭 처리
   const handleSettingsPress = () => {
     router.push('/settings');
   };
 
-  const handleAccountPress = () => {
-    router.push(`/account/${mockAccount.accountID}`);
+  const handleAccountPress = (accountId: number) => {
+    router.push(`/account/${accountId}`);
   };
 
   return (
@@ -56,28 +35,27 @@ export default function HomeScreen() {
         colors={[colors.background, colors.disabled]}
         style={styles.background}
       />
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <HomeHeader onSettingsPress={handleSettingsPress} />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* 계좌 카드 */}
-        <AccountCard
-          account={mockAccount}
-          balance={accountBalance}
-          onPress={handleAccountPress}
-        />
-
-        {/* 최근 거래내역 */}
-        <RecentTransactions />
-      </ScrollView>
+      {accounts.length === 1 ? (
+        <View style={styles.centerContainer}>
+          <NoAccountsState onRegisterPress={handleRegisterAccount} />
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <AccountCard
+            account={accounts[0]}
+            balance={accounts[0].balance || 0}
+            onPress={() => handleAccountPress(accounts[0].accountId)}
+          />
+          <RecentTransactions />
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -98,5 +76,10 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

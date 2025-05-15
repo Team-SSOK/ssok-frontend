@@ -1,13 +1,14 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
-import { AccountData, getBankName, getAccountType } from '@/mock/accountData';
+import { getBankName, getAccountType } from '@/mock/accountData';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
+import { RegisteredAccount } from '@/modules/account/api/accountApi';
 
 interface AccountCardProps {
-  account: AccountData;
+  account: RegisteredAccount;
   balance: number;
   onPress?: () => void;
 }
@@ -17,8 +18,11 @@ export default function AccountCard({
   balance,
   onPress,
 }: AccountCardProps) {
-  const bankName = getBankName(account.bankCode);
-  const accountType = getAccountType(account.accountTypeCode);
+  const bankName = account.bankName || getBankName(account.bankCode);
+  const accountType =
+    typeof account.accountTypeCode === 'number'
+      ? getAccountType(account.accountTypeCode)
+      : account.accountTypeCode;
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
@@ -38,7 +42,7 @@ export default function AccountCard({
 
       <View style={styles.accountInfoContainer}>
         <Text style={[typography.body1, styles.accountAlias]}>
-          {account.accountAlias}
+          {account.accountAlias || '내 계좌'}
         </Text>
         <Text style={[typography.caption, styles.accountNumber]}>
           {maskAccountNumber(account.accountNumber)}
