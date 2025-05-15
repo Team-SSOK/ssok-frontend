@@ -11,7 +11,7 @@ import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { accounts, isLoading, fetchAccounts } = useAccountStore();
+  const { accounts, fetchAccounts } = useAccountStore();
 
   useEffect(() => {
     fetchAccounts();
@@ -29,6 +29,8 @@ export default function HomeScreen() {
     router.push(`/account/${accountId}`);
   };
 
+  const hasAccounts = accounts && accounts.length > 1;
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -38,7 +40,7 @@ export default function HomeScreen() {
 
       <HomeHeader onSettingsPress={handleSettingsPress} />
 
-      {accounts.length === 1 ? (
+      {!hasAccounts ? (
         <View style={styles.centerContainer}>
           <NoAccountsState onRegisterPress={handleRegisterAccount} />
         </View>
@@ -48,11 +50,13 @@ export default function HomeScreen() {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          <AccountCard
-            account={accounts[0]}
-            balance={accounts[0].balance || 0}
-            onPress={() => handleAccountPress(accounts[0].accountId)}
-          />
+          {accounts[0] && (
+            <AccountCard
+              account={accounts[0]}
+              balance={accounts[0].balance || 0}
+              onPress={() => handleAccountPress(accounts[0].accountId)}
+            />
+          )}
           <RecentTransactions />
         </ScrollView>
       )}

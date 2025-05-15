@@ -9,16 +9,14 @@ import {
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Account, RegisteredAccount } from '../api/accountApi';
-import { banks } from '@/mock/bankData';
 import { Ionicons } from '@expo/vector-icons';
+import { findBank } from '@/modules/account/utils/bankUtils';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
   withDelay,
-  interpolate,
-  Extrapolate,
 } from 'react-native-reanimated';
 
 interface AccountListItemProps {
@@ -69,21 +67,7 @@ export default function AccountListItem({
     scale.value = withSpring(1);
   };
 
-  // 은행 코드로 은행 정보 찾기
-  const findBank = () => {
-    // 은행 코드가 문자열이면 숫자로 바꿔서 비교
-    const bankCodeStr =
-      typeof account.bankCode === 'number'
-        ? String(account.bankCode).padStart(3, '0')
-        : String(account.bankCode);
-
-    return (
-      banks.find((bank) => bank.code === bankCodeStr) ||
-      banks.find((bank) => bank.name === account.bankName)
-    );
-  };
-
-  const bank = findBank();
+  const bank = findBank(account.bankCode, account.bankName);
 
   return (
     <AnimatedTouchable
@@ -94,36 +78,7 @@ export default function AccountListItem({
       activeOpacity={1}
     >
       <View style={styles.contentContainer}>
-        {bank ? (
-          bank.logoSource ? (
-            <Image
-              source={bank.logoSource}
-              style={styles.bankLogo}
-              resizeMode="contain"
-            />
-          ) : (
-            <View
-              style={[
-                styles.bankBadge,
-                bank.color ? { backgroundColor: bank.color } : null,
-              ]}
-            >
-              {bank.icon ? (
-                <Ionicons name={bank.icon} size={20} color="white" />
-              ) : (
-                <Text style={styles.bankInitial}>
-                  {bank.name?.charAt(0) || account.bankName?.charAt(0) || 'B'}
-                </Text>
-              )}
-            </View>
-          )
-        ) : (
-          <View style={styles.bankBadge}>
-            <Text style={styles.bankInitial}>
-              {account.bankName?.charAt(0) || 'B'}
-            </Text>
-          </View>
-        )}
+        <BankLogo bank={bank} bankName={account.bankName} />
 
         <View style={styles.bankInfo}>
           <Text style={styles.bankName}>{account.bankName}</Text>
@@ -135,6 +90,34 @@ export default function AccountListItem({
         </View>
       </View>
     </AnimatedTouchable>
+  );
+}
+
+// 은행 로고 컴포넌트
+function BankLogo({ bank, bankName }: { bank?: any; bankName?: string }) {
+  if (bank?.logoSource) {
+    return (
+      <Image
+        source={bank.logoSource}
+        style={styles.bankLogo}
+        resizeMode="contain"
+      />
+    );
+  }
+
+  return (
+    <View
+      style={[
+        styles.bankBadge,
+        bank?.color ? { backgroundColor: bank.color } : null,
+      ]}
+    >
+      {bank?.icon ? (
+        <Ionicons name={bank.icon} size={20} color="white" />
+      ) : (
+        <Text style={styles.bankInitial}>{bankName?.charAt(0) || 'B'}</Text>
+      )}
+    </View>
   );
 }
 
