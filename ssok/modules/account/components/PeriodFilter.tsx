@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   periodButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 10,
     marginRight: 8,
     backgroundColor: colors.silver,
   },

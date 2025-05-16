@@ -1,5 +1,12 @@
-import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  ToastAndroid,
+  Platform,
+} from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { colors } from '@/constants/colors';
 import { formatNumber } from '@/utils/formatters';
 import { router } from 'expo-router';
@@ -17,16 +24,40 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
   accountType,
   balance,
 }) => {
+  const [copied, setCopied] = useState(false);
+
   const handleTransferPress = () => {
     router.push('/transfer');
+  };
+
+  const copyToClipboard = async () => {
+    await Clipboard.setStringAsync(accountNumber);
+    setCopied(true);
+
+    // 복사 확인 메시지
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('계좌번호가 복사되었습니다', ToastAndroid.SHORT);
+    }
+
+    // 2초 후 복사 상태 초기화
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   return (
     <View style={styles.container}>
       <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
-      <Text style={[typography.caption, styles.accountNumber]}>
-        {accountNumber}
-      </Text>
+      <TouchableOpacity onPress={copyToClipboard} activeOpacity={0.6}>
+        <View style={styles.accountNumberContainer}>
+          <Text style={[typography.caption, styles.accountNumber]}>
+            {accountNumber}
+          </Text>
+          <Text style={styles.copyText}>
+            {copied ? '복사됨' : '터치하여 복사'}
+          </Text>
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.balanceRow}>
         <Text style={[typography.h1, styles.balance]}>
@@ -53,9 +84,22 @@ const styles = StyleSheet.create({
   accountType: {
     marginBottom: 8,
   },
+  accountNumberContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   accountNumber: {
     color: colors.mGrey,
-    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.silver,
+    paddingBottom: 1,
+    marginRight: 8,
+  },
+  copyText: {
+    fontSize: 10,
+    color: colors.primary,
+    fontWeight: '500',
   },
   balanceRow: {
     flexDirection: 'row',

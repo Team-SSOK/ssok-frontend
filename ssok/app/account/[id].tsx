@@ -4,10 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { filterTransactionsByPeriod } from '@/utils/dateUtils';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
-import {
-  transferApi,
-  TransferHistory,
-} from '@/modules/transfer/api/transferApi';
+import { transferApi } from '@/modules/transfer/api/transferApi';
 
 // 컴포넌트 임포트
 import AccountInfoSection from '@/modules/account/components/AccountInfoSection';
@@ -84,10 +81,6 @@ export default function AccountDetailScreen() {
     setFilteredTransactions(filtered);
   }, [selectedPeriod, transactions]);
 
-  const handleBackPress = () => {
-    router.back();
-  };
-
   const handlePeriodChange = (period: PeriodFilterType) => {
     setSelectedPeriod(period);
   };
@@ -116,13 +109,11 @@ export default function AccountDetailScreen() {
           }
           balance={currentAccount.balance || 0}
         />
-
         {/* 기간 필터 */}
         <PeriodFilter
           selectedPeriod={selectedPeriod}
           onPeriodChange={handlePeriodChange}
         />
-
         {/* 거래 목록 */}
         <TransactionList
           transactions={filteredTransactions}

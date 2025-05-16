@@ -1,4 +1,4 @@
-# Transfer API Specification
+## Transfer API Specification
 
 ## 1. 일반 송금
 
@@ -221,5 +221,75 @@ GET {PORT}/api/transfers/histories
   "code": 4001,
   "message": "계좌 ID는 필수입니다.",
   "result": null
+}
+```
+
+---
+
+## 4. 최근 송금 내역 조회
+
+### 개요
+
+- 사용자의 최근 송금 내역을 조회합니다.
+
+### 요청
+
+#### API URL
+
+```
+GET {PORT}/api/transfers/history
+```
+
+#### 요청 PathVariable
+
+없음
+
+#### 요청 Query
+
+없음
+
+#### 요청 Header
+
+| 헤더명        | 설명                     |
+| ------------- | ------------------------ |
+| Content-Type  | `application/json`       |
+| Authorization | `Bearer xxx` (추가 예정) |
+
+#### 요청 Body
+
+없음
+
+---
+
+## 응답
+
+### 응답 Body
+
+#### 1. 성공 케이스
+
+```json
+{
+  "code": 200,
+  "message": "최근 송금 내역 조회가 완료되었습니다.",
+  "result": [
+    {
+      "transferId": 101,
+      "transferType": "WITHDRAWAL",
+      "counterpartName": "최지훈",
+      "transferMoney": 150000,
+      "currencyCode": "KRW",
+      "transferMethod": "GENERAL",
+      "createdAt": "2025-04-21T10:31:22"
+    },
+    {
+      "transferId": 100,
+      "transferType": "DEPOSIT",
+      "counterpartName": "박도훈",
+      "transferMoney": 50000,
+      "currencyCode": "KRW",
+      "transferMethod": "BLUETOOTH",
+      "createdAt": "2025-04-20T15:12:10"
+    }
+  ]
 }
 ```

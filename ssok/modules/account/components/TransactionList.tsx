@@ -1,10 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, Pressable, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { colors } from '@/constants/colors';
 import TransactionItem from './TransactionItem';
 import { Transaction } from '@/utils/types';
 import { Text } from '@/components/TextProvider';
-import { typography } from '@/theme/typography';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -48,7 +47,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 30,
+    paddingVertical: 12,
   },
   loadingContainer: {
     justifyContent: 'center',

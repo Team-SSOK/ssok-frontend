@@ -37,6 +37,16 @@ export interface TransferHistory {
   createdAt: string;
 }
 
+export interface RecentTransferHistory {
+  transferId: number;
+  transferType: 'WITHDRAWAL' | 'DEPOSIT';
+  counterpartName: string;
+  transferMoney: number;
+  currencyCode: string;
+  transferMethod: string;
+  createdAt: string;
+}
+
 interface ApiResponse<T = any> {
   isSuccess: boolean;
   code: number;
@@ -75,6 +85,16 @@ export const transferApi = {
     console.log('getTransferHistory', accountId);
     return api.get<ApiResponse<TransferHistory[]>>(
       `/api/transfers/histories?accountId=${accountId}`,
+    );
+  },
+
+  /**
+   * 최근 송금 내역 조회
+   */
+  getRecentTransferHistory: async () => {
+    console.log('getRecentTransferHistory');
+    return api.get<ApiResponse<RecentTransferHistory[]>>(
+      '/api/transfers/history',
     );
   },
 };

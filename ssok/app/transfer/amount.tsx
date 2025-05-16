@@ -7,7 +7,6 @@ import AmountDisplay from '../../modules/transfer/components/AmountDisplay';
 import Keypad from '../../modules/transfer/components/Keypad';
 import NextButton from '../../modules/transfer/components/NextButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
-import { Text } from '@/components/TextProvider';
 
 /**
  * 송금 금액 입력 화면
