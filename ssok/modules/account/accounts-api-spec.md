@@ -241,3 +241,59 @@ POST {PORT}/api/accounts/openbank/verify-name
   }
 }
 ```
+
+---
+
+## 6. 주 연동 계좌 변경
+
+### 요청
+
+#### API URL
+
+```
+PATCH {PORT}/api/accounts/{id}/primary
+```
+
+#### Path Variable
+
+| 변수명    | 설명                 |
+| --------- | -------------------- |
+| accountId | 변경할 계좌의 식별자 |
+
+#### Query
+
+없음
+
+#### Headers
+
+| 헤더명        | 설명               |
+| ------------- | ------------------ |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+| X-User-Id     | 사용자 ID          |
+
+#### Request Body
+
+없음  
+(백엔드에서 `X-User-Id`로 사용자를 확인 후, 해당 `accountId`를 주 계좌로 변경)
+
+### 응답
+
+#### 성공 (200)
+
+```json
+{
+  "isSuccess": true,
+  "code": 200,
+  "message": "주 연동 계좌 변경을 완료했습니다.",
+  "result": {
+    "accountId": 2,
+    "accountNumber": "111111-1111",
+    "bankCode": 2,
+    "bankName": "SSOK뱅크",
+    "accountAlias": "모임계좌",
+    "isPrimaryAccount": true,
+    "accountTypeCode": "예금"
+  }
+}
+```

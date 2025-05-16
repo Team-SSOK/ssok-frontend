@@ -9,6 +9,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import Loading from '@/components/LoadingIndicator';
 import Header from '@/components/Header';
+import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
+import { useAuthStore } from '@/modules/auth/store/authStore';
+import { getBankNameByCode } from '@/modules/transfer/utils/bankUtils';
 
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
@@ -19,6 +22,17 @@ const BluetoothScreen: React.FC = () => {
     DiscoveredDevice[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 스토어
+  const {
+    registerUuid,
+    updateDiscoveredDevices,
+    discoveredUsers,
+    primaryAccount,
+    isLoading: isApiLoading,
+    error,
+  } = useBluetoothStore();
+  const { userId } = useAuthStore();
 
   // 기기 활성 상태 정리 함수
   const cleanupInactiveDevices = useCallback(() => {
@@ -46,6 +60,13 @@ const BluetoothScreen: React.FC = () => {
     };
   }, [cleanupInactiveDevices]);
 
+  // API 오류 감지 및 알림
+  useEffect(() => {
+    if (error) {
+      Alert.alert('오류', error);
+    }
+  }, [error]);
+
   // 화면 포커스/블러 처리
   useFocusEffect(
     useCallback(() => {
@@ -61,6 +82,9 @@ const BluetoothScreen: React.FC = () => {
           // UUID 업데이트
           setMyUUID(bleService.getMyUUID());
 
+          // UUID API 등록
+          await registerUuid(bleService.getMyUUID());
+
           // 앱 진입 시 자동으로 광고 및 스캔 시작
           startAdvertisingAndScanning();
         }
@@ -74,7 +98,7 @@ const BluetoothScreen: React.FC = () => {
         bleService.stopAdvertising();
         bleService.stopScanning();
       };
-    }, [myUUID]),
+    }, [myUUID, registerUuid]),
   );
 
   // BLE 서비스 이벤트 리스너 등록
@@ -129,6 +153,13 @@ const BluetoothScreen: React.FC = () => {
     };
   }, []);
 
+  // 발견된 기기 목록이 변경될 때마다 사용자 조회 시도
+  useEffect(() => {
+    if (discoveredDevices.length > 0) {
+      updateDiscoveredDevices(discoveredDevices);
+    }
+  }, [discoveredDevices, updateDiscoveredDevices]);
+
   // 광고 및 스캔 시작 함수
   const startAdvertisingAndScanning = async () => {
     try {
@@ -154,7 +185,7 @@ const BluetoothScreen: React.FC = () => {
     }
   };
 
-  // 기기 선택 핸들러
+  // 사용자 선택 핸들러
   const handleDevicePress = (device: DiscoveredDevice) => {
     if (!device.iBeaconData) {
       Alert.alert('오류', '기기 정보를 불러올 수 없습니다.', [
@@ -163,18 +194,27 @@ const BluetoothScreen: React.FC = () => {
       return;
     }
 
+    // 발견된 UUID와 일치하는 사용자 찾기
+    const uuid = device.iBeaconData.uuid;
+    const matchedUser = useBluetoothStore.getState().getUserByUuid(uuid);
+
+    if (!matchedUser) {
+      Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.', [
+        { text: '확인', style: 'default' },
+      ]);
+      return;
+    }
+
     // 로딩 상태 활성화
     setIsLoading(true);
 
-    // 실제로는 API를 호출해야 하지만, 임시로 Mock 데이터 사용
-    setTimeout(() => {
-      // Mock API 응답 데이터
-      const mockResponse = {
-        userId: 101, // 사용자 ID (송금 요청 시 사용)
-        userName: '최*훈', // 마스킹된 사용자명
-        bankName: '신한은행',
-      };
+    // 은행 정보 가져오기
+    const bankName = primaryAccount
+      ? getBankNameByCode(primaryAccount.bankCode)
+      : '은행';
 
+    // 실제 사용자 정보 사용
+    setTimeout(() => {
       // 로딩 상태 비활성화
       setIsLoading(false);
 
@@ -182,9 +222,9 @@ const BluetoothScreen: React.FC = () => {
       router.push({
         pathname: '/transfer/amount',
         params: {
-          userId: mockResponse.userId.toString(),
-          userName: mockResponse.userName,
-          bankName: mockResponse.bankName,
+          userId: matchedUser.userId.toString(),
+          userName: matchedUser.username,
+          bankName: bankName,
           isBluetooth: 'true', // 블루투스 송금 플래그
         },
       });
@@ -204,7 +244,7 @@ const BluetoothScreen: React.FC = () => {
       </View>
 
       {/* 로딩 컴포넌트 - 단순 Lottie 애니메이션만 표시 */}
-      <Loading visible={isLoading} />
+      <Loading visible={isLoading || isApiLoading} />
     </SafeAreaView>
   );
 };
