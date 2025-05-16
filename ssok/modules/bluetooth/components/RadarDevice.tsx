@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
+import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
 
 interface RadarDeviceProps {
   device: DiscoveredDevice;
@@ -26,6 +27,9 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
   // 애니메이션 값 설정
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(0.8)).current;
+
+  // Bluetooth store에서 UUID에 해당하는 사용자 정보 가져오기
+  const getUserByUuid = useBluetoothStore((state) => state.getUserByUuid);
 
   // RSSI 강도에 따른 색상 계산
   const getSignalColor = (rssi: number | null): string => {
@@ -74,8 +78,11 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
     }
   }, [animated, pulseAnim, opacityAnim]);
 
-  // 기기 이름 표시 (없으면 알 수 없음)
-  const deviceName = device.name || '알 수 없음';
+  // 기기 UUID로부터 사용자 이름 가져오기
+  const user = device.iBeaconData
+    ? getUserByUuid(device.iBeaconData.uuid)
+    : undefined;
+  const userName = user ? user.username : '알 수 없음';
   const signalColor = getSignalColor(device.rssi);
 
   return (
@@ -114,9 +121,9 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
         />
       </View>
 
-      {/* 기기 이름 */}
+      {/* 사용자 이름 */}
       <Text style={styles.deviceName} numberOfLines={1}>
-        {deviceName}
+        {userName}
       </Text>
     </TouchableOpacity>
   );

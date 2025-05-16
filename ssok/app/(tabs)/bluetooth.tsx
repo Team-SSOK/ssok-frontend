@@ -70,7 +70,6 @@ const BluetoothScreen: React.FC = () => {
   // 화면 포커스/블러 처리
   useFocusEffect(
     useCallback(() => {
-      console.log('블루투스 화면 진입 - 광고/스캔 시작');
       // 화면에 진입했을 때 BLE 서비스 초기화 및 시작
       const initService = async () => {
         const initialized = await bleService.initialize({
@@ -94,7 +93,6 @@ const BluetoothScreen: React.FC = () => {
 
       // 화면을 벗어날 때 정리
       return () => {
-        console.log('블루투스 화면 이탈 - 광고/스캔 중지');
         bleService.stopAdvertising();
         bleService.stopScanning();
       };
@@ -123,21 +121,17 @@ const BluetoothScreen: React.FC = () => {
         });
       },
       onAdvertisingStarted: (uuid) => {
-        console.log('광고 시작:', uuid);
         setIsAdvertising(true);
       },
       onAdvertisingStopped: () => {
-        console.log('광고 중지');
         setIsAdvertising(false);
       },
       onScanningStarted: () => {
-        console.log('스캔 시작');
         setIsScanning(true);
         // 스캔 시작 시 기존 발견 목록 초기화
         setDiscoveredDevices([]);
       },
       onScanningStopped: () => {
-        console.log('스캔 중지');
         setIsScanning(false);
       },
       onError: (error) => {
@@ -167,18 +161,12 @@ const BluetoothScreen: React.FC = () => {
       const advSuccess = await bleService.startAdvertising();
       if (!advSuccess) {
         console.warn('BLE 광고를 시작할 수 없습니다.');
-      } else {
-        console.log('블루투스 광고가 시작되었습니다.');
       }
 
       // 스캔 시작
       const scanSuccess = await bleService.startScanning();
       if (!scanSuccess) {
         console.warn('BLE 스캔을 시작할 수 없습니다.');
-      } else {
-        console.log(
-          '블루투스 스캔이 시작되었습니다. 지속적으로 주변 기기를 탐색합니다.',
-        );
       }
     } catch (error) {
       console.error('BLE 오류:', error);
@@ -243,8 +231,8 @@ const BluetoothScreen: React.FC = () => {
         />
       </View>
 
-      {/* 로딩 컴포넌트 - 단순 Lottie 애니메이션만 표시 */}
-      <Loading visible={isLoading || isApiLoading} />
+      {/* 로딩 컴포넌트 - 사용자 상호작용 시에만 표시 (배경 스캔 시에는 표시하지 않음) */}
+      <Loading visible={isLoading} />
     </SafeAreaView>
   );
 };

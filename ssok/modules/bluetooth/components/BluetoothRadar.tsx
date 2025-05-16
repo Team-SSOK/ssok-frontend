@@ -11,6 +11,7 @@ import {
 import { DiscoveredDevice } from '@/hooks/useBleScanner';
 import RadarDevice from './RadarDevice';
 import { colors } from '@/constants/colors';
+import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
 
 interface BluetoothRadarProps {
   devices: DiscoveredDevice[];
@@ -40,6 +41,9 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
 }) => {
   // 추가 기기 리스트 표시 상태
   const [showList, setShowList] = useState(false);
+
+  // Bluetooth store에서 UUID에 해당하는 사용자 정보 가져오기
+  const getUserByUuid = useBluetoothStore((state) => state.getUserByUuid);
 
   // 기기 ID와 위치 인덱스를 매핑하는 상태
   const [devicePositions, setDevicePositions] = useState<Map<string, number>>(
@@ -164,23 +168,29 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
           <FlatList
             data={listDevices}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.deviceListItem}
-                onPress={() => onDevicePress(item)}
-              >
-                <View
-                  style={[
-                    styles.deviceSignal,
-                    { backgroundColor: getSignalColor(item.rssi) },
-                  ]}
-                />
-                <Text style={styles.deviceName}>
-                  {item.name || '알 수 없음'}
-                </Text>
-                <Text style={styles.deviceRssi}>{item.rssi || '-'} dBm</Text>
-              </TouchableOpacity>
-            )}
+            renderItem={({ item }) => {
+              // 기기 UUID로부터 사용자 이름 가져오기
+              const user = item.iBeaconData
+                ? getUserByUuid(item.iBeaconData.uuid)
+                : undefined;
+              const userName = user ? user.username : '알 수 없음';
+
+              return (
+                <TouchableOpacity
+                  style={styles.deviceListItem}
+                  onPress={() => onDevicePress(item)}
+                >
+                  <View
+                    style={[
+                      styles.deviceSignal,
+                      { backgroundColor: getSignalColor(item.rssi) },
+                    ]}
+                  />
+                  <Text style={styles.deviceName}>{userName}</Text>
+                  <Text style={styles.deviceRssi}>{item.rssi || '-'} dBm</Text>
+                </TouchableOpacity>
+              );
+            }}
           />
         </View>
       )}

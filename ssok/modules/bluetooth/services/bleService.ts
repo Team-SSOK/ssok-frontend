@@ -100,14 +100,12 @@ class BleService {
     try {
       // UUID 설정 (옵션으로 전달된 UUID가 있으면 사용, 없으면 새로 생성)
       this.uuid = options?.advertisingUUID || generateUUID();
-      console.log(`${this.LOG_TAG}-${FUNC_NAME} UUID 설정:`, this.uuid);
 
       // 안드로이드에서는 블루투스 권한 요청
       if (Platform.OS === 'android') {
         try {
           // 권한 요청
           await this.requestBluetoothPermissions();
-          console.log(`${this.LOG_TAG}-${FUNC_NAME} 권한 요청 완료`);
 
           // 권한 확인
           const hasPermissions = await this.checkBlePermissions();
@@ -136,12 +134,6 @@ class BleService {
           this.minor = options.minor;
         }
       }
-
-      console.log(`${this.LOG_TAG}-${FUNC_NAME} 초기화 완료:`, {
-        uuid: this.uuid,
-        major: this.major,
-        minor: this.minor,
-      });
 
       this.isInitialized = true;
 
@@ -177,16 +169,11 @@ class BleService {
       async (nextAppState) => {
         // 앱이 백그라운드에서 포그라운드로 전환될 때만 처리
         if (nextAppState === 'active') {
-          console.log('[BLE Service] 앱이 활성화되었습니다. 권한 재확인 중...');
-
           // 권한 재확인
           const hasPermissions = await this.checkBlePermissions();
           if (hasPermissions) {
-            console.log('[BLE Service] 필요한 모든 권한이 허용됨');
-
             // 광고 중이었다면 재시작 시도
             if (this.isAdvertising) {
-              console.log('[BLE Service] 광고 재시작 시도');
               // 광고 중지 후 재시작
               await this.stopAdvertising();
               await this.startAdvertising();
@@ -205,14 +192,8 @@ class BleService {
     const sdkVersion = Platform.OS === 'android' ? Platform.Version : 0;
     const FUNC_NAME = 'requestBluetoothPermissions()';
 
-    console.log(
-      `${this.LOG_TAG}-${FUNC_NAME} Android SDK Version: ${sdkVersion}`,
-    );
-
     // Android 14 (API 34) 이상
     if (Platform.OS === 'android' && sdkVersion >= 34) {
-      console.log(`${this.LOG_TAG}-${FUNC_NAME} 안드로이드 14+ 권한 요청`);
-
       // 최신 안드로이드에서는 권한을 개별적으로 요청하여 더 명확한 피드백 제공
       // BLUETOOTH_CONNECT 권한 먼저 요청
       const connectResult = await PermissionsAndroid.request(
@@ -222,10 +203,6 @@ class BleService {
           message: '블루투스 기기에 연결하기 위해 권한이 필요합니다.',
           buttonPositive: '확인',
         },
-      );
-
-      console.log(
-        `${this.LOG_TAG}-${FUNC_NAME} BLUETOOTH_CONNECT 권한 결과: ${connectResult}`,
       );
 
       // BLUETOOTH_SCAN 권한 요청
@@ -238,10 +215,6 @@ class BleService {
         },
       );
 
-      console.log(
-        `${this.LOG_TAG}-${FUNC_NAME} BLUETOOTH_SCAN 권한 결과: ${scanResult}`,
-      );
-
       // BLUETOOTH_ADVERTISE 권한 요청
       const advertiseResult = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
@@ -252,10 +225,6 @@ class BleService {
         },
       );
 
-      console.log(
-        `${this.LOG_TAG}-${FUNC_NAME} BLUETOOTH_ADVERTISE 권한 결과: ${advertiseResult}`,
-      );
-
       // 위치 권한 요청 (일부 기기에서 필요)
       const locationResult = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -264,10 +233,6 @@ class BleService {
           message: '블루투스 기기를 검색하기 위해 위치 접근 권한이 필요합니다.',
           buttonPositive: '확인',
         },
-      );
-
-      console.log(
-        `${this.LOG_TAG}-${FUNC_NAME} 위치 권한 결과: ${locationResult}`,
       );
 
       // 권한이 'never_ask_again'인 경우 설정 화면 안내
