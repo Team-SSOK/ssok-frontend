@@ -13,6 +13,10 @@ interface TransactionItemProps {
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
   const isDeposit = transaction.transferType === 'DEPOSIT';
 
+  // 송금 방식 표시 (0: 일반, 1: 블루투스)
+  const transferMethodText =
+    transaction.transferMethod === 0 ? '일반' : '블루투스';
+
   return (
     <View style={styles.transactionItem}>
       <View style={styles.transactionInfo}>
@@ -35,7 +39,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
           {formatNumber(transaction.transferMoney)}원
         </Text>
         <Text style={[typography.caption, styles.currentBalance]}>
-          잔액 {formatNumber(transaction.balanceAfterTransaction)}원
+          {transferMethodText}
         </Text>
       </View>
     </View>

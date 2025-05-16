@@ -26,6 +26,17 @@ export interface TransferResponse {
   amount: number;
 }
 
+export interface TransferHistory {
+  transferId: number;
+  transferType: 'WITHDRAWAL' | 'DEPOSIT';
+  transferMoney: number;
+  currencyCode: string;
+  transferMethod: string;
+  counterpartAccount: string;
+  counterpartName: string;
+  createdAt: string;
+}
+
 interface ApiResponse<T = any> {
   isSuccess: boolean;
   code: number;
@@ -54,6 +65,16 @@ export const transferApi = {
     return api.post<ApiResponse<TransferResponse>>(
       '/api/transfers/openbank/bluetooth',
       data,
+    );
+  },
+
+  /**
+   * 송금 내역 조회
+   */
+  getTransferHistory: async (accountId: number) => {
+    console.log('getTransferHistory', accountId);
+    return api.get<ApiResponse<TransferHistory[]>>(
+      `/api/transfers/histories?accountId=${accountId}`,
     );
   },
 };

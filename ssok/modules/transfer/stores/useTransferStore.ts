@@ -48,10 +48,10 @@ export const useTransferStore = create<TransferState>((set, get) => ({
   },
 
   sendMoneyBluetooth: async (data: BluetoothTransferRequest) => {
-    console.log('sendMoneyBluetooth', data);
     set({ isLoading: true, error: null });
     try {
       const response = await transferApi.sendMoneyBluetooth(data);
+
       if (response.data.isSuccess && response.data.result) {
         set({
           lastTransfer: response.data.result,
