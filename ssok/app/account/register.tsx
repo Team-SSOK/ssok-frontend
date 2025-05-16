@@ -66,7 +66,14 @@ export default function RegisterAccountScreen() {
 
       await withLoading(async () => {
         try {
-          await registerAccount(accountRequest);
+          const registeredAccount = await registerAccount(accountRequest);
+
+          if (registeredAccount) {
+            await useAccountStore
+              .getState()
+              .setPrimaryAccount(registeredAccount.accountId);
+          }
+
           router.replace('/(tabs)');
         } catch (error) {
           console.error('계좌 등록에 실패했습니다.');

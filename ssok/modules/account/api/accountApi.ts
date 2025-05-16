@@ -83,4 +83,14 @@ export const accountApi = {
       data,
     );
   },
+
+  /**
+   * 주 연동 계좌 변경
+   */
+  setPrimaryAccount: async (accountId: number) => {
+    console.log('setPrimaryAccount', accountId);
+    return api.patch<ApiResponse<RegisteredAccount>>(
+      `/api/accounts/${accountId}/primary`,
+    );
+  },
 };

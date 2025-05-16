@@ -61,10 +61,18 @@ export const bluetoothApi = {
       console.log('📥 매칭 응답 코드:', response.data.code);
       console.log('📥 매칭 응답 메시지:', response.data.message);
 
+      // 2400 코드도 성공으로 처리 (Bluetooth UUID에 대한 유저가 조회되었습니다)
+      if (response.data.code === 2400) {
+        console.log(
+          '📥 2400 코드: Bluetooth UUID에 대한 유저가 조회되었습니다 (정상 응답)',
+        );
+      }
+
       if (response.data.result) {
         const { users, primaryAccount } = response.data.result;
         console.log('📥 매칭된 사용자 수:', users?.length || 0);
         console.log('📥 매칭된 사용자 목록:', JSON.stringify(users, null, 2));
+        console.log('📥 주 계좌 정보:', primaryAccount);
         console.log(
           '📥 주 계좌 정보:',
           primaryAccount
@@ -81,14 +89,27 @@ export const bluetoothApi = {
 
         // 에러지만 실제론 성공인 경우가 있는지 확인
         const errorData = (error as any).response.data;
+
+        // 2400 코드는 성공으로 처리 (Bluetooth UUID에 대한 유저가 조회되었습니다)
+        if (errorData.code === 2400 && errorData.result) {
+          console.log(
+            '📥 2400 코드: Bluetooth UUID에 대한 유저가 조회되었습니다 (정상 응답)',
+          );
+          return { data: errorData };
+        }
+
         if (
           errorData.result &&
-          errorData.message?.includes('매칭된 유저 조회 성공')
+          (errorData.message?.includes('매칭된 유저 조회 성공') ||
+            errorData.message?.includes(
+              'Bluetooth UUID에 대한 유저가 조회되었습니다',
+            ))
         ) {
           console.log(
             '📥 (에러 응답이지만) 매칭된 사용자:',
             errorData.result.users?.length || 0,
           );
+          return { data: errorData };
         }
       } else {
         console.log('❌ 매칭 에러:', error);

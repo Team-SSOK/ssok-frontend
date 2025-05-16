@@ -120,7 +120,10 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       // 성공 메시지가 포함되어 있거나, 코드가 200인 경우 성공으로 처리
       const isSuccess =
         (response.data.message &&
-          response.data.message.includes('매칭된 유저 조회 성공')) ||
+          (response.data.message.includes('매칭된 유저 조회 성공') ||
+            response.data.message.includes(
+              'Bluetooth UUID에 대한 유저가 조회되었습니다',
+            ))) ||
         response.data.code === 200;
 
       if (isSuccess && response.data.result) {
@@ -150,7 +153,10 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
 
       // 성공 메시지가 포함된 경우 실제로는 성공으로 처리
       if (
-        errorMessage.includes('매칭된 유저 조회 성공') &&
+        (errorMessage.includes('매칭된 유저 조회 성공') ||
+          errorMessage.includes(
+            'Bluetooth UUID에 대한 유저가 조회되었습니다',
+          )) &&
         error instanceof Error &&
         (error as any).response?.data?.result
       ) {

@@ -14,11 +14,14 @@ interface AccountState {
   isLoading: boolean;
   error: string | null;
   fetchAccounts: () => Promise<void>;
-  registerAccount: (account: AccountRequest) => Promise<void>;
+  registerAccount: (
+    account: AccountRequest,
+  ) => Promise<RegisteredAccount | null>;
   getAccountDetail: (accountId: number) => Promise<RegisteredAccount | null>;
   verifyAccountName: (
     data: NameVerificationRequest,
   ) => Promise<NameVerificationResponse | null>;
+  setPrimaryAccount: (accountId: number) => Promise<RegisteredAccount | null>;
 }
 
 export const useAccountStore = create<AccountState>((set, get) => ({
@@ -51,11 +54,13 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           accounts: [...state.accounts, response.data.result!],
           isLoading: false,
         }));
+        return response.data.result;
       } else {
         throw new Error('API 응답 형식이 올바르지 않습니다.');
       }
     } catch (error) {
       set({ error: '계좌 등록에 실패했습니다.', isLoading: false });
+      return null;
     }
   },
 
@@ -97,6 +102,32 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     } catch (error) {
       set({
         error: '계좌 실명 조회에 실패했습니다.',
+        isLoading: false,
+      });
+      return null;
+    }
+  },
+
+  setPrimaryAccount: async (accountId: number) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await accountApi.setPrimaryAccount(accountId);
+      if (response.data.isSuccess && response.data.result) {
+        set((state) => ({
+          accounts: state.accounts.map((account) => ({
+            ...account,
+            isPrimaryAccount: account.accountId === accountId,
+          })),
+          currentAccount: response.data.result,
+          isLoading: false,
+        }));
+        return response.data.result;
+      } else {
+        throw new Error('API 응답 형식이 올바르지 않습니다.');
+      }
+    } catch (error) {
+      set({
+        error: '주 연동 계좌 변경에 실패했습니다.',
         isLoading: false,
       });
       return null;
