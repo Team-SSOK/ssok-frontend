@@ -12,7 +12,7 @@ import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
  * 송금이 성공적으로 완료되었음을 사용자에게 알리는 화면
  */
 export default function CompleteScreen() {
-  const { amount, isBluetooth, userId } = useLocalSearchParams();
+  const { amount, isBluetooth, userId, userName } = useLocalSearchParams();
   const isBluetoothTransfer = isBluetooth === 'true';
   const { lastTransfer } = useTransferStore();
 
@@ -31,7 +31,7 @@ export default function CompleteScreen() {
           isBluetoothTransfer={isBluetoothTransfer}
           userId={isBluetoothTransfer ? (userId as string) : undefined}
           recipientName={
-            isBluetoothTransfer ? undefined : lastTransfer?.recvName
+            isBluetoothTransfer ? (userName as string) : lastTransfer?.recvName
           }
           accountNumber={
             isBluetoothTransfer ? undefined : lastTransfer?.recvAccountNumber

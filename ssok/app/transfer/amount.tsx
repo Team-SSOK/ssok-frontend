@@ -13,9 +13,12 @@ import { Text } from '@/components/TextProvider';
  * 송금 금액 입력 화면
  */
 export default function AmountScreen() {
-  const { accountNumber, bankName, userName } = useLocalSearchParams();
+  const { accountNumber, bankName, userName, userId, isBluetooth } =
+    useLocalSearchParams();
   const [amount, setAmount] = useState<number>(0);
   const [btnEnabled, setBtnEnabled] = useState<boolean>(false);
+
+  const isBluetoothTransfer = isBluetooth === 'true';
 
   useEffect(() => {
     setBtnEnabled(!isNaN(amount) && amount > 0);
@@ -62,6 +65,8 @@ export default function AmountScreen() {
         accountNumber,
         bankName,
         userName,
+        userId: isBluetoothTransfer ? userId : undefined,
+        isBluetooth: isBluetoothTransfer ? 'true' : 'false',
       },
     });
   };
@@ -76,7 +81,9 @@ export default function AmountScreen() {
           amount={amount}
           recipientName={userName as string}
           bankName={bankName as string}
-          accountNumber={accountNumber as string}
+          accountNumber={
+            isBluetoothTransfer ? undefined : (accountNumber as string)
+          }
         />
 
         <View style={styles.spacer} />

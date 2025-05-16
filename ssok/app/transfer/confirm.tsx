@@ -9,7 +9,10 @@ import ConfirmButton from '../../modules/transfer/components/ConfirmButton';
 import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
-import { TransferRequest } from '@/modules/transfer/api/transferApi';
+import {
+  TransferRequest,
+  BluetoothTransferRequest,
+} from '@/modules/transfer/api/transferApi';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import { getBankCodeByName } from '@/modules/transfer/utils/bankUtils';
 import { useProfileStore } from '@/modules/settings/store/profileStore';
@@ -24,7 +27,7 @@ export default function ConfirmScreen() {
   const { accountNumber, bankName, userName, amount, userId, isBluetooth } =
     useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const { sendMoney } = useTransferStore();
+  const { sendMoney, sendMoneyBluetooth } = useTransferStore();
   const { accounts } = useAccountStore();
   const { username, fetchProfile } = useProfileStore();
   const { userId: authUserId } = useAuthStore();
@@ -58,10 +61,26 @@ export default function ConfirmScreen() {
 
       // 블루투스 송금인 경우 (userId로 송금)
       if (isBluetoothTransfer && userId) {
-        // TODO: 블루투스 송금 API 구현
-        // 임시 구현: 송금 성공 가정 (2초 지연)
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log('블루투스 송금 완료:', { userId, amount });
+        // 블루투스 송금 API 호출
+        const bluetoothTransferData: BluetoothTransferRequest = {
+          sendAccountId: sendAccount.accountId,
+          sendBankCode: sendAccount.bankCode,
+          sendName: senderName,
+          recvUserId: Number(userId),
+          amount: Number(amount),
+        };
+
+        console.log(
+          'Sending bluetooth transfer with data:',
+          bluetoothTransferData,
+        );
+
+        // API 호출
+        const response = await sendMoneyBluetooth(bluetoothTransferData);
+
+        if (!response) {
+          throw new Error('블루투스 송금 요청이 실패했습니다.');
+        }
       }
       // 일반 계좌 송금인 경우
       else {
@@ -94,6 +113,7 @@ export default function ConfirmScreen() {
         pathname: '/transfer/complete' as any,
         params: {
           amount: amount,
+          userName: userName as string,
           userId: isBluetoothTransfer ? userId : undefined,
           isBluetooth: isBluetoothTransfer ? 'true' : 'false',
         },

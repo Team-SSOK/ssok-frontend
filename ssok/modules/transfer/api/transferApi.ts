@@ -11,6 +11,14 @@ export interface TransferRequest {
   amount: number;
 }
 
+export interface BluetoothTransferRequest {
+  sendAccountId: number;
+  sendBankCode: number;
+  sendName: string;
+  recvUserId: number;
+  amount: number;
+}
+
 export interface TransferResponse {
   sendAccountId: number;
   recvAccountNumber: string;
@@ -34,6 +42,17 @@ export const transferApi = {
     console.log('sendMoney', data);
     return api.post<ApiResponse<TransferResponse>>(
       '/api/transfers/openbank',
+      data,
+    );
+  },
+
+  /**
+   * 블루투스 송금 요청
+   */
+  sendMoneyBluetooth: async (data: BluetoothTransferRequest) => {
+    console.log('sendMoneyBluetooth', data);
+    return api.post<ApiResponse<TransferResponse>>(
+      '/api/transfers/openbank/bluetooth',
       data,
     );
   },

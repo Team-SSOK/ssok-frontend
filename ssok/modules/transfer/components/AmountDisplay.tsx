@@ -9,7 +9,7 @@ interface AmountDisplayProps {
   amount: number;
   recipientName: string;
   bankName: string;
-  accountNumber: string;
+  accountNumber?: string;
 }
 
 const AmountDisplay: React.FC<AmountDisplayProps> = ({
@@ -20,6 +20,7 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
 }) => {
   const formattedAmount = amount.toLocaleString('ko-KR');
   const isZero = amount === 0;
+  const isBluetoothTransfer = !accountNumber;
 
   return (
     <View style={styles.container}>
@@ -38,9 +39,16 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
         <Text style={[typography.h3, styles.recipientName]}>
           {recipientName}
         </Text>
-        <Text style={[typography.body1, styles.recipientName]}>
-          {accountNumber}
-        </Text>
+        {!isBluetoothTransfer && (
+          <Text style={[typography.body1, styles.recipientName]}>
+            {accountNumber}
+          </Text>
+        )}
+        {isBluetoothTransfer && (
+          <Text style={[typography.body1, styles.recipientName]}>
+            블루투스 송금
+          </Text>
+        )}
       </View>
 
       {/* 금액 표시 섹션 */}
