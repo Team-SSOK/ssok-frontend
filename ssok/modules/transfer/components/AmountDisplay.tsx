@@ -27,28 +27,28 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
       {/* 받는 분 정보 카드 */}
       <View style={styles.recipientCard}>
         <View style={styles.recipientHeader}>
-          <Text style={[typography.button, styles.recipientLabel]}>
-            받는 분
-          </Text>
+          <Text style={[typography.body1, styles.recipientLabel]}>받는 분</Text>
           <View style={styles.bankBadge}>
-            <Text style={[typography.caption, styles.bankBadgeText]}>
+            <Text style={[typography.body2, styles.bankBadgeText]}>
               {bankName}
             </Text>
           </View>
         </View>
-        <Text style={[typography.h3, styles.recipientName]}>
-          {recipientName}
-        </Text>
-        {!isBluetoothTransfer && (
-          <Text style={[typography.body1, styles.recipientName]}>
-            {accountNumber}
+        <View style={styles.recipientNameContainer}>
+          <Text style={[typography.h3, styles.recipientName]}>
+            {recipientName}
           </Text>
-        )}
-        {isBluetoothTransfer && (
-          <Text style={[typography.body1, styles.recipientName]}>
-            블루투스 송금
-          </Text>
-        )}
+          {!isBluetoothTransfer && (
+            <Text style={[typography.body1, styles.recipientAccount]}>
+              {accountNumber}
+            </Text>
+          )}
+          {isBluetoothTransfer && (
+            <Text style={[typography.caption, styles.bluetoothLabel]}>
+              블루투스 송금
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* 금액 표시 섹션 */}
@@ -71,7 +71,6 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
           )}
         </View>
 
-        {/* 하단 구분선 */}
         <View style={styles.divider} />
       </View>
     </View>
@@ -80,19 +79,18 @@ const AmountDisplay: React.FC<AmountDisplayProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginVertical: 20,
   },
   recipientCard: {
-    padding: 20,
+    padding: 16,
     backgroundColor: colors.white,
-    borderRadius: 16,
-    marginBottom: 28,
+    borderRadius: 8,
+    marginBottom: 24,
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 1,
   },
   recipientHeader: {
     flexDirection: 'row',
@@ -110,10 +108,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   bankBadgeText: {
-    color: colors.grey,
+    color: colors.mGrey,
+  },
+  recipientNameContainer: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   recipientName: {
     color: colors.black,
+  },
+  recipientAccount: {
+    color: colors.mGrey,
+  },
+  bluetoothLabel: {
+    color: colors.primary,
+    backgroundColor: colors.primary + '15', // 약간 투명한 배경색
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   amountSection: {
     alignItems: 'center',

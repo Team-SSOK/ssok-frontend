@@ -41,7 +41,7 @@ export default function TransactionDetailsCard({
           <Text style={[typography.caption, styles.detailLabel]}>
             송금 방식
           </Text>
-          <Text style={[typography.body1, styles.bluetoothValue]}>
+          <Text style={[typography.body2, styles.bluetoothValue]}>
             블루투스 송금
           </Text>
         </View>
@@ -51,23 +51,10 @@ export default function TransactionDetailsCard({
           <Text style={[typography.caption, styles.detailLabel]}>
             받는 계좌
           </Text>
-          <Text style={[typography.body1, styles.detailValue]}>
+          <Text style={[typography.body2, styles.detailValue]}>
             {bankName} {accountNumber}
           </Text>
         </View>
-      )}
-
-      {/* 블루투스 송금인 경우 userId도 표시 */}
-      {isBluetoothTransfer && userId && (
-        <>
-          <View style={styles.separator} />
-          <View style={styles.detailRow}>
-            <Text style={[typography.caption, styles.detailLabel]}>
-              사용자 ID
-            </Text>
-            <Text style={[typography.body1, styles.detailValue]}>{userId}</Text>
-          </View>
-        </>
       )}
 
       <View style={styles.separator} />
@@ -90,9 +77,9 @@ const styles = StyleSheet.create({
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 1,
     marginBottom: 20,
   },
   detailRow: {

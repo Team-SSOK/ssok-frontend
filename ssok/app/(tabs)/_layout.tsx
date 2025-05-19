@@ -147,8 +147,8 @@ export default function TabLayout() {
       )}
     >
       <Tabs.Screen name="index" options={{ title: '홈' }} />
-      <Tabs.Screen name="bluetooth" options={{ title: '송금' }} />
-      <Tabs.Screen name="settings" options={{ title: '설정' }} />
+      <Tabs.Screen name="bluetooth" options={{ title: ' 송금 ' }} />
+      <Tabs.Screen name="settings" options={{ title: ' 설정 ' }} />
     </Tabs>
   );
 }

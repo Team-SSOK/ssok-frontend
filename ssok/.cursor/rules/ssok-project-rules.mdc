@@ -1,0 +1,180 @@
+---
+description: 프로젝트 내 코드 품질을 유지하기 위한 통일된 폴더 구조, import 순서, 상태/API 구성 규칙 등을 정의합니다.
+globs: 
+alwaysApply: false
+---
+### 통합 및 자동화
+
+- `eslint-config-prettier`, `eslint-plugin-prettier` 활용
+- VS Code: 저장 시 포맷 설정
+
+## 1. 파일 및 폴더 구조, 그리고 Import 순서
+
+### 폴더 구조
+
+- 공용 폴더: `components/`, `utils/`, `hooks/`
+- 기능 모듈: `modules/<feature>/components`, `utils`, `hooks`, `stores`
+
+### 명명 규칙
+
+- 폴더: 소문자, 복수형
+- 파일: `kebab-case.ts(x)`, 컴포넌트는 PascalCase export
+- 테스트: `.test.tsx`
+
+### 절대경로 및 Import 순서
+
+- `@/components/...` 등으로 alias 사용 (`tsconfig.json`)
+- 외부 라이브러리 → alias 내부 모듈 → 로컬 모듈 순
+- `import/order` 린트 적용 권장
+
+### 내보내기
+
+- `index.ts` 배럴 파일 사용
+- 순환참조 방지, export 범위 관리
+
+## 2. TypeScript 타입 및 인터페이스 컨벤션
+
+### 네이밍
+
+- `UserProfile`, `PaymentMethod` 등 PascalCase
+- `I`, `T` 접두사 지양
+
+### interface vs type
+
+- `interface`: 객체, API 구조
+- `type`: 유니언, 함수 시그니처
+
+### 타입 선언
+
+- 함수, Props 등 명시
+- 명백한 추론은 생략 가능
+- `any` 대신 `unknown`, 타입 단언
+
+### 엄격 모드
+
+- `strict: true`, `noImplicitAny`, `strictNullChecks` 등
+
+## 3. 코드 구성 원칙 (Atomic Design, 모듈화, Co-location)
+
+### Atomic Design
+
+- Atoms: 버튼, 텍스트 등
+- Molecules: 검색창 등
+- Organisms: 패널, 내비게이션
+- Templates/Pages: 레이아웃/라우트 구성
+
+### 모듈화 & Co-location
+
+- `modules/feature` 단위
+- 내부에 컴포넌트, 훅, 상태 등 포함
+- 공용은 상위 폴더로 올림
+
+### 단일 책임 & 재사용
+
+- UI/로직 분리 (컴포넌트/커스텀 훅)
+- DRY 원칙, 과도한 추상화 지양
+
+### 조건문 & 렌더링
+
+- 복잡한 조건은 분리하여 변수/함수로 추출
+- 삼항 연산자는 단순할 때만 사용
+- 조기 return(guard clause) 권장
+
+### 불변성
+
+- 객체/배열은 직접 수정하지 않고 spread 사용
+- 복잡한 객체에는 immer 사용 가능
+
+---
+
+---
+
+### 주석 & 문서화
+
+- 필요한 곳에만 Why 중심 주석
+- JSDoc 사용 권장
+
+4. Axios 기반 API 구성 및 관리 Best Practices
+
+### ✅ API 모듈 구조 설계
+
+- `axios.create()`로 중앙 Axios 인스턴스를 생성
+- `api/` 또는 `services/` 디렉토리에 API 함수 정리
+- 환경 변수(`.env`)로 baseURL, API 키 분리 관리
+
+### ✅ 모듈별 API 함수 분리
+
+- `userService.ts`, `productService.ts` 등 도메인 기반 분리
+- 도메인별 함수: `getUser()`, `updateUser()` 등으로 구성
+- 코드 캡슐화 및 재사용성 향상
+
+### ✅ 공통 인터셉터 처리
+
+- 요청 시 인증 토큰 자동 추가
+- 응답 에러 처리, 로깅 등 전역 처리
+- 공통 로직은 인터셉터에서 통합 관리
+
+### ✅ 오류 핸들링 전략
+
+- 인터셉터에서 401, 500 등 공통 처리
+- 개별 API에서는 필요할 때만 `try-catch`
+- 공통 에러 메시지/재인증/로깅 처리 일원화
+
+---
+
+## Zustand 상태 관리 Best Practices
+
+### ✅ 전역 vs 모듈별 상태 관리
+
+- 전역 상태: `store/global.ts` 등
+- 모듈별 상태: `modules/<feature>/store.ts`로 로컬 slice 구성
+- slice 단위로 분리하여 가독성과 유지보수 향상
+
+### ✅ Zustand 디렉토리 구조
+
+- 전역 상태는 `store/`
+- 기능별 상태는 각 `modules/` 내부에 co-location
+
+### ✅ Middleware 활용 전략
+
+- `selector`: 필요한 상태만 구독 → 렌더 최적화
+- `persist`: AsyncStorage에 저장 필요 상태 보존
+- `devtools`, `immer`: 디버깅 및 불변성 유지에 유용
+
+### ✅ TypeScript 기반 타입 안전성 확보
+
+- `interface State { ... }` + `create<State>()` 패턴 사용
+- slice별 타입 분리 및 병합 가능
+- 커스텀 훅으로 필요한 상태만 추출해서 제공
+
+---
+
+## 4. 커밋 메시지 규칙 (Conventional Commits)
+
+### 유형 예시
+
+- `feat`: 기능 추가
+- `fix`: 버그 수정
+- `docs`: 문서 수정
+- `style`, `refactor`, `test`, `chore` 등
+
+### 형식
+
+```
+<type>: <간결한 제목>
+
+<본문: 변경 이유나 세부사항>
+
+Resolves: #이슈번호
+```
+
+### 예시
+
+```
+feat: 사용자 프로필 화면 UI 구성
+
+프로필 화면에 아바타, 통계 위젯 등의 새로운 UI 컴포넌트를 추가하고 레이아웃을 설계함.
+프로필 편집 기능은 버튼만 추가하고 추후 구현 예정.
+
+```
+

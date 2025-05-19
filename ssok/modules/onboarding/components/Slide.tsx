@@ -99,11 +99,11 @@ const Slide: React.FC<SlideProps> = ({
         <Text style={[typography.h1, styles.title, titleStyle]}>{title}</Text>
 
         <View style={styles.subtitleContainer}>
-          <Text style={[typography.body1, styles.subtitle, subtitleStyle]}>
+          <Text style={[typography.h3, styles.subtitle, subtitleStyle]}>
             {subtitle1}
           </Text>
           {subtitle2 && (
-            <Text style={[typography.body1, styles.subtitle, subtitleStyle]}>
+            <Text style={[typography.h3, styles.subtitle, subtitleStyle]}>
               {subtitle2}
             </Text>
           )}

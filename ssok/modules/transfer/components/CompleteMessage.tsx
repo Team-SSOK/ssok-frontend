@@ -43,19 +43,10 @@ export default function CompleteMessage({
         />
       </View>
 
-      <Text style={[typography.h1, styles.title]}>송금 완료</Text>
-      <Text style={[typography.h1, styles.amountText]}>
+      <Text style={[typography.h2, styles.title]}>송금 완료</Text>
+      <Text style={[typography.h2, styles.amountText]}>
         {amount.toLocaleString('ko-KR')}원
       </Text>
-
-      {isBluetoothTransfer && userId && (
-        <Text style={[typography.body1, styles.bluetoothInfo]}>
-          <Text style={[typography.body1, styles.bluetoothLabel]}>
-            Bluetooth 송금 |{' '}
-          </Text>
-          <Text style={[typography.body1, styles.userId]}>ID: {userId}</Text>
-        </Text>
-      )}
 
       {!isBluetoothTransfer && recipientName && accountNumber && (
         <View style={styles.recipientInfo}>

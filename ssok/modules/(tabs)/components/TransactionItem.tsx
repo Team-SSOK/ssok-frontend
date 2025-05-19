@@ -34,7 +34,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
   return (
     <View style={styles.transactionItem}>
       <View style={styles.leftSection}>
-        <Text style={[typography.body1, styles.merchantName]}>
+        <Text style={[typography.body2, styles.merchantName]}>
           {transaction.counterpartName}
         </Text>
         <Text style={[typography.caption, styles.transactionDate]}>
@@ -61,9 +61,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.silver + '30', // 약간 투명한 경계선
+    borderBottomColor: colors.silver + 80,
   },
   leftSection: {
     flex: 1,

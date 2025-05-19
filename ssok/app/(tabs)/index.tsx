@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   View,
   SafeAreaView,
   ScrollView,
   StatusBar,
+  RefreshControl,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
@@ -12,17 +14,40 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
 import AccountCard from '@/modules/(tabs)/components/AccountCard';
-import RecentTransactions from '@/modules/(tabs)/components/RecentTransactions';
+import RecentTransactions, {
+  RecentTransactionsRefType,
+} from '@/modules/(tabs)/components/RecentTransactions';
 import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
 import { useLoadingStore } from '@/stores/loadingStore';
+import { transferApi } from '@/modules/transfer/api/transferApi';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { accounts, fetchAccounts, getAccountDetail } = useAccountStore();
   const { withLoading } = useLoadingStore();
+  const [refreshing, setRefreshing] = useState(false);
+  const recentTransactionsRef = useRef<RecentTransactionsRefType>(null);
 
   useEffect(() => {
     fetchAccounts();
+  }, [fetchAccounts]);
+
+  const reloadAllData = async () => {
+    await fetchAccounts();
+    if (recentTransactionsRef.current) {
+      await recentTransactionsRef.current.refresh();
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await reloadAllData();
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
+      setRefreshing(false);
+    }
   }, [fetchAccounts]);
 
   const handleRegisterAccount = () => {
@@ -61,6 +86,14 @@ export default function HomeScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]} // 앱의 프라이머리 컬러 사용
+              tintColor={colors.primary} // iOS에서 인디케이터 컬러
+            />
+          }
         >
           {accounts[0] && (
             <AccountCard
@@ -69,7 +102,7 @@ export default function HomeScreen() {
               onPress={() => handleAccountPress(accounts[0].accountId)}
             />
           )}
-          <RecentTransactions />
+          <RecentTransactions ref={recentTransactionsRef} />
         </ScrollView>
       )}
     </SafeAreaView>
@@ -92,6 +125,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20, // Extra padding for iOS
   },
   centerContainer: {
     flex: 1,

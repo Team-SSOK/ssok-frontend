@@ -41,7 +41,7 @@ export const slideData: SlideData[] = [
   },
   {
     key: 'slide2',
-    title: '더 빠른 송금을 \n경험하세요',
+    title: '더 빠른 송금을 경험하세요',
     subtitle1: '단순한 송금을 넘어,',
     subtitle2: '더 빠르고 간편한 송금 프로세스',
     mediaType: 'video',
@@ -49,7 +49,7 @@ export const slideData: SlideData[] = [
   },
   {
     key: 'slide3',
-    title: `SSOK만의 특별한\n블루투스 송금`,
+    title: `SSOK만의 블루투스 송금`,
     subtitle1: '블루투스 송금으로',
     subtitle2: '주변 사람에게 빠르게 송금해보세요',
     mediaType: 'lottie',

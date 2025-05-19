@@ -40,31 +40,24 @@ export default function AccountCard({
         </Text>
       </View>
 
-      <View style={styles.accountInfoContainer}>
-        <Text style={[typography.body1, styles.accountAlias]}>
-          {account.accountAlias || '내 계좌'}
-        </Text>
-        <Text style={[typography.caption, styles.accountNumber]}>
-          {maskAccountNumber(account.accountNumber)}
-        </Text>
-      </View>
+      <Text style={[typography.caption, styles.accountNumber]}>
+        {maskAccountNumber(account.accountNumber)}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
     padding: 20,
     marginBottom: 16,
+    backgroundColor: colors.white,
+    borderRadius: 12,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 1,
     shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: colors.silver,
+    elevation: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -86,11 +79,6 @@ const styles = StyleSheet.create({
   },
   balance: {
     color: colors.black,
-  },
-  accountInfoContainer: {
-    borderTopWidth: 1,
-    borderTopColor: colors.silver,
-    paddingTop: 16,
   },
   accountAlias: {
     color: colors.black,
