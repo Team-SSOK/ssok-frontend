@@ -1,7 +1,7 @@
 import React from 'react';
-import Slide from './components/Slide';
+import Slide from '../components/Slide';
 import { colors } from '@/constants/colors';
-import { SlideData, SlideStyles } from './utils/types';
+import { SlideData, SlideStyles } from './types';
 
 /**
  * 슬라이드 스타일 정의
@@ -66,50 +66,54 @@ export const slideData: SlideData[] = [
 ];
 
 /**
- * 슬라이드 컴포넌트 렌더링 함수
+ * 슬라이드 렌더링 함수: 슬라이드 데이터를 컴포넌트로 변환
  */
-export const renderSlides = () => {
-  return slideData.map((slide, index) => {
-    // key를 제외한 기본 props 정의
-    const commonProps = {
-      title: slide.title,
-      subtitle1: slide.subtitle1,
-      subtitle2: slide.subtitle2,
-      containerStyle: slideStyles.containerStyle,
-      titleStyle: slideStyles.titleStyle,
-      subtitleStyle: slideStyles.subtitleStyle,
-      imageContainerStyle: slideStyles.imageContainerStyle,
-      isLast: index === slideData.length - 1, // 마지막 슬라이드 여부
-    };
+const createSlideComponent = (
+  slide: SlideData,
+  index: number,
+  totalSlides: number,
+): React.ReactNode => {
+  // 공통 props 정의
+  const commonProps = {
+    title: slide.title,
+    subtitle1: slide.subtitle1,
+    subtitle2: slide.subtitle2,
+    containerStyle: slideStyles.containerStyle,
+    titleStyle: slideStyles.titleStyle,
+    subtitleStyle: slideStyles.subtitleStyle,
+    imageContainerStyle: slideStyles.imageContainerStyle,
+    isLast: index === totalSlides - 1,
+  };
 
-    // 미디어 타입에 따라 props 추가하고 key는 직접 전달
-    switch (slide.mediaType) {
-      case 'image':
-        return (
-          <Slide key={slide.key} {...commonProps} imageSource={slide.source} />
-        );
-      case 'video':
-        return (
-          <Slide key={slide.key} {...commonProps} videoSource={slide.source} />
-        );
-      case 'lottie':
-        return (
-          <Slide key={slide.key} {...commonProps} lottieSource={slide.source} />
-        );
-      case 'component':
-        return (
-          <Slide
-            key={slide.key}
-            {...commonProps}
-            isCard={true}
-            cardContent={slide.component}
-          />
-        );
-      default:
-        return null;
-    }
-  });
+  // 미디어 타입에 따라 적절한 props 추가
+  switch (slide.mediaType) {
+    case 'image':
+      return (
+        <Slide key={slide.key} {...commonProps} imageSource={slide.source} />
+      );
+    case 'video':
+      return (
+        <Slide key={slide.key} {...commonProps} videoSource={slide.source} />
+      );
+    case 'lottie':
+      return (
+        <Slide key={slide.key} {...commonProps} lottieSource={slide.source} />
+      );
+    case 'component':
+      return (
+        <Slide
+          key={slide.key}
+          {...commonProps}
+          isCard={true}
+          cardContent={slide.component}
+        />
+      );
+    default:
+      return null;
+  }
 };
 
-// 미리 렌더링된 슬라이드 배열
-export const onboardingSlides = renderSlides();
+// 미리 렌더링된 슬라이드 배열 - React.memo로 감싸인 컴포넌트를 사용하여 불필요한 리렌더링 방지
+export const onboardingSlides = slideData.map((slide, index) =>
+  createSlideComponent(slide, index, slideData.length),
+);

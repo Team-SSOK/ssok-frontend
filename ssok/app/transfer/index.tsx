@@ -17,7 +17,7 @@ import { Text } from '@/components/TextProvider';
 import AccountInput from '@/modules/transfer/components/AccountInput';
 import BankSelector from '@/modules/transfer/components/BankSelector';
 import NextButton from '@/modules/transfer/components/NextButton';
-import { Bank } from '@/mock/bankData';
+import { Bank } from '@/mocks/bankData';
 import Header from '@/components/Header';
 
 export default function TransferScreen() {

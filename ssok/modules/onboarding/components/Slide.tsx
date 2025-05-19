@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -30,6 +30,7 @@ interface SlideProps {
   cardContent?: React.ReactNode;
 }
 
+// 미디어 카드 기본 스타일
 const mediaCard: ViewStyle & ImageStyle = {
   height: 420,
   width: 220,
@@ -44,6 +45,37 @@ const mediaCard: ViewStyle & ImageStyle = {
   // Android 그림자
   elevation: 4,
 };
+
+// 이미지 미디어 컴포넌트
+const ImageMedia = React.memo(({ source }: { source: ImageSourcePropType }) => (
+  <Image source={source} style={styles.image} resizeMode="contain" />
+));
+
+// 비디오 미디어 컴포넌트
+const VideoMedia = React.memo(
+  ({ source, isLast }: { source: VideoSource; isLast?: boolean }) => {
+    const player = useVideoPlayer(source, (player) => {
+      player.loop = true;
+      player.play();
+    });
+
+    if (!player) return null;
+
+    return (
+      <VideoView
+        player={player}
+        style={isLast ? styles.lastVideo : styles.video}
+        nativeControls={false}
+        pointerEvents="none"
+      />
+    );
+  },
+);
+
+// Lottie 미디어 컴포넌트
+const LottieMedia = React.memo(({ source }: { source: any }) => (
+  <LottieView source={source} style={styles.lottie} autoPlay loop />
+));
 
 const Slide: React.FC<SlideProps> = ({
   title,
@@ -60,38 +92,19 @@ const Slide: React.FC<SlideProps> = ({
   isLast = false,
   cardContent,
 }) => {
-  // 비디오 소스가 제공된 경우 비디오 플레이어 초기화
-  const player = videoSource
-    ? useVideoPlayer(videoSource, (player) => {
-        player.loop = true;
-        player.play();
-      })
-    : null;
-
-  // 컨텐츠 렌더링
-  const renderContent = () => {
+  // 미디어 컨텐츠 메모이제이션
+  const mediaContent = useMemo(() => {
     if (isCard && cardContent) {
       return cardContent;
     } else if (imageSource) {
-      return (
-        <Image source={imageSource} style={styles.image} resizeMode="contain" />
-      );
-    } else if (videoSource && player) {
-      return (
-        <VideoView
-          player={player}
-          style={isLast ? styles.lastVideo : styles.video}
-          nativeControls={false}
-          pointerEvents="none"
-        />
-      );
+      return <ImageMedia source={imageSource} />;
+    } else if (videoSource) {
+      return <VideoMedia source={videoSource} isLast={isLast} />;
     } else if (lottieSource) {
-      return (
-        <LottieView source={lottieSource} style={styles.lottie} autoPlay loop />
-      );
+      return <LottieMedia source={lottieSource} />;
     }
     return null;
-  };
+  }, [isCard, cardContent, imageSource, videoSource, lottieSource, isLast]);
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -111,7 +124,7 @@ const Slide: React.FC<SlideProps> = ({
       </View>
 
       <View style={[styles.imageContainer, imageContainerStyle]}>
-        {renderContent()}
+        {mediaContent}
       </View>
     </View>
   );
@@ -163,4 +176,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Slide;
+export default React.memo(Slide);

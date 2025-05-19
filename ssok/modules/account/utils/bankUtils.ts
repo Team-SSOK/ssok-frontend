@@ -1,4 +1,4 @@
-import { banks, Bank } from '@/mock/bankData';
+import { banks, Bank } from '@/mocks/bankData';
 
 /**
  * 은행 코드 또는 이름으로 은행 정보를 찾는 유틸리티 함수

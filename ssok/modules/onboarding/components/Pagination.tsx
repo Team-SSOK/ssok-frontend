@@ -9,6 +9,30 @@ interface ExtendedPaginationProps extends PaginationProps {
   activeDotStyle?: ViewStyle;
 }
 
+// 개별 페이지네이션 점 컴포넌트
+const PaginationDot: React.FC<{
+  isActive: boolean;
+  index: number;
+  onPress: (index: number) => void;
+  dotStyle?: ViewStyle;
+  activeDotStyle?: ViewStyle;
+}> = React.memo(({ isActive, index, onPress, dotStyle, activeDotStyle }) => (
+  <TouchableOpacity
+    style={[
+      styles.dot,
+      dotStyle,
+      isActive && styles.activeDot,
+      isActive && activeDotStyle,
+    ]}
+    activeOpacity={0.8}
+    accessibilityRole="button"
+    accessibilityLabel={`${index + 1}번째 슬라이드로 이동`}
+    accessibilityState={{ selected: isActive }}
+    accessibilityHint={`전체 슬라이드 중 ${index + 1}번째 슬라이드로 이동합니다.`}
+    onPress={() => onPress(index)}
+  />
+));
+
 const Pagination: React.FC<ExtendedPaginationProps> = ({
   total,
   current,
@@ -17,25 +41,30 @@ const Pagination: React.FC<ExtendedPaginationProps> = ({
   dotStyle,
   activeDotStyle,
 }) => {
-  // Create array of dots based on total slides
+  // 페이지 점 배열을 메모이제이션하여 불필요한 재생성 방지
   const dots = useMemo(() => Array.from({ length: total }), [total]);
 
+  // 페이지 변경 이벤트 핸들러
+  const handlePageChange = (index: number) => {
+    if (onPageChange) {
+      onPageChange(index);
+    }
+  };
+
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View
+      style={[styles.container, containerStyle]}
+      accessibilityRole="tablist"
+      accessibilityLabel={`슬라이드 페이지네이션: ${current + 1} / ${total}`}
+    >
       {dots.map((_, index) => (
-        <TouchableOpacity
-          key={index}
-          style={[
-            styles.dot,
-            dotStyle,
-            current === index && styles.activeDot,
-            current === index && activeDotStyle,
-          ]}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={`Go to slide ${index + 1}`}
-          accessibilityState={{ selected: current === index }}
-          onPress={() => onPageChange && onPageChange(index)}
+        <PaginationDot
+          key={`dot-${index}`}
+          isActive={current === index}
+          index={index}
+          onPress={handlePageChange}
+          dotStyle={dotStyle}
+          activeDotStyle={activeDotStyle}
         />
       ))}
     </View>
@@ -62,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Pagination;
+export default React.memo(Pagination);

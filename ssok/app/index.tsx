@@ -1,25 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
   SafeAreaView,
   StatusBar,
   TouchableOpacity,
-  ViewToken,
 } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
-import SlideShow from '@/modules/onboarding/components/SlideShow';
-import { onboardingSlides } from '@/modules/onboarding/slides';
+import SlideShow, {
+  ViewableItemsChangedInfo,
+} from '@/modules/onboarding/components/SlideShow';
+import { onboardingSlides } from '@/modules/onboarding/utils/slides';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import { useLoadingStore } from '@/stores/loadingStore';
 
-type ViewableItemsChangedInfo = {
-  viewableItems: ViewToken[];
-  changed: ViewToken[];
-};
+const StartButton = React.memo(({ onPress }: { onPress: () => void }) => (
+  <View style={styles.buttonContainer}>
+    <TouchableOpacity
+      style={styles.startButton}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel="SSOK 시작하기"
+      accessibilityHint="앱 온보딩을 완료하고 회원가입 화면으로 이동합니다"
+    >
+      <Text style={[typography.button, styles.startButtonText]}>
+        SSOK 시작하기
+      </Text>
+    </TouchableOpacity>
+  </View>
+));
 
 export default function Index() {
   const { checkingStatus } = useAuthFlow();
@@ -39,16 +52,21 @@ export default function Index() {
     router.push('/auth/register');
   };
 
-  const handleSlideChange = (info: ViewableItemsChangedInfo) => {
+  // 슬라이드 변경 이벤트 핸들러
+  const handleSlideChange = useCallback((info: ViewableItemsChangedInfo) => {
     const { viewableItems } = info;
     if (viewableItems?.length > 0 && viewableItems[0].index !== null) {
       setCurrentSlideIndex(viewableItems[0].index);
     }
-  };
+  }, []);
 
+  // 로딩 중일 때는 빈 화면 표시
   if (checkingStatus) {
     return null;
   }
+
+  // 마지막 슬라이드에서만 시작하기 버튼 표시
+  const isLastSlide = currentSlideIndex === onboardingSlides.length - 1;
 
   return (
     <View style={styles.container}>
@@ -56,21 +74,12 @@ export default function Index() {
       <SafeAreaView style={styles.safeArea}>
         <SlideShow
           data={onboardingSlides}
-          showPagination={currentSlideIndex < onboardingSlides.length - 1}
+          showPagination={!isLastSlide}
           EndComponent={
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.startButton}
-                onPress={handleStart}
-                activeOpacity={0.8}
-              >
-                <Text style={[typography.button, styles.startButtonText]}>
-                  SSOK 시작하기
-                </Text>
-              </TouchableOpacity>
-            </View>
+            isLastSlide ? <StartButton onPress={handleStart} /> : undefined
           }
           onViewableItemsChanged={handleSlideChange}
+          autoPlay={false}
         />
       </SafeAreaView>
     </View>

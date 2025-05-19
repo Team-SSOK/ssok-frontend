@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '@/constants/colors';
-import { getBankName, getAccountType } from '@/mock/accountData';
+import { getBankName, getAccountType } from '@/mocks/accountData';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';

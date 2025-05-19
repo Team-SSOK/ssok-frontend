@@ -12,8 +12,57 @@ alwaysApply: false
 
 ### 폴더 구조
 
-- 공용 폴더: `components/`, `utils/`, `hooks/`
-- 기능 모듈: `modules/<feature>/components`, `utils`, `hooks`, `stores`
+bash```
+.
+├── api/                         # Axios 인스턴스 및 API 전역 관리
+│   └── ApiInstance.ts
+├── app/                         # App Router 기반 페이지 구성 (Next.js style)
+│   ├── __tests__/              # 테스트 파일 모음
+│   ├── (tabs)/                # 탭 네비게이션 구성
+│   ├── account/               # account 관련 라우팅
+│   ├── auth/                  # auth 관련 라우팅
+│   ├── transfer/              # transfer 관련 라우팅
+│   ├── _layout.tsx           # App 레이아웃 정의
+│   └── index.tsx             # 루트 페이지 엔트리
+├── assets/                     # 이미지, 폰트 등 정적 자산
+├── components/                # 공통 UI 컴포넌트 모음
+├── constants/                 # 상수 정의
+├── docs/                      # API 명세나 설계 문서
+├── hooks/                     # 전역에서 재사용하는 커스텀 훅
+├── mocks/                     # 목 데이터 (테스트용)
+├── modules/                   # 기능 단위별 모듈
+│   ├── account/
+│   │   ├── api/              # account 전용 API 함수들
+│   │   ├── components/       # account 전용 컴포넌트
+│   │   ├── hooks/            # account 전용 훅
+│   │   ├── store/            # account 전용 Zustand 상태
+│   │   ├── utils/            # account 관련 유틸
+│   │   ├── auth_api_spec.md  # API 문서
+│   │   └── index.ts
+│   ├── auth/
+│   ├── bluetooth/
+│   ├── onboarding/
+│   ├── settings/
+│   └── transfer/
+├── node_modules/
+├── stores/                    # 전역 Zustand store (slice 기반 분리 가능)
+├── styles/                    # 전역 스타일
+├── theme/                     # 색상, 폰트 등 테마 토큰
+├── types/                     # 전역 TypeScript 타입 정의
+├── utils/                     # 전역 유틸 함수 모음
+├── .eslintrc.js               # ESLint 설정
+├── .gitignore
+├── .prettierrc                # Prettier 설정
+├── app.json                   # Expo 설정
+├── eas.json                   # Expo Application Services 설정
+├── expo-env.d.ts              # 환경 타입 정의
+├── package.json
+├── package-lock.json
+├── README.md
+└── tsconfig.json              # TypeScript 설정
+
+
+```
 
 ### 명명 규칙
 
@@ -69,10 +118,12 @@ alwaysApply: false
 - 내부에 컴포넌트, 훅, 상태 등 포함
 - 공용은 상위 폴더로 올림
 
-### 단일 책임 & 재사용
+### 단일 책임(SRP) & 재사용
 
+- 더 완벽한 단일 책임 원칙 적용을 위해서는 이들을 개별 파일로 분리합니다.
 - UI/로직 분리 (컴포넌트/커스텀 훅)
 - DRY 원칙, 과도한 추상화 지양
+
 
 ### 조건문 & 렌더링
 

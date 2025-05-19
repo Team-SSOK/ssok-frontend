@@ -8,7 +8,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { colors } from '@/constants/colors';
-import { Bank, banks } from '../../../mock/bankData';
+import { Bank, banks } from '../../../mocks/bankData';
 import { Ionicons } from '@expo/vector-icons';
 import BankSelectModal from './BankSelectModal';
 

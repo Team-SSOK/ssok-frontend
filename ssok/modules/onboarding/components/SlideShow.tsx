@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,12 +9,13 @@ import {
   ViewToken,
 } from 'react-native';
 import { colors } from '@/constants/colors';
-import Pagination from './Pagination';
 import useOnboarding from '../hooks/useOnboarding';
+import SlideItem from './SlideItem';
+import SlideFooter from './SlideFooter';
 
 const { width } = Dimensions.get('window');
 
-type ViewableItemsChangedInfo = {
+export type ViewableItemsChangedInfo = {
   viewableItems: ViewToken[];
   changed: ViewToken[];
 };
@@ -34,6 +35,10 @@ interface SlideShowProps {
   onViewableItemsChanged?: (info: ViewableItemsChangedInfo) => void;
 }
 
+/**
+ * 슬라이드쇼 컴포넌트
+ * 슬라이드 데이터를 받아 페이지네이션 포함한 슬라이드쇼를 구성
+ */
 const SlideShow: React.FC<SlideShowProps> = ({
   data,
   showPagination = true,
@@ -48,22 +53,33 @@ const SlideShow: React.FC<SlideShowProps> = ({
   loop = false,
   onViewableItemsChanged,
 }) => {
-  const { currentSlide, goToSlide, goToNextSlide } = useOnboarding();
-
+  const { currentSlide, goToSlide } = useOnboarding();
   const flatListRef = useRef<FlatList>(null);
   const isLastSlide = currentSlide === data.length - 1;
 
-  // 스크롤 시 현재 인덱스 업데이트
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / width);
-    if (index !== currentSlide) {
+  // 페이지 변경 핸들러
+  const handlePageChange = useCallback(
+    (index: number) => {
       goToSlide(index);
-    }
-  };
+      flatListRef.current?.scrollToIndex({ index, animated: true });
+    },
+    [goToSlide],
+  );
 
-  // 화면에 보이는 아이템 변경 시 처리
-  const handleViewableItemsChanged = useRef(
+  // 스크롤 이벤트 핸들러
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const contentOffsetX = event.nativeEvent.contentOffset.x;
+      const index = Math.round(contentOffsetX / width);
+      if (index !== currentSlide) {
+        goToSlide(index);
+      }
+    },
+    [currentSlide, goToSlide],
+  );
+
+  // 뷰 변경 이벤트 핸들러
+  const handleViewableItemsChanged = useCallback(
     (info: ViewableItemsChangedInfo) => {
       const { viewableItems } = info;
       if (viewableItems.length > 0 && viewableItems[0].index !== null) {
@@ -73,17 +89,12 @@ const SlideShow: React.FC<SlideShowProps> = ({
         onViewableItemsChanged(info);
       }
     },
-  ).current;
-
-  // 페이지 변경 핸들러
-  const handlePageChange = (index: number) => {
-    goToSlide(index);
-    flatListRef.current?.scrollToIndex({ index, animated: true });
-  };
+    [goToSlide, onViewableItemsChanged],
+  );
 
   // 자동 재생 기능
   useEffect(() => {
-    let intervalId: ReturnType<typeof setTimeout> | undefined;
+    let intervalId: ReturnType<typeof setTimeout>;
 
     if (autoPlay && !isLastSlide) {
       intervalId = setTimeout(() => {
@@ -100,7 +111,14 @@ const SlideShow: React.FC<SlideShowProps> = ({
     return () => {
       if (intervalId) clearTimeout(intervalId);
     };
-  }, [autoPlay, currentSlide, data.length, loop, autoPlayInterval]);
+  }, [
+    autoPlay,
+    currentSlide,
+    data.length,
+    loop,
+    autoPlayInterval,
+    handlePageChange,
+  ]);
 
   // 마지막 슬라이드에 도달했을 때 이벤트 처리
   useEffect(() => {
@@ -117,31 +135,31 @@ const SlideShow: React.FC<SlideShowProps> = ({
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={[styles.slide, { width }]}>{item}</View>
-        )}
-        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => <SlideItem item={item} />}
+        keyExtractor={(_, index) => `slide-${index}`}
         onScroll={handleScroll}
         onViewableItemsChanged={handleViewableItemsChanged}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 50,
         }}
         scrollEventThrottle={16}
+        removeClippedSubviews={true}
+        initialNumToRender={1}
+        maxToRenderPerBatch={2}
+        windowSize={3}
       />
 
-      <View style={styles.footerContainer}>
-        {showPagination &&
-          (PaginationComponent || (
-            <Pagination
-              total={data.length}
-              current={currentSlide}
-              onPageChange={handlePageChange}
-            />
-          ))}
-
-        {showSkip && !isLastSlide && SkipComponent}
-        {isLastSlide && EndComponent}
-      </View>
+      <SlideFooter
+        showPagination={showPagination}
+        isLastSlide={isLastSlide}
+        dataLength={data.length}
+        currentSlide={currentSlide}
+        onPageChange={handlePageChange}
+        PaginationComponent={PaginationComponent}
+        EndComponent={EndComponent}
+        SkipComponent={SkipComponent}
+        showSkip={showSkip}
+      />
     </View>
   );
 };
@@ -151,12 +169,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  slide: {
-    flex: 1,
-  },
-  footerContainer: {
-    paddingBottom: 40,
-  },
 });
 
-export default SlideShow;
+export default React.memo(SlideShow);
