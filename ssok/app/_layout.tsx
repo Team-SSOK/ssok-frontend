@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { TextProvider } from '../components/TextProvider';
+import { FontProvider } from '../components/TextProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useLoadingStore } from '@/stores/loadingStore';
@@ -10,7 +10,7 @@ export default function RootLayout() {
 
   return (
     <PaperProvider>
-      <TextProvider>
+      <FontProvider>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="auth/register" options={{ headerShown: false }} />
@@ -50,7 +50,7 @@ export default function RootLayout() {
           />
         </Stack>
         <LoadingIndicator visible={isLoading} />
-      </TextProvider>
+      </FontProvider>
     </PaperProvider>
   );
 }
