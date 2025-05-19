@@ -136,6 +136,15 @@ bash```
 - 객체/배열은 직접 수정하지 않고 spread 사용
 - 복잡한 객체에는 immer 사용 가능
 
+
+###  useCallback은 아래 조건 모두 만족할 때만 쓰세요
+
+- 해당 함수를 자식 컴포넌트에 props로 전달한다.
+
+- 그 자식 컴포넌트가 React.memo 또는 useEffect/useCallback/useMemo로 해당 prop을 의존한다.
+
+- 함수 생성 비용이 높은 경우 or 함수 재생성이 리렌더 성능에 영향을 줄 수 있는 구조일 경우
+
 ---
 
 ---

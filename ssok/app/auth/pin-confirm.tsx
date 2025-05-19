@@ -6,7 +6,6 @@ import { authApi } from '@/modules/auth/api/auth';
 import { STORAGE_KEYS } from '@/modules/auth/utils/constants';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
-import * as SecureStore from 'expo-secure-store';
 
 export default function PinConfirm() {
   const pin = useAuthStore((state) => state.pin);

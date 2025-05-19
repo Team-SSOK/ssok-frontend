@@ -38,6 +38,7 @@ export const ERROR_MESSAGES = {
   PHONE_VERIFICATION_REQUIRED: '휴대폰 인증이 필요합니다',
   REQUIRED_VERIFICATION_CODE: '인증번호를 입력해주세요',
   INVALID_VERIFICATION_CODE: '인증번호가 올바르지 않습니다',
+  TERMS_REQUIRED: '서비스 이용약관에 동의해주세요',
 
   // API 관련
   API_ERROR: '서버와의 통신 중 오류가 발생했습니다',
