@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   FlatList,
   StyleSheet,
   View,
   SafeAreaView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -20,7 +21,13 @@ import Header from '@/components/Header';
 import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
+/**
+ * 계좌 등록 화면
+ *
+ * 연동할 계좌를 선택하고 등록하는 화면입니다.
+ */
 export default function RegisterAccountScreen() {
   const router = useRouter();
   const { registerAccount } = useAccountStore();
@@ -28,60 +35,111 @@ export default function RegisterAccountScreen() {
   const { isLoading, withLoading } = useLoadingStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadCandidates();
-  }, []);
+  // 계좌 목록 로딩 (API 호출이 포함되어 있으므로 useCallback 유지)
+  const loadCandidates = useCallback(async () => {
+    setError(null);
 
-  const loadCandidates = async () => {
     await withLoading(async () => {
       try {
         const response = await accountApi.getLinkedAccounts();
         if (response.data.isSuccess && response.data.result) {
           setCandidates(response.data.result);
         } else {
-          throw new Error('API 응답 형식이 올바르지 않습니다.');
+          throw new Error(
+            response.data.message || '계좌 목록을 불러오는데 실패했습니다.',
+          );
         }
       } catch (error) {
-        console.error('계좌 목록을 불러오는데 실패했습니다.');
+        console.error('계좌 목록을 불러오는데 실패했습니다.', error);
+        setError('계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.');
+
+        // 오류 시 사용자에게 알림
+        Alert.alert(
+          '오류',
+          '계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.',
+          [{ text: '확인', onPress: () => {} }],
+        );
       }
     });
-  };
+  }, [withLoading]);
 
-  const handleSelectAccount = async (account: Account) => {
+  // 컴포넌트 마운트 시 계좌 목록 로딩
+  useEffect(() => {
+    loadCandidates();
+  }, [loadCandidates]);
+
+  // 계좌 선택 핸들러 (단순 상태 업데이트라 useCallback 불필요)
+  const handleSelectAccount = (account: Account) => {
     setSelectedAccount(account);
     setModalVisible(true);
   };
 
-  const handleModalFinish = async () => {
-    if (selectedAccount) {
-      const accountRequest: AccountRequest = {
-        accountNumber: selectedAccount.accountNumber,
-        bankCode: selectedAccount.bankCode,
-        accountTypeCode:
-          typeof selectedAccount.accountTypeCode === 'string'
-            ? 1
-            : Number(selectedAccount.accountTypeCode),
-      };
+  // 계좌 등록 완료 핸들러 (API 호출과 복잡한 로직이 있으므로 useCallback 유지)
+  const handleModalFinish = useCallback(async () => {
+    if (!selectedAccount) return;
 
-      await withLoading(async () => {
-        try {
-          const registeredAccount = await registerAccount(accountRequest);
+    const accountRequest: AccountRequest = {
+      accountNumber: selectedAccount.accountNumber,
+      bankCode: selectedAccount.bankCode,
+      accountTypeCode:
+        typeof selectedAccount.accountTypeCode === 'string'
+          ? 1
+          : Number(selectedAccount.accountTypeCode),
+    };
 
-          if (registeredAccount) {
-            await useAccountStore
-              .getState()
-              .setPrimaryAccount(registeredAccount.accountId);
-          }
+    await withLoading(async () => {
+      try {
+        const registeredAccount = await registerAccount(accountRequest);
 
+        if (registeredAccount) {
+          // 주 계좌로 설정
+          await useAccountStore
+            .getState()
+            .setPrimaryAccount(registeredAccount.accountId);
+
+          // 성공 메시지와 함께 홈으로 이동
           router.replace('/(tabs)');
-        } catch (error) {
-          console.error('계좌 등록에 실패했습니다.');
-          setModalVisible(false);
+        } else {
+          throw new Error('계좌 등록에 실패했습니다.');
         }
-      });
-    }
+      } catch (error) {
+        console.error('계좌 등록에 실패했습니다.', error);
+        setModalVisible(false);
+
+        // 오류 시 사용자에게 알림
+        Alert.alert('오류', '계좌 등록에 실패했습니다. 다시 시도해주세요.', [
+          { text: '확인', onPress: () => {} },
+        ]);
+      }
+    });
+  }, [selectedAccount, withLoading, registerAccount, router]);
+
+  // 재시도 핸들러 (간단한 함수 호출이므로 useCallback 불필요)
+  const handleRetry = () => {
+    loadCandidates();
   };
+
+  // 빈 목록 컴포넌트 (memo 함수로 감싸서 처리하는 것이 더 적절)
+  const EmptyListComponent = () => (
+    <View style={styles.emptyList}>
+      <Text style={typography.body1}>연동 가능한 계좌가 없습니다.</Text>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={[typography.caption, styles.errorText]}>{error}</Text>
+          <View style={styles.retryButtonContainer}>
+            <Text
+              style={[typography.button, styles.retryButton]}
+              onPress={handleRetry}
+            >
+              다시 시도
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,7 +152,7 @@ export default function RegisterAccountScreen() {
 
       {isLoading && candidates.length === 0 ? (
         <View style={styles.loading}>
-          <Text>계좌 목록을 불러오는 중...</Text>
+          <Text style={typography.body1}>계좌 목록을 불러오는 중...</Text>
         </View>
       ) : (
         <FlatList
@@ -108,11 +166,7 @@ export default function RegisterAccountScreen() {
             />
           )}
           contentContainerStyle={styles.listContainer}
-          ListEmptyComponent={() => (
-            <View style={styles.emptyList}>
-              <Text></Text>
-            </View>
-          )}
+          ListEmptyComponent={EmptyListComponent}
         />
       )}
 
@@ -135,6 +189,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingVertical: 8,
+    flex: 1,
   },
   loading: {
     flex: 1,
@@ -142,7 +197,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyList: {
-    padding: 16,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
+  },
+  errorContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  errorText: {
+    color: colors.error,
+    marginBottom: 12,
+  },
+  retryButtonContainer: {
+    marginTop: 8,
+  },
+  retryButton: {
+    color: colors.primary,
+    padding: 8,
   },
 });

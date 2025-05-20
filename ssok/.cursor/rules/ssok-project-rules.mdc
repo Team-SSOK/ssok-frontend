@@ -1,5 +1,5 @@
 ---
-description: 프로젝트 내 코드 품질을 유지하기 위한 통일된 폴더 구조, import 순서, 상태/API 구성 규칙 등을 정의합니다.
+description: expo 프로젝트에서 유지보수성을 높이기 위한 코드 품질 표준을 정리한 실전 가이드입니다. 폴더 구조, 명명 규칙, TypeScript 타입 전략, Atomic Design, Zustand 상태 관리, Axios API 설계, useCallback 최적화 조건 등 실무 적용이 가능한 기준들을 통합하여 설명합니다
 globs: 
 alwaysApply: false
 ---
@@ -12,21 +12,20 @@ alwaysApply: false
 
 ### 폴더 구조
 
-bash```
-.
-├── api/                         # Axios 인스턴스 및 API 전역 관리
+```bash
+├── api/                       # Axios 인스턴스 및 API 전역 관리
 │   └── ApiInstance.ts
-├── app/                         # App Router 기반 페이지 구성 (Next.js style)
-│   ├── __tests__/              # 테스트 파일 모음
+├── app/                       # App Router 기반 페이지 구성 (Next.js style)
+│   ├── __tests__/             # 테스트 파일 모음
 │   ├── (tabs)/                # 탭 네비게이션 구성
 │   ├── account/               # account 관련 라우팅
 │   ├── auth/                  # auth 관련 라우팅
 │   ├── transfer/              # transfer 관련 라우팅
-│   ├── _layout.tsx           # App 레이아웃 정의
-│   └── index.tsx             # 루트 페이지 엔트리
-├── assets/                     # 이미지, 폰트 등 정적 자산
+│   ├── _layout.tsx            # App 레이아웃 정의
+│   └── index.tsx              # 루트 페이지 엔트리
+├── assets/                    # 이미지, 폰트 등 공통 정적 자산
 ├── components/                # 공통 UI 컴포넌트 모음
-├── constants/                 # 상수 정의
+├── constants/                 # 상수 정의 (color.ts)
 ├── docs/                      # API 명세나 설계 문서
 ├── hooks/                     # 전역에서 재사용하는 커스텀 훅
 ├── mocks/                     # 목 데이터 (테스트용)
@@ -67,7 +66,8 @@ bash```
 ### 명명 규칙
 
 - 폴더: 소문자, 복수형
-- 파일: `kebab-case.ts(x)`, 컴포넌트는 PascalCase export
+- 파일: `kebab-case.ts(x)`
+- 컴포넌트는 PascalCase export
 - 테스트: `.test.tsx`
 
 ### 절대경로 및 Import 순서
@@ -76,7 +76,7 @@ bash```
 - 외부 라이브러리 → alias 내부 모듈 → 로컬 모듈 순
 - `import/order` 린트 적용 권장
 
-### 내보내기
+### export
 
 - `index.ts` 배럴 파일 사용
 - 순환참조 방지, export 범위 관리
@@ -99,10 +99,6 @@ bash```
 - 명백한 추론은 생략 가능
 - `any` 대신 `unknown`, 타입 단언
 
-### 엄격 모드
-
-- `strict: true`, `noImplicitAny`, `strictNullChecks` 등
-
 ## 3. 코드 구성 원칙 (Atomic Design, 모듈화, Co-location)
 
 ### Atomic Design
@@ -124,7 +120,6 @@ bash```
 - UI/로직 분리 (컴포넌트/커스텀 훅)
 - DRY 원칙, 과도한 추상화 지양
 
-
 ### 조건문 & 렌더링
 
 - 복잡한 조건은 분리하여 변수/함수로 추출
@@ -136,16 +131,13 @@ bash```
 - 객체/배열은 직접 수정하지 않고 spread 사용
 - 복잡한 객체에는 immer 사용 가능
 
-
-###  useCallback은 아래 조건 모두 만족할 때만 쓰세요
+###  useCallback 조건
 
 - 해당 함수를 자식 컴포넌트에 props로 전달한다.
 
 - 그 자식 컴포넌트가 React.memo 또는 useEffect/useCallback/useMemo로 해당 prop을 의존한다.
 
 - 함수 생성 비용이 높은 경우 or 함수 재생성이 리렌더 성능에 영향을 줄 수 있는 구조일 경우
-
----
 
 ---
 
@@ -208,33 +200,4 @@ bash```
 - 커스텀 훅으로 필요한 상태만 추출해서 제공
 
 ---
-
-## 4. 커밋 메시지 규칙 (Conventional Commits)
-
-### 유형 예시
-
-- `feat`: 기능 추가
-- `fix`: 버그 수정
-- `docs`: 문서 수정
-- `style`, `refactor`, `test`, `chore` 등
-
-### 형식
-
-```
-<type>: <간결한 제목>
-
-<본문: 변경 이유나 세부사항>
-
-Resolves: #이슈번호
-```
-
-### 예시
-
-```
-feat: 사용자 프로필 화면 UI 구성
-
-프로필 화면에 아바타, 통계 위젯 등의 새로운 UI 컴포넌트를 추가하고 레이아웃을 설계함.
-프로필 편집 기능은 버튼만 추가하고 추후 구현 예정.
-
-```
 

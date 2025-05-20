@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import {
   StyleSheet,
   View,
   TouchableOpacity,
   ToastAndroid,
   Platform,
+  Alert,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { colors } from '@/constants/colors';
@@ -14,11 +15,27 @@ import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 
 interface AccountInfoSectionProps {
+  /**
+   * 계좌번호
+   */
   accountNumber: string;
+
+  /**
+   * 계좌 유형 또는 별칭
+   */
   accountType: string;
+
+  /**
+   * 계좌 잔액
+   */
   balance: number;
 }
 
+/**
+ * 계좌 정보 섹션 컴포넌트
+ *
+ * 계좌번호, 잔액 등 계좌 기본 정보를 표시하고, 계좌번호 복사 및 송금 기능을 제공합니다.
+ */
 const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
   accountNumber,
   accountType,
@@ -26,29 +43,49 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
+  // 송금 화면으로 이동 (단순 라우팅 함수이므로 useCallback 불필요)
   const handleTransferPress = () => {
     router.push('/transfer');
   };
 
+  // 계좌번호 복사 (useCallback 유지: Clipboard 같은 비동기 함수이므로 의미있음)
   const copyToClipboard = async () => {
-    await Clipboard.setStringAsync(accountNumber);
-    setCopied(true);
+    try {
+      await Clipboard.setStringAsync(accountNumber);
+      setCopied(true);
 
-    // 복사 확인 메시지
-    if (Platform.OS === 'android') {
-      ToastAndroid.show('계좌번호가 복사되었습니다', ToastAndroid.SHORT);
+      // 복사 확인 메시지
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('계좌번호가 복사되었습니다', ToastAndroid.SHORT);
+      } else {
+        // iOS의 경우 Alert 사용
+        Alert.alert('알림', '계좌번호가 복사되었습니다', [
+          { text: '확인', style: 'default' },
+        ]);
+      }
+
+      // 2초 후 복사 상태 초기화
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error('계좌번호 복사 실패:', error);
+      Alert.alert('오류', '계좌번호 복사에 실패했습니다', [
+        { text: '확인', style: 'default' },
+      ]);
     }
-
-    // 2초 후 복사 상태 초기화
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
   };
 
   return (
     <View style={styles.container}>
       <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
-      <TouchableOpacity onPress={copyToClipboard} activeOpacity={0.6}>
+
+      <TouchableOpacity
+        onPress={copyToClipboard}
+        activeOpacity={0.6}
+        accessibilityLabel="계좌번호 복사"
+        accessibilityHint="터치하여 계좌번호를 클립보드에 복사합니다"
+      >
         <View style={styles.accountNumberContainer}>
           <Text style={[typography.caption, styles.accountNumber]}>
             {accountNumber}
@@ -67,6 +104,8 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
           style={styles.transferButton}
           onPress={handleTransferPress}
           activeOpacity={0.7}
+          accessibilityLabel="송금하기"
+          accessibilityHint="송금 화면으로 이동합니다"
         >
           <Text style={[typography.button, styles.transferButtonText]}>
             송금
@@ -123,4 +162,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AccountInfoSection;
+// props가 변경될 때만 리렌더링하도록 메모이제이션
+export default memo(AccountInfoSection);
