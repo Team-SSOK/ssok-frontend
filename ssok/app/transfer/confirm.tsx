@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -41,7 +41,7 @@ export default function ConfirmScreen() {
 
   const isBluetoothTransfer = isBluetooth === 'true';
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     try {
       // 로딩 상태 활성화
       setIsLoading(true);
@@ -131,7 +131,18 @@ export default function ConfirmScreen() {
         [{ text: '확인', style: 'default' }],
       );
     }
-  };
+  }, [
+    accounts,
+    amount,
+    accountNumber,
+    bankName,
+    isBluetoothTransfer,
+    userId,
+    userName,
+    username,
+    sendMoney,
+    sendMoneyBluetooth,
+  ]);
 
   return (
     <SafeAreaView style={styles.container}>

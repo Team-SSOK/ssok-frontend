@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
 import { shortenUUID } from '@/utils/ble';
 

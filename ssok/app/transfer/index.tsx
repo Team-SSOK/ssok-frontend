@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -34,7 +34,7 @@ export default function TransferScreen() {
   };
 
   // 다음 단계로 이동 (계좌 실명 조회 후)
-  const handleNextPress = async () => {
+  const handleNextPress = useCallback(async () => {
     if (accountNumber && selectedBank) {
       const bankCode = Number(selectedBank.code);
 
@@ -75,7 +75,7 @@ export default function TransferScreen() {
         }
       });
     }
-  };
+  }, [accountNumber, selectedBank, verifyAccountName, withLoading]);
 
   // 계좌번호 포맷팅 함수 (xxx-xx-xxxx-xxxxxx 형식으로 변환)
   const formatAccountNumber = (accountNumber: string): string => {

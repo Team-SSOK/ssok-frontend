@@ -7,7 +7,7 @@ import {
   Animated,
   Image,
 } from 'react-native';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
 

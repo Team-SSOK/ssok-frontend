@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import RadarDevice from './RadarDevice';
 import { colors } from '@/constants/colors';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';

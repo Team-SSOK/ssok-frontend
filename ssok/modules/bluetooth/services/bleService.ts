@@ -6,7 +6,7 @@ import {
   AppState,
 } from 'react-native';
 import { generateUUID, parseIBeaconData } from '@/utils/ble';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 // BLE 광고 모듈 가져오기 (타입 오류 무시)
 // @ts-ignore
 import BleAdvertise from 'react-native-ble-advertise';

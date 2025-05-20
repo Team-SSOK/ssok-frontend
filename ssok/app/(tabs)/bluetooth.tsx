@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import { colors } from '@/constants/colors';
 import bleService from '@/modules/bluetooth/services/bleService';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import { generateUUID } from '@/utils/ble';
 import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';

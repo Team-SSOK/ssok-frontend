@@ -6,7 +6,7 @@ import {
   User,
   PrimaryAccount,
 } from '../api/bluetoothApi';
-import { DiscoveredDevice } from '@/hooks/useBleScanner';
+import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 
 interface BluetoothState {
   // 상태
