@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { notificationApi } from '../api/notificationApi';
 import { useAuthStore } from '@/modules/auth/store/authStore';
-import Constants from 'expo-constants';
 
 // FCM 토큰 저장 키
 const FCM_TOKEN_KEY = 'fcm_token';
@@ -13,11 +12,6 @@ const FCM_TOKEN_KEY = 'fcm_token';
 const FCM_TOKEN_DATE_KEY = 'fcm_token_date';
 // FCM 토큰 유효기간 (30일)
 const FCM_TOKEN_TTL = 30 * 24 * 60 * 60 * 1000; // 30일
-
-// 프로젝트 ID (app.json에서 가져옴)
-const PROJECT_ID =
-  Constants.expoConfig?.extra?.eas?.projectId ||
-  '2a3b5cd9-08b6-4936-adb8-92dd3c4005cd';
 
 /**
  * 푸시 알림 설정 및 FCM 토큰 관리를 위한 커스텀 훅
@@ -28,6 +22,8 @@ export const usePushNotification = () => {
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { isLoggedIn, userId } = useAuthStore();
+  // 초기화 상태를 추적하는 ref
+  const isInitializedRef = useRef<boolean>(false);
 
   /**
    * 알림 권한 요청 함수
@@ -81,6 +77,11 @@ export const usePushNotification = () => {
         if (now - tokenDate < FCM_TOKEN_TTL) {
           console.log('기존 디바이스 푸시 토큰 사용:', savedToken);
           setDevicePushToken(savedToken);
+
+          // 토큰이 이미 등록된 것으로 간주
+          setIsRegistered(true);
+          isInitializedRef.current = true;
+
           return savedToken;
         }
       }
@@ -135,6 +136,12 @@ export const usePushNotification = () => {
    * @param token 디바이스 푸시 토큰
    */
   const registerPushTokenToServer = async (token: string): Promise<boolean> => {
+    // 이미 등록된 경우 중복 등록 방지
+    if (isRegistered) {
+      console.log('디바이스 푸시 토큰이 이미 서버에 등록되어 있습니다.');
+      return true;
+    }
+
     try {
       console.log('서버에 디바이스 푸시 토큰 등록 요청:', token);
       const response = await notificationApi.registerFcmToken(token);
@@ -148,8 +155,17 @@ export const usePushNotification = () => {
         setError(`디바이스 푸시 토큰 등록 실패: ${response.data.message}`);
         return false;
       }
-    } catch (err) {
+    } catch (err: any) {
+      // 오류 메시지 로그만 남기고 로그인 프로세스는 방해하지 않음
       console.error('디바이스 푸시 토큰 서버 등록 오류:', err);
+
+      // No refresh token 오류는 로그인 과정 중이므로 일시적으로 발생할 수 있는 예상된 오류
+      // 사용자 경험을 방해하지 않기 위해 오류를 표시하지 않음
+      if (err.message === 'No refresh token') {
+        console.log('로그인 중이므로 토큰 등록은 나중에 재시도합니다.');
+        return false;
+      }
+
       setError('디바이스 푸시 토큰 서버 등록 중 오류가 발생했습니다.');
       return false;
     }
@@ -159,6 +175,12 @@ export const usePushNotification = () => {
    * 푸시 알림 초기화 함수
    */
   const initPushNotifications = async (): Promise<void> => {
+    // 이미 초기화되었다면 중복 실행 방지
+    if (isInitializedRef.current) {
+      console.log('푸시 알림이 이미 초기화되었습니다. 건너뜁니다.');
+      return;
+    }
+
     try {
       console.log('푸시 알림 초기화 시작...');
 
@@ -187,6 +209,12 @@ export const usePushNotification = () => {
         return;
       }
 
+      // 이미 초기화 완료된 경우(기존 토큰 사용) 서버 등록 과정 생략
+      if (isInitializedRef.current) {
+        console.log('기존 토큰이 있으므로 서버 등록 과정을 생략합니다.');
+        return;
+      }
+
       // 서버에 토큰 등록 (로그인 상태인 경우)
       if (isLoggedIn && userId) {
         console.log('로그인 상태, 서버에 디바이스 푸시 토큰 등록 시도');
@@ -196,6 +224,7 @@ export const usePushNotification = () => {
       }
 
       console.log('푸시 알림 초기화 완료');
+      isInitializedRef.current = true;
     } catch (err) {
       console.error('푸시 알림 초기화 오류:', err);
       setError('푸시 알림 초기화 중 오류가 발생했습니다.');
@@ -218,14 +247,14 @@ export const usePushNotification = () => {
 
   // 로그인 상태 변경 시 푸시 토큰 등록 처리
   useEffect(() => {
-    if (isLoggedIn && userId && devicePushToken) {
+    if (isLoggedIn && userId && devicePushToken && !isRegistered) {
       console.log('로그인 상태 변경 감지, 디바이스 푸시 토큰 등록 시도', {
         userId,
         devicePushToken,
       });
       registerPushTokenToServer(devicePushToken);
     }
-  }, [isLoggedIn, userId, devicePushToken]);
+  }, [isLoggedIn, userId, devicePushToken, isRegistered]);
 
   return {
     devicePushToken,

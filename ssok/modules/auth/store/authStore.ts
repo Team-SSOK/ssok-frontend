@@ -200,7 +200,6 @@ export const useAuthStore = create<AuthState>()(
       isUserRegistered: () => {
         const { phoneNumber, pin } = get();
         const isRegistered = !!phoneNumber && !!pin;
-        console.log('[LOG] isRegistered: ', isRegistered);
         return isRegistered;
       },
 

@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { FontProvider } from '../components/TextProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -10,23 +10,34 @@ import { usePushNotification } from '@/modules/notification/hooks/usePushNotific
 
 export default function RootLayout() {
   const isLoading = useLoadingStore((state) => state.isLoading);
-  const { initPushNotifications, error, devicePushToken } =
+  const { initPushNotifications, error, devicePushToken, isRegistered } =
     usePushNotification();
+  // 초기화 플래그 추가
+  const hasInitializedRef = useRef(false);
 
-  // 앱 시작 시 푸시 알림 초기화
+  // 앱 시작 시 푸시 알림 초기화 (한 번만 실행)
   useEffect(() => {
+    // 이미 초기화된 경우 다시 실행하지 않음
+    if (hasInitializedRef.current || isRegistered) {
+      console.log('푸시 알림이 이미 초기화되어 있거나 등록되어 있습니다.');
+      hasInitializedRef.current = true;
+      return;
+    }
+
     const initNotifications = async () => {
       try {
         await initPushNotifications();
         console.log('푸시 알림이 초기화되었습니다.');
-        console.log('디바이스 푸시 토큰:', devicePushToken);
+
+        // 초기화 완료 표시
+        hasInitializedRef.current = true;
       } catch (err) {
         console.error('푸시 알림 초기화 오류:', err);
       }
     };
 
     initNotifications();
-  }, [initPushNotifications]);
+  }, []);
 
   // 푸시 알림 오류 로깅
   useEffect(() => {

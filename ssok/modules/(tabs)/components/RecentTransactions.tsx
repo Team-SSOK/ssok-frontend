@@ -32,6 +32,7 @@ const RecentTransactions = forwardRef<
   const fetchRecentTransactions = async () => {
     setIsLoading(true);
     try {
+      console.log('getRecentTransferHistory');
       const response = await transferApi.getRecentTransferHistory();
       if (response.data.isSuccess && response.data.result) {
         // API 응답 데이터를 Transaction 형식으로 변환
@@ -54,6 +55,8 @@ const RecentTransactions = forwardRef<
       }
     } catch (error) {
       console.error('최근 거래내역 조회 실패:', error);
+      // 오류 발생 시 빈 배열로 설정하여 UI에 빈 상태 표시
+      setTransactions([]);
     } finally {
       setIsLoading(false);
     }

@@ -29,12 +29,25 @@ class NotificationService {
    * 앱 시작 시 호출
    */
   public async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      console.log('[NotificationService] 이미 초기화되어 있습니다.');
+      return;
+    }
 
     try {
       // usePushNotification 훅의 기능을 활용하기 위한 임시 해결책
       // 실제로는 App.tsx 등에서 usePushNotification 훅을 사용하여 초기화
-      const { initPushNotifications } = usePushNotification();
+      const { initPushNotifications, isRegistered } = usePushNotification();
+
+      // 이미 등록된 경우 초기화 완료로 간주
+      if (isRegistered) {
+        console.log(
+          '[NotificationService] 이미 푸시 토큰이 등록되어 있습니다. 초기화 생략',
+        );
+        this.initialized = true;
+        return;
+      }
+
       await initPushNotifications();
 
       this.initialized = true;
