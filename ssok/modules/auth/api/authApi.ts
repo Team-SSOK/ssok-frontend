@@ -1,5 +1,7 @@
 import api from '@/api/ApiInstance';
 
+const LOG_TAG = '[LOG][authApi]';
+
 /**
  * API 응답 기본 인터페이스
  */
@@ -74,7 +76,7 @@ export const authApi = {
    * @returns API 응답
    */
   sendVerificationCode: (data: AuthRequestTypes['PhoneVerification']) => {
-    console.log('sendVerificationCode', data);
+    console.log(`${LOG_TAG} sendVerificationCode: `, data);
     return api.post<ApiResponse>('/api/users/phone', data);
   },
 
@@ -84,7 +86,7 @@ export const authApi = {
    * @returns API 응답
    */
   verifyCode: (data: AuthRequestTypes['CodeVerification']) => {
-    console.log('verifyCode', data);
+    console.log(`${LOG_TAG} verifyCode: `, data);
     return api.post<ApiResponse>('/api/users/phone/verify', data);
   },
 
@@ -94,7 +96,7 @@ export const authApi = {
    * @returns API 응답 (사용자 ID 포함)
    */
   signup: (data: AuthRequestTypes['Signup']) => {
-    console.log('signup', data);
+    console.log(`${LOG_TAG} signup: `, data);
     return api.post<ApiResponse<AuthResponseTypes['Signup']>>(
       '/api/users/signup',
       data,
@@ -107,7 +109,7 @@ export const authApi = {
    * @returns API 응답 (액세스 토큰, 리프레시 토큰 포함)
    */
   login: (data: AuthRequestTypes['Login']) => {
-    console.log('login', data);
+    console.log(`${LOG_TAG} login: `, data);
     return api.post<ApiResponse<AuthResponseTypes['TokenResponse']>>(
       '/api/auth/login',
       data,
@@ -120,6 +122,7 @@ export const authApi = {
    * @returns API 응답 (새 액세스 토큰, 리프레시 토큰 포함)
    */
   refreshToken: (data: AuthRequestTypes['RefreshToken']) => {
+    console.log(`${LOG_TAG} refreshToken: `, data);
     return api.post<ApiResponse<AuthResponseTypes['TokenResponse']>>(
       '/api/auth/refresh',
       data,
@@ -131,6 +134,7 @@ export const authApi = {
    * @returns API 응답
    */
   logout: () => {
+    console.log(`${LOG_TAG} logout: `);
     return api.post<ApiResponse>('/api/auth/logout');
   },
 };

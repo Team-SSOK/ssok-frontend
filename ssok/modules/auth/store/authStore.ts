@@ -91,9 +91,9 @@ const tokenStorage = {
     try {
       await SecureStore.setItemAsync(TOKEN_KEYS.ACCESS_TOKEN, accessToken);
       await SecureStore.setItemAsync(TOKEN_KEYS.REFRESH_TOKEN, refreshToken);
-      console.log('[LOG] 토큰 SecureStore 저장 완료');
+      console.log('[LOG][authStore] 토큰 SecureStore 저장 완료');
     } catch (error) {
-      console.error('[ERROR] SecureStore 토큰 저장 실패:', error);
+      console.error('[ERROR][authStore] SecureStore 토큰 저장 실패:', error);
       throw new Error('토큰 저장 실패');
     }
   },
@@ -105,9 +105,9 @@ const tokenStorage = {
     try {
       await SecureStore.deleteItemAsync(TOKEN_KEYS.ACCESS_TOKEN);
       await SecureStore.deleteItemAsync(TOKEN_KEYS.REFRESH_TOKEN);
-      console.log('[LOG] SecureStore 토큰 제거 완료');
+      console.log('[LOG][authStore] SecureStore 토큰 제거 완료');
     } catch (error) {
-      console.error('[ERROR] SecureStore 토큰 제거 실패:', error);
+      console.error('[ERROR][authStore] SecureStore 토큰 제거 실패:', error);
       throw new Error('토큰 제거 실패');
     }
   },
@@ -126,9 +126,10 @@ const tokenStorage = {
       const refreshToken = await SecureStore.getItemAsync(
         TOKEN_KEYS.REFRESH_TOKEN,
       );
+      console.log('[LOG][authStore] SecureStore 토큰 조회 완료');
       return { accessToken, refreshToken };
     } catch (error) {
-      console.error('[ERROR] SecureStore 토큰 조회 실패:', error);
+      console.error('[ERROR][authStore] SecureStore 토큰 조회 실패:', error);
       return { accessToken: null, refreshToken: null };
     }
   },

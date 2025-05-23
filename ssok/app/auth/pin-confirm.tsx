@@ -2,7 +2,7 @@ import React from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/modules/auth/store/authStore';
-import { authApi } from '@/modules/auth/api/auth';
+import { authApi } from '@/modules/auth/api/authApi';
 import { STORAGE_KEYS } from '@/modules/auth/utils/constants';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';

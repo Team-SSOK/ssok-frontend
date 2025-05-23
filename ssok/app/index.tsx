@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,7 +15,7 @@ import { onboardingSlides } from '@/modules/onboarding/utils/slides';
 import { useAuthFlow } from '@/hooks/useAuthFlow';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
-import { useLoadingStore } from '@/stores/loadingStore';
+import LoadingIndicator from '@/components/LoadingIndicator';
 
 const StartButton = ({ onPress }: { onPress: () => void }) => (
   <View style={styles.buttonContainer}>
@@ -35,18 +35,8 @@ const StartButton = ({ onPress }: { onPress: () => void }) => (
 );
 
 export default function Index() {
-  const { checkingStatus } = useAuthFlow();
+  const { isAuthChecking } = useAuthFlow();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
-  const { startLoading, stopLoading } = useLoadingStore();
-
-  // 인증 상태 확인 중일 때 전역 로딩 상태 사용
-  useEffect(() => {
-    if (checkingStatus) {
-      startLoading();
-    } else {
-      stopLoading();
-    }
-  }, [checkingStatus, startLoading, stopLoading]);
 
   const handleStart = () => {
     return <Link href="/auth/register" />;
@@ -60,9 +50,8 @@ export default function Index() {
     }
   }, []);
 
-  // 로딩 중일 때는 빈 화면 표시
-  if (checkingStatus) {
-    return null;
+  if (isAuthChecking) {
+    return <LoadingIndicator visible={true} />;
   }
 
   // 마지막 슬라이드에서만 시작하기 버튼 표시

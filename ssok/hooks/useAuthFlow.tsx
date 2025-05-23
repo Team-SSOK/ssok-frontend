@@ -7,19 +7,19 @@ export function useAuthFlow() {
   const navigateAfterAuthCheck = useAuthStore(
     (state) => state.navigateAfterAuthCheck,
   );
-  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         await navigateAfterAuthCheck();
       } finally {
-        setCheckingStatus(false);
+        setIsAuthChecking(false);
       }
     };
 
     checkAuth();
   }, [isLoggedIn, navigateAfterAuthCheck]);
 
-  return { checkingStatus };
+  return { isAuthChecking };
 }

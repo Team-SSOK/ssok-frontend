@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthStore } from '@/modules/auth/store/authStore';
-import { authApi } from '@/modules/auth/api/auth';
+import { authApi } from '@/modules/auth/api/authApi';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
 import { Alert, BackHandler } from 'react-native';

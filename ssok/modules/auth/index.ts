@@ -1,5 +1,5 @@
 // API exports
-export { authApi } from './api/auth';
+export { authApi } from './api/authApi';
 
 // Components
 export * from './components';
