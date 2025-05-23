@@ -4,13 +4,12 @@ globs:
 alwaysApply: true
 ---
 
-# React + TypeScript 코드 품질 규칙 (.mdc)
+# React + TypeScript 코드 품질 규칙
 
 이 문서는 React + TypeScript 기반 프로젝트에서 Cursor 룰 정의 및 팀 협업을 위한 실전 코드 품질 규칙입니다. 
 다음 기준을 바탕으로 작성되었습니다:
 
 - [Frontend Fundamentals](mdc:https:/frontend-fundamentals.com/code-quality/code)
-- Cursor 및 Windsurf 기반 코드 컨벤션
 - 실무 적용 예시 기반 가이드
 - React, TypeScript, Zustand, ESLint, Prettier 등 통합
 
@@ -31,12 +30,18 @@ alwaysApply: true
 
 ---
 
+## 프롬프트
+```bash
+"지향하다"라고 적혀져 있는 부분들은 적극적으로 적용
+"지양하다"라고 적혀져 있는 부분들은 "지향하다"방식으로 개선
+```
+
 ## 1. 명명 규칙
 
-- **폴더:** 소문자 + 복수형 (`components`, `hooks`, `utils`)
-- **파일:** `kebab-case.ts(x)`
-- **React 컴포넌트:** 파일은 kebab-case, 컴포넌트 이름은 PascalCase
-- **변수/함수:** camelCase
+- **폴더:** 소문자 + 복수형 (`api`,`components`, `hooks`, `utils`)
+- **파일:** 파일 이름 `camelCase.ts`
+- **컴포넌트:** 파일, 컴포넌트 이름은 각각 `PascalCase.tsx` , `const PascalCase = () => {}`
+- **변수/함수:** 파일 이름 `camelCase`
 - **상수:** 대문자 스네이크_CASE
 - **일관된 용어 사용:** `fetchUser`, `loadUser` 등 혼용 금지
 - **외부 함수와 충돌 피하기:** 라이브러리 함수명과 중복 피함
@@ -65,10 +70,12 @@ export const httpService = {
 - **논리 연산자는 의도 명확히**
 
 ```ts
-// ❌ 복잡한 조건
+// ❌ 복잡한 조건 (지양하다)
 const result = a && b ? "AB" : a ? "A" : b ? "B" : "None";
+```
 
-// ✅ 가독성 개선
+```ts
+// ✅ 가독성 개선 (지향하다)
 function getResult() {
   if (a && b) return "AB";
   if (a) return "A";
@@ -87,7 +94,7 @@ function getResult() {
 - **Immer는 상황에 따라 선택**
 
 ```ts
-// ✅ 상태 불변성 유지 예시
+// ✅ 상태 불변성 유지 예시 (지향하다)
 setUser(prev => ({ ...prev, age: prev.age + 1 }));
 ```
 
@@ -109,7 +116,7 @@ setUser(prev => ({ ...prev, age: prev.age + 1 }));
 - **역할별 컴포넌트 분리**
 
 ```tsx
-// ✅ 권한별 분리 예시
+// ✅ 권한별 분리 예시 (지향하다)
 return isViewer ? <ViewerButton /> : <AdminButton />;
 ```
 
@@ -137,7 +144,7 @@ return isViewer ? <ViewerButton /> : <AdminButton />;
 - **Context API 또는 Composition 활용**
 
 ```tsx
-// ✅ Context API 사용
+// ✅ Context API 사용 (지향하다)
 const ctx = useContext(UserContext);
 ```
 
@@ -186,7 +193,7 @@ export const formatPrice = (price: number) =>
 
 ---
 
-## 12. 디렉토리 구조 및 모듈화
+## 12. 디렉토리 구조 및 모듈화 (지향하다)
 
 ```bash
 src/
@@ -212,7 +219,7 @@ src/
 
 ---
 
-## Import 정렬 순서 (권장)
+## Import 정렬 순서 (지향하다)
 
 1. 외부 라이브러리
 2. `@/` alias
