@@ -6,7 +6,7 @@ import {
   StatusBar,
   TouchableOpacity,
 } from 'react-native';
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import { colors } from '@/constants/colors';
 import SlideShow, {
   ViewableItemsChangedInfo,
@@ -17,7 +17,7 @@ import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import { useLoadingStore } from '@/stores/loadingStore';
 
-const StartButton = React.memo(({ onPress }: { onPress: () => void }) => (
+const StartButton = ({ onPress }: { onPress: () => void }) => (
   <View style={styles.buttonContainer}>
     <TouchableOpacity
       style={styles.startButton}
@@ -32,7 +32,7 @@ const StartButton = React.memo(({ onPress }: { onPress: () => void }) => (
       </Text>
     </TouchableOpacity>
   </View>
-));
+);
 
 export default function Index() {
   const { checkingStatus } = useAuthFlow();
@@ -49,7 +49,7 @@ export default function Index() {
   }, [checkingStatus, startLoading, stopLoading]);
 
   const handleStart = () => {
-    router.push('/auth/register');
+    return <Link href="/auth/register" />;
   };
 
   // 슬라이드 변경 이벤트 핸들러
