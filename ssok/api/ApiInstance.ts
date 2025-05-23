@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { authStoreActions } from '@/modules/auth/store/authStore';
 
-const BASE_URL = 'http://kudong.kr:55030/';
+const BASE_URL = 'http://api.ssok.kr/';
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
