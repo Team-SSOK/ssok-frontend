@@ -4,7 +4,7 @@ import {
   View,
   SafeAreaView,
   StatusBar,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -17,30 +17,26 @@ import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import LoadingIndicator from '@/components/LoadingIndicator';
 
-const StartButton = ({ onPress }: { onPress: () => void }) => (
-  <View style={styles.buttonContainer}>
-    <TouchableOpacity
+const StartButton = () => (
+  <Link href="/auth/register" asChild>
+    <Pressable
       style={styles.startButton}
-      onPress={onPress}
-      activeOpacity={0.8}
-      accessibilityRole="button"
-      accessibilityLabel="SSOK 시작하기"
-      accessibilityHint="앱 온보딩을 완료하고 회원가입 화면으로 이동합니다"
+      android_ripple={{
+        color: 'rgba(0,0,0,0.2)',
+        borderless: false,
+        radius: 300,
+      }}
     >
       <Text style={[typography.button, styles.startButtonText]}>
         SSOK 시작하기
       </Text>
-    </TouchableOpacity>
-  </View>
+    </Pressable>
+  </Link>
 );
 
 export default function Index() {
   const { isAuthChecking } = useAuthFlow();
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
-
-  const handleStart = () => {
-    return <Link href="/auth/register" />;
-  };
 
   // 슬라이드 변경 이벤트 핸들러
   const handleSlideChange = useCallback((info: ViewableItemsChangedInfo) => {
@@ -64,9 +60,7 @@ export default function Index() {
         <SlideShow
           data={onboardingSlides}
           showPagination={!isLastSlide}
-          EndComponent={
-            isLastSlide ? <StartButton onPress={handleStart} /> : undefined
-          }
+          EndComponent={isLastSlide ? <StartButton /> : undefined}
           onViewableItemsChanged={handleSlideChange}
           autoPlay={false}
         />
@@ -89,16 +83,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   startButton: {
+    margin: 20,
     backgroundColor: colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
   },
   startButtonText: {
     color: colors.white,
