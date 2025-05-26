@@ -19,17 +19,18 @@ import RecentTransactions, {
 } from '@/modules/(tabs)/components/RecentTransactions';
 import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
 import { useLoadingStore } from '@/stores/loadingStore';
-import { transferApi } from '@/modules/transfer/api/transferApi';
 
 export default function HomeScreen() {
-  const router = useRouter();
   const { accounts, fetchAccounts, getAccountDetail } = useAccountStore();
-  const { withLoading } = useLoadingStore();
   const [refreshing, setRefreshing] = useState(false);
+  const { withLoading } = useLoadingStore();
   const recentTransactionsRef = useRef<RecentTransactionsRefType>(null);
 
+  const router = useRouter();
+
+  const hasAccounts = accounts && accounts.length > 0;
+
   useEffect(() => {
-    console.log('계좌 여부 확인');
     fetchAccounts();
   }, [fetchAccounts]);
 
@@ -66,10 +67,6 @@ export default function HomeScreen() {
     });
   };
 
-  console.log('[LOG][HomeScreen] accounts:', accounts);
-
-  const hasAccounts = accounts && accounts.length > 0;
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -93,8 +90,8 @@ export default function HomeScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[colors.primary]} // 앱의 프라이머리 컬러 사용
-              tintColor={colors.primary} // iOS에서 인디케이터 컬러
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
         >
@@ -128,7 +125,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20, // Extra padding for iOS
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   centerContainer: {
     flex: 1,
