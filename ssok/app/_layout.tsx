@@ -20,7 +20,7 @@ export default function RootLayout() {
   const globalLoading = useLoadingStore((state) => state.isLoading);
 
   useEffect(() => {
-    async function prepare() {
+    async function appInit() {
       try {
         await initializeAuth();
       } catch (e) {
@@ -30,7 +30,7 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       }
     }
-    prepare();
+    appInit();
   }, [initializeAuth]);
 
   if (!appIsReady || sessionIsLoading) {

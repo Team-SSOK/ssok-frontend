@@ -18,16 +18,11 @@ import {
 import Button from '@/components/Button';
 
 export default function SignInScreen() {
-  const { isAuthenticated, isLoading: isSessionLoading } = useSession();
+  const { isAuthenticated, isLoading } = useSession();
 
-  // Zustand selector 최적화: 각 상태를 개별적으로 가져옵니다.
   const isUserRegistered = useAuthStore((state: AuthStoreState) =>
     state.isUserRegistered(),
   );
-  const isAuthStoreLoading = useAuthStore(
-    (state: AuthStoreState) => state.isLoading,
-  );
-  const isLoading = isSessionLoading || isAuthStoreLoading;
 
   const handleSignInPress = () => {
     router.push('/(auth)/pin-login');

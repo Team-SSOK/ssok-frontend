@@ -108,7 +108,7 @@ export const useAuthStore = create<AuthStoreState>()(
       },
 
       isUserRegistered: () => {
-        const { pin, user } = get();
+        const { pin } = get();
         return !!pin;
       },
 
