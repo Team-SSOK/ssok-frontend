@@ -95,8 +95,6 @@ export default function ConfirmScreen() {
           amount: Number(amount),
         };
 
-        console.log('Sending transfer with username:', senderName);
-
         // API 호출
         const response = await sendMoney(transferData);
 

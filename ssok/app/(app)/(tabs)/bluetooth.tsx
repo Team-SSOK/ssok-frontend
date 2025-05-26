@@ -24,15 +24,8 @@ const BluetoothScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // 스토어
-  const {
-    registerUuid,
-    updateDiscoveredDevices,
-    discoveredUsers,
-    primaryAccount,
-    isLoading: isApiLoading,
-    error,
-  } = useBluetoothStore();
-  const { userId } = useAuthStore();
+  const { registerUuid, updateDiscoveredDevices, primaryAccount, error } =
+    useBluetoothStore();
 
   // 기기 활성 상태 정리 함수
   const cleanupInactiveDevices = useCallback(() => {

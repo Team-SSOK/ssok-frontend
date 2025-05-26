@@ -92,7 +92,6 @@ export const transferApi = {
    * 최근 송금 내역 조회
    */
   getRecentTransferHistory: async () => {
-    console.log('getRecentTransferHistory');
     return api.get<ApiResponse<RecentTransferHistory[]>>(
       '/api/transfers/history',
     );
