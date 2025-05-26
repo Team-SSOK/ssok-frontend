@@ -1,10 +1,15 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+// import * as SecureStore from 'expo-secure-store'; // tokenService를 사용하므로 직접 호출 제거
 import { authStoreActions } from '@/modules/auth/store/authStore';
+import {
+  getTokens as getTokensFromSecureStore,
+  saveTokens as saveTokensToSecureStore,
+} from '@/services/tokenService'; // tokenService import
 
 const BASE_URL = 'http://api.ssok.kr/';
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+// ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY 상수 제거 - tokenService에서 관리
+// const ACCESS_TOKEN_KEY = 'accessToken';
+// const REFRESH_TOKEN_KEY = 'refreshToken';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -12,24 +17,26 @@ const api = axios.create({
   timeout: 10000,
 });
 
-async function getTokens() {
-  const [accessToken, refreshToken] = await Promise.all([
-    SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
-    SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
-  ]);
-  return { accessToken, refreshToken };
-}
+// getTokens 함수 제거 - tokenService로 대체
+// async function getTokens() {
+//   const [accessToken, refreshToken] = await Promise.all([
+//     SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
+//     SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
+//   ]);
+//   return { accessToken, refreshToken };
+// }
 
-async function saveTokens(accessToken: string, refreshToken: string) {
-  await Promise.all([
-    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
-    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
-  ]);
-}
+// saveTokens 함수 제거 - tokenService로 대체
+// async function saveTokens(accessToken: string, refreshToken: string) {
+//   await Promise.all([
+//     SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
+//     SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
+//   ]);
+// }
 
 // 요청 인터셉터: accessToken이 있으면 헤더에 붙임
 api.interceptors.request.use(async (config) => {
-  const { accessToken } = await getTokens();
+  const { accessToken } = await getTokensFromSecureStore(); // tokenService 사용
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -48,7 +55,7 @@ api.interceptors.response.use(
     (config as any)._retry = true;
 
     try {
-      const { refreshToken } = await getTokens();
+      const { refreshToken } = await getTokensFromSecureStore(); // tokenService 사용
       if (!refreshToken) throw new Error('No refresh token');
 
       const { data } = await axios.post(`${BASE_URL}api/auth/refresh`, {
@@ -56,7 +63,7 @@ api.interceptors.response.use(
       });
 
       const { accessToken: newAccess, refreshToken: newRefresh } = data.result;
-      await saveTokens(newAccess, newRefresh);
+      await saveTokensToSecureStore(newAccess, newRefresh); // tokenService 사용
 
       config.headers.Authorization = `Bearer ${newAccess}`;
       return api(config);

@@ -2,13 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-
-// 토큰 상수
-const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'accessToken',
-  REFRESH_TOKEN: 'refreshToken',
-};
+import {
+  saveTokens as saveTokensToSecureStore,
+  clearTokens as clearTokensFromSecureStore,
+  getTokens as getTokensFromSecureStore,
+} from '@/services/tokenService';
 
 // 상태 타입 정의
 interface TokenState {
@@ -76,64 +74,6 @@ interface AuthState
     UserActions,
     AuthActions,
     NavigationActions {}
-
-/**
- * 토큰 관리를 위한 SecureStore 유틸리티 함수
- */
-const tokenStorage = {
-  /**
-   * SecureStore에 토큰 저장
-   */
-  storeTokens: async (
-    accessToken: string,
-    refreshToken: string,
-  ): Promise<void> => {
-    try {
-      await SecureStore.setItemAsync(TOKEN_KEYS.ACCESS_TOKEN, accessToken);
-      await SecureStore.setItemAsync(TOKEN_KEYS.REFRESH_TOKEN, refreshToken);
-      console.log('[LOG][authStore] 토큰 SecureStore 저장 완료');
-    } catch (error) {
-      console.error('[ERROR][authStore] SecureStore 토큰 저장 실패:', error);
-      throw new Error('토큰 저장 실패');
-    }
-  },
-
-  /**
-   * SecureStore에서 토큰 제거
-   */
-  clearTokens: async (): Promise<void> => {
-    try {
-      await SecureStore.deleteItemAsync(TOKEN_KEYS.ACCESS_TOKEN);
-      await SecureStore.deleteItemAsync(TOKEN_KEYS.REFRESH_TOKEN);
-      console.log('[LOG][authStore] SecureStore 토큰 제거 완료');
-    } catch (error) {
-      console.error('[ERROR][authStore] SecureStore 토큰 제거 실패:', error);
-      throw new Error('토큰 제거 실패');
-    }
-  },
-
-  /**
-   * SecureStore에서 토큰 조회
-   */
-  getTokens: async (): Promise<{
-    accessToken: string | null;
-    refreshToken: string | null;
-  }> => {
-    try {
-      const accessToken = await SecureStore.getItemAsync(
-        TOKEN_KEYS.ACCESS_TOKEN,
-      );
-      const refreshToken = await SecureStore.getItemAsync(
-        TOKEN_KEYS.REFRESH_TOKEN,
-      );
-      console.log('[LOG][authStore] SecureStore 토큰 조회 완료');
-      return { accessToken, refreshToken };
-    } catch (error) {
-      console.error('[ERROR][authStore] SecureStore 토큰 조회 실패:', error);
-      return { accessToken: null, refreshToken: null };
-    }
-  },
-};
 
 /**
  * 인증 상태 관리 스토어
@@ -232,8 +172,8 @@ export const useAuthStore = create<AuthState>()(
         console.log('[LOG] 로그인 성공, 토큰 저장 시작');
 
         try {
-          // SecureStore에 토큰 저장
-          await tokenStorage.storeTokens(accessToken, refreshToken);
+          // SecureStore에 토큰 저장 (tokenService 사용)
+          await saveTokensToSecureStore(accessToken, refreshToken);
 
           // Zustand 상태 업데이트
           set({
@@ -256,8 +196,8 @@ export const useAuthStore = create<AuthState>()(
         console.log('[LOG] 로그아웃');
 
         try {
-          // SecureStore에서 토큰 제거
-          await tokenStorage.clearTokens();
+          // SecureStore에서 토큰 제거 (tokenService 사용)
+          await clearTokensFromSecureStore();
 
           // Zustand 상태 업데이트
           set({
@@ -325,8 +265,8 @@ export const authStoreActions = {
    */
   resetAuth: async () => {
     try {
-      // SecureStore에서 토큰 제거
-      await tokenStorage.clearTokens();
+      // SecureStore에서 토큰 제거 (tokenService 사용)
+      await clearTokensFromSecureStore();
 
       // 스토어 상태 초기화
       useAuthStore.setState({
@@ -347,8 +287,8 @@ export const authStoreActions = {
    */
   updateTokens: async (accessToken: string, refreshToken: string) => {
     try {
-      // SecureStore에 토큰 저장
-      await tokenStorage.storeTokens(accessToken, refreshToken);
+      // SecureStore에 토큰 저장 (tokenService 사용)
+      await saveTokensToSecureStore(accessToken, refreshToken);
 
       // Zustand 상태 업데이트
       useAuthStore.setState({
@@ -366,6 +306,7 @@ export const authStoreActions = {
    */
   isAuthenticated: () => {
     const state = useAuthStore.getState();
+    // isLoggedIn 상태와 함께 accessToken 유무도 확인 (SecureStore 직접 접근 대신 상태 사용)
     return !!state.accessToken && state.isLoggedIn;
   },
 };
