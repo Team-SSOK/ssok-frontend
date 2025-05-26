@@ -5,7 +5,6 @@ import { FontProvider } from '../components/TextProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useLoadingStore } from '@/stores/loadingStore';
-import notificationService from '@/modules/notification/services/notificationService';
 import { usePushNotification } from '@/modules/notification/hooks/usePushNotification';
 
 export default function RootLayout() {
