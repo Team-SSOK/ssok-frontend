@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { authApi } from '@/modules/auth/api/authApi';
 import {
   saveTokens as saveTokensToSecureStore,
   clearTokens as clearTokensFromSecureStore,
@@ -44,7 +45,13 @@ interface UserActions {
 }
 
 interface AuthActions {
-  loginWithPin: (inputPin: string) => Promise<boolean>;
+  signupAndLoginViaApi: (
+    inputPin: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  loginWithPinViaApi: (
+    inputPin: string,
+    userId: number,
+  ) => Promise<{ success: boolean; message?: string }>;
   login: (
     user: User,
     accessToken: string,
@@ -88,53 +95,219 @@ export const useAuthStore = create<AuthStoreState>()(
       clearPin: () => set({ pin: '' }),
 
       saveRegistrationInfo: (username, phoneNumber, birthDate, pin) => {
-        console.log('[LOG][authStore] 사용자 회원 가입 정보 임시 저장');
+        console.log('[LOG][authStore] 사용자 회원 가입 정보 및 PIN 임시 저장');
         set({
           pin,
           user: {
-            ...(get().user || {}),
             username,
             phoneNumber,
             birthDate,
             id: null,
-          } as User,
+          },
         });
       },
 
       isUserRegistered: () => {
-        const { pin } = get();
+        const { pin, user } = get();
         return !!pin;
       },
 
       // 인증 관련 액션
-      loginWithPin: async (inputPin) => {
+      signupAndLoginViaApi: async (inputPin) => {
         set({ isLoading: true, error: null });
-        const storedPin = get().pin;
-        if (storedPin === inputPin) {
-          const { accessToken, refreshToken } =
-            await getTokensFromSecureStore();
-          if (accessToken && refreshToken) {
-            set({ isAuthenticated: true, isLoading: false });
-            console.log('[LOG][authStore] PIN 로그인 성공 (토큰 존재 가정)');
-            return true;
-          } else {
-            set({
-              isAuthenticated: false,
-              error: '토큰이 없어 PIN으로 로그인할 수 없습니다.',
-              isLoading: false,
-            });
-            console.warn(
-              '[WARN][authStore] PIN은 일치하지만 SecureStore에 토큰 없음',
+        const tempUser = get().user;
+
+        if (
+          !tempUser ||
+          !tempUser.username ||
+          !tempUser.phoneNumber ||
+          !tempUser.birthDate
+        ) {
+          const msg = '회원가입에 필요한 사용자 정보가 스토어에 없습니다.';
+          console.error('[ERROR][authStore] signupAndLoginViaApi:', msg);
+          set({ error: msg, isLoading: false });
+          return { success: false, message: msg };
+        }
+
+        try {
+          const signupData = {
+            username: tempUser.username,
+            phoneNumber: tempUser.phoneNumber,
+            birthDate: tempUser.birthDate,
+            pinCode: Number(inputPin),
+          };
+
+          console.log('[LOG][authStore] 회원가입 API 요청:', signupData);
+          const signupResponse = await authApi.signup(signupData);
+          console.log(
+            '[LOG][authStore] 회원가입 API 응답:',
+            signupResponse.data,
+          );
+
+          if (
+            signupResponse.data.isSuccess &&
+            signupResponse.data.result?.userId
+          ) {
+            const userId = signupResponse.data.result.userId;
+            console.log(
+              '[LOG][authStore] 회원가입 성공. userId:',
+              userId,
+              '로그인 API 시도.',
             );
-            return false;
+
+            const loginResponse = await authApi.login({
+              userId,
+              pinCode: Number(inputPin),
+            });
+            console.log(
+              '[LOG][authStore] 로그인 API 응답:',
+              loginResponse.data,
+            );
+
+            if (loginResponse.data.isSuccess && loginResponse.data.result) {
+              const { accessToken, refreshToken } = loginResponse.data.result;
+
+              if (
+                typeof accessToken === 'string' &&
+                typeof refreshToken === 'string' &&
+                accessToken.trim() !== '' &&
+                refreshToken.trim() !== ''
+              ) {
+                const finalUser: User = {
+                  id: userId,
+                  username: tempUser.username,
+                  phoneNumber: tempUser.phoneNumber,
+                  birthDate: tempUser.birthDate,
+                };
+                await get().login(finalUser, accessToken, refreshToken);
+                console.log(
+                  '[LOG][authStore] signupAndLoginViaApi: 회원가입 및 로그인 성공',
+                );
+                return { success: true };
+              } else {
+                const msg =
+                  '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
+                console.error('[ERROR][authStore] signupAndLoginViaApi:', msg, {
+                  accessToken,
+                  refreshToken,
+                });
+                set({ error: msg, isLoading: false });
+                return { success: false, message: msg };
+              }
+            } else {
+              const msg =
+                loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
+              console.error(
+                '[ERROR][authStore] signupAndLoginViaApi: 로그인 API 실패:',
+                loginResponse.data,
+              );
+              set({ error: msg, isLoading: false });
+              return { success: false, message: msg };
+            }
+          } else {
+            const msg =
+              signupResponse.data.message ||
+              '회원가입 API 호출에 실패했거나 userId가 없습니다.';
+            console.error(
+              '[ERROR][authStore] signupAndLoginViaApi: 회원가입 API 실패:',
+              signupResponse.data,
+            );
+            set({ error: msg, isLoading: false });
+            return { success: false, message: msg };
           }
-        } else {
-          set({
-            isAuthenticated: false,
-            error: 'PIN이 일치하지 않습니다.',
-            isLoading: false,
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '회원가입 또는 로그인 처리 중 예외 발생';
+          console.error('[ERROR][authStore] signupAndLoginViaApi 예외:', error);
+          set({ error: errorMessage, isLoading: false });
+          return { success: false, message: errorMessage };
+        }
+      },
+
+      loginWithPinViaApi: async (inputPin, userId) => {
+        set({ isLoading: true, error: null });
+        const storedUser = get().user;
+
+        if (!userId) {
+          const msg = '로그인에 필요한 userId가 없습니다.';
+          console.error('[ERROR][authStore] loginWithPinViaApi:', msg);
+          set({ error: msg, isLoading: false });
+          return { success: false, message: msg };
+        }
+
+        try {
+          console.log(
+            `[LOG][authStore] loginWithPinViaApi: userId: ${userId}로 로그인 API 요청`,
+          );
+          const loginResponse = await authApi.login({
+            userId,
+            pinCode: Number(inputPin),
           });
-          return false;
+          console.log(
+            '[LOG][authStore] loginWithPinViaApi: 로그인 API 응답:',
+            loginResponse.data,
+          );
+
+          if (loginResponse.data.isSuccess && loginResponse.data.result) {
+            const {
+              accessToken,
+              refreshToken,
+              username: apiUsername,
+              phoneNumber: apiPhoneNumber,
+              birthDate: apiBirthDate,
+            } = loginResponse.data.result as {
+              accessToken: string;
+              refreshToken: string;
+              username?: string;
+              phoneNumber?: string;
+              birthDate?: string;
+            };
+
+            if (
+              typeof accessToken === 'string' &&
+              typeof refreshToken === 'string' &&
+              accessToken.trim() !== '' &&
+              refreshToken.trim() !== ''
+            ) {
+              const finalUser: User = {
+                id: userId,
+                username: apiUsername || storedUser?.username || '',
+                phoneNumber: apiPhoneNumber || storedUser?.phoneNumber || '',
+                birthDate: apiBirthDate || storedUser?.birthDate || '',
+              };
+
+              await get().login(finalUser, accessToken, refreshToken);
+              console.log('[LOG][authStore] loginWithPinViaApi: 로그인 성공');
+              return { success: true };
+            } else {
+              const msg = '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
+              console.error('[ERROR][authStore] loginWithPinViaApi:', msg, {
+                accessToken,
+                refreshToken,
+              });
+              set({ error: msg, isLoading: false });
+              return { success: false, message: msg };
+            }
+          } else {
+            const msg =
+              loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
+            console.error(
+              '[ERROR][authStore] loginWithPinViaApi: 로그인 API 실패:',
+              loginResponse.data,
+            );
+            set({ error: msg, isLoading: false });
+            return { success: false, message: msg };
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'PIN 로그인 처리 중 예외 발생';
+          console.error('[ERROR][authStore] loginWithPinViaApi 예외:', error);
+          set({ error: errorMessage, isLoading: false });
+          return { success: false, message: errorMessage };
         }
       },
 
@@ -149,8 +322,12 @@ export const useAuthStore = create<AuthStoreState>()(
             refreshToken,
             isAuthenticated: true,
             isLoading: false,
+            pin: get().pin,
           });
-          console.log('[LOG][authStore] 로그인 완료');
+          console.log(
+            '[LOG][authStore] 로그인 완료, isAuthenticated:',
+            get().isAuthenticated,
+          );
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : '로그인 처리 중 오류 발생';
@@ -163,11 +340,13 @@ export const useAuthStore = create<AuthStoreState>()(
             error: errorMessage,
             isLoading: false,
           });
-          throw error;
         }
       },
 
       logout: async () => {
+        const currentPin = get().pin;
+        const isUserPreviouslyRegistered = !!currentPin;
+
         set({ isLoading: true, error: null });
         console.log('[LOG][authStore] 로그아웃 처리 시작');
         try {
@@ -177,7 +356,7 @@ export const useAuthStore = create<AuthStoreState>()(
             accessToken: null,
             refreshToken: null,
             isAuthenticated: false,
-            pin: get().isUserRegistered() ? get().pin : '',
+            pin: isUserPreviouslyRegistered ? currentPin : '',
             isLoading: false,
           });
           console.log('[LOG][authStore] 로그아웃 완료');
@@ -189,7 +368,6 @@ export const useAuthStore = create<AuthStoreState>()(
               : '로그아웃 처리 중 오류 발생';
           console.error('[ERROR][authStore] 로그아웃 실패:', errorMessage);
           set({ error: errorMessage, isLoading: false });
-          throw error;
         }
       },
 
@@ -198,8 +376,9 @@ export const useAuthStore = create<AuthStoreState>()(
         console.log('[LOG][authStore] Initialize 시작');
         try {
           const tokens = await getTokensFromSecureStore();
-          const persistedUser = get().user;
-          const persistedPin = get().pin;
+          const persistedState = get();
+          const persistedUser = persistedState.user;
+          const persistedPin = persistedState.pin;
 
           console.log(
             '[LOG][authStore] Initialize - SecureStore tokens:',
@@ -214,13 +393,17 @@ export const useAuthStore = create<AuthStoreState>()(
             persistedPin,
           );
 
-          const isValid = await hasValidTokens();
+          const isValidTokenPresent = await hasValidTokens();
           console.log(
             '[LOG][authStore] Initialize - hasValidTokens 결과:',
-            isValid,
+            isValidTokenPresent,
           );
 
-          if (isValid) {
+          if (
+            isValidTokenPresent &&
+            tokens.accessToken &&
+            tokens.refreshToken
+          ) {
             if (persistedUser && persistedUser.id && persistedPin) {
               set({
                 user: persistedUser,
@@ -232,8 +415,7 @@ export const useAuthStore = create<AuthStoreState>()(
                 error: null,
               });
               console.log(
-                '[LOG][authStore] 초기화: 유효한 토큰과 AsyncStorage 사용자 정보/PIN으로 인증됨. isAuthenticated:',
-                get().isAuthenticated,
+                '[LOG][authStore] 초기화: 유효한 토큰, AsyncStorage 사용자 정보 및 PIN으로 인증됨.',
               );
             } else {
               console.warn(
@@ -243,7 +425,7 @@ export const useAuthStore = create<AuthStoreState>()(
             }
           } else {
             console.log(
-              '[LOG][authStore] 초기화: 유효한 토큰 없음 (hasValidTokens false). resetAuth 호출.',
+              '[LOG][authStore] 초기화: 유효한 토큰 없음. resetAuth 호출.',
             );
             await get().resetAuth();
           }
@@ -267,6 +449,7 @@ export const useAuthStore = create<AuthStoreState>()(
           get().isAuthenticated,
         );
         await clearTokensFromSecureStore();
+        const currentPin = get().pin;
         set({
           user: null,
           accessToken: null,
@@ -274,6 +457,7 @@ export const useAuthStore = create<AuthStoreState>()(
           isAuthenticated: false,
           error: null,
           isLoading: false,
+          pin: currentPin,
         });
         console.log(
           '[LOG][authStore] resetAuth 종료. 최종 isAuthenticated:',
@@ -285,15 +469,21 @@ export const useAuthStore = create<AuthStoreState>()(
       setIsLoading: (isLoading) => set({ isLoading }),
 
       navigateAfterAuthCheck: async () => {
-        console.log(
-          '[LOG][authStore] navigateAfterAuthCheck 호출됨 (현재 사용되지 않을 수 있음)',
-        );
-        const { isAuthenticated, isUserRegistered } = get();
-        if (isAuthenticated) {
+        console.log('[LOG][authStore] navigateAfterAuthCheck 호출됨.');
+        await get().initialize();
+        const { isAuthenticated, pin, user } = get();
+
+        if (isAuthenticated && user?.id) {
+          console.log('[LOG][authStore] navigate: (app)/(tabs)로 이동');
           router.replace('/(app)/(tabs)');
-        } else if (isUserRegistered()) {
+        } else if (pin && user?.id) {
+          console.log('[LOG][authStore] navigate: (auth)/pin-login으로 이동');
           router.replace('/(auth)/pin-login');
+        } else if (pin && !user?.id) {
+          console.log('[LOG][authStore] navigate: (auth)/pin-confirm으로 이동');
+          router.replace('/(auth)/pin-confirm');
         } else {
+          console.log('[LOG][authStore] navigate: /sign-in으로 이동');
           router.replace('/sign-in');
         }
       },
@@ -301,18 +491,21 @@ export const useAuthStore = create<AuthStoreState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ user: state.user, pin: state.pin }),
-      onRehydrateStorage: (state) => {
-        console.log(
-          '[LOG][authStore] AsyncStorage로부터 스토어 재수화 시작',
-          state,
-        );
+      partialize: (state) => ({
+        user: state.user,
+        pin: state.pin,
+      }),
+      onRehydrateStorage: () => {
+        console.log('[LOG][authStore] AsyncStorage로부터 스토어 재수화 감지');
         return (restoredState, error) => {
           if (error) {
-            console.error('[ERROR][authStore] AsyncStorage 복원 실패:', error);
+            console.error(
+              '[ERROR][authStore] AsyncStorage 복원 중 오류:',
+              error,
+            );
           } else {
             console.log(
-              '[LOG][authStore] AsyncStorage 복원 완료:',
+              '[LOG][authStore] AsyncStorage에서 성공적으로 복원됨:',
               restoredState,
             );
           }
@@ -325,9 +518,9 @@ export const useAuthStore = create<AuthStoreState>()(
 // User 인터페이스를 export하여 다른 모듈(예: useSession)에서 타입 참조 가능하게 함
 export type { User as AuthUser };
 
-// 개발 중 상태 확인용 (프로덕션에서는 제거)
+// 개발 중 상태 확인용 (프로덕션에서는 제거 권장)
 // if (__DEV__) {
 //   useAuthStore.subscribe(
-//     (state, prevState) => console.log('[Zustand State Change][authStore]', { newState: state, oldState: prevState })
+//     (state) => console.log('[Zustand State Change][authStore]', state),
 //   );
 // }

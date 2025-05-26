@@ -1,5 +1,12 @@
 import React, { useState, useCallback, memo } from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  StatusBar,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { colors } from '@/constants/colors';
 import PinDots from '@/modules/auth/components/PinDots';
 import PinKeypad from '@/modules/auth/components/PinKeypad';
@@ -16,6 +23,7 @@ interface PinScreenProps {
   maxLength?: number;
   onComplete: (pin: string) => Promise<boolean> | boolean;
   errorDuration?: number;
+  isLoading?: boolean;
 }
 
 /**
@@ -30,6 +38,7 @@ const PinScreen: React.FC<PinScreenProps> = ({
   maxLength = 6,
   onComplete,
   errorDuration = 1000,
+  isLoading,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { startLoading, stopLoading } = useLoadingStore();
@@ -73,6 +82,8 @@ const PinScreen: React.FC<PinScreenProps> = ({
     onComplete: handlePinComplete,
   });
 
+  const isPinComplete = inputPin.length === maxLength;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
@@ -103,6 +114,22 @@ const PinScreen: React.FC<PinScreenProps> = ({
           onPressNumber={handlePressNumber}
           onPressDelete={handleDelete}
         />
+
+        <TouchableOpacity
+          style={[
+            styles.button,
+            isPinComplete ? styles.buttonEnabled : styles.buttonDisabled,
+            isLoading && styles.buttonLoading,
+          ]}
+          onPress={handleConfirm}
+          disabled={!isPinComplete || isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>확인</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
       <DialogProvider
@@ -152,6 +179,26 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     ...typography.body2,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonEnabled: {
+    backgroundColor: colors.primary,
+  },
+  buttonDisabled: {
+    backgroundColor: colors.disabled,
+  },
+  buttonLoading: {
+    backgroundColor: colors.disabled,
+  },
+  buttonText: {
+    color: colors.white,
+    ...typography.body1,
   },
 });
 

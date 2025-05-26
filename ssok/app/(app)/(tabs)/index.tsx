@@ -29,6 +29,7 @@ export default function HomeScreen() {
   const recentTransactionsRef = useRef<RecentTransactionsRefType>(null);
 
   useEffect(() => {
+    console.log('계좌 여부 확인');
     fetchAccounts();
   }, [fetchAccounts]);
 
@@ -64,6 +65,8 @@ export default function HomeScreen() {
       router.push(`/account/${accountId}`);
     });
   };
+
+  console.log('[LOG][HomeScreen] accounts:', accounts);
 
   const hasAccounts = accounts && accounts.length > 0;
 

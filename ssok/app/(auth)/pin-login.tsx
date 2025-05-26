@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useAuthStore, type AuthUser } from '@/modules/auth/store/authStore';
-import { authApi } from '@/modules/auth/api/authApi';
+import { useAuthStore } from '@/modules/auth/store/authStore';
+import { useSession } from '@/contexts/useSession';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/modules/auth/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
@@ -25,6 +25,13 @@ export default function PinLogin() {
     clearError,
     isAuthenticated,
   } = useAuthStore();
+  const {
+    signInWithPin,
+    isAuthenticated: isSessionAuthenticated,
+    isLoading: isSessionLoading,
+    error: sessionError,
+    clearAuthError,
+  } = useSession();
   const { showDialog, dialogState, hideDialog } = useDialog();
   const params = useLocalSearchParams();
 
@@ -44,10 +51,10 @@ export default function PinLogin() {
   // 로그인 성공 시 (tabs)로 이동 (handleComplete에서 직접 라우팅하므로, 이 useEffect는 선택적 또는 중복될 수 있음)
   // 다만, 다른 이유로 isAuthenticated 상태가 변경될 경우를 대비해 유지할 수 있음.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isSessionAuthenticated) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated]);
+  }, [isSessionAuthenticated]);
 
   // 세션 만료 감지 (쿼리 파라미터로부터)
   useEffect(() => {
@@ -67,73 +74,32 @@ export default function PinLogin() {
    * useCallback을 제거해도 성능에 큰 영향이 없습니다.
    */
   const handleComplete = async (inputPin: string) => {
-    setIsLoading(true);
-    clearError();
     setLoginAttempts((prev) => prev + 1);
 
-    if (inputPin !== storedPin) {
-      if (loginAttempts >= 2) {
+    const result = await signInWithPin(inputPin);
+
+    if (result.success) {
+      console.log('[LOG][PinLogin] PIN 로그인 성공, 화면 전환');
+      return true;
+    } else {
+      console.error('[ERROR][PinLogin] PIN 로그인 실패:', result.message);
+      if (loginAttempts >= 2 && result.message?.includes('PIN')) {
         showDialog({
           title: '로그인 실패',
           content: ERROR_MESSAGES.PIN_LOGIN_ATTEMPT_LIMIT,
           confirmText: '확인',
+          onConfirm: () => {
+            hideDialog();
+            setLoginAttempts(0);
+          },
         });
-        setLoginAttempts(0);
-      }
-      setIsLoading(false);
-      return false;
-    }
-
-    const userIdToLogin = storedUser?.id;
-
-    if (!userIdToLogin) {
-      showDialog({
-        title: '오류',
-        content: ERROR_MESSAGES.USER_ID_NOT_FOUND,
-        confirmText: '확인',
-      });
-      setIsLoading(false);
-      return false;
-    }
-
-    try {
-      const loginResponse = await authApi.login({
-        userId: userIdToLogin,
-        pinCode: Number(inputPin),
-      });
-
-      if (loginResponse.data.isSuccess && loginResponse.data.result) {
-        const { accessToken, refreshToken, ...userDataFromApi } = loginResponse
-          .data.result as any;
-
-        const finalUser: AuthUser = {
-          id: userIdToLogin,
-          username: userDataFromApi.username || storedUser?.username || '',
-          phoneNumber:
-            userDataFromApi.phoneNumber || storedUser?.phoneNumber || '',
-          birthDate: userDataFromApi.birthDate || storedUser?.birthDate || '',
-        };
-
-        await login(finalUser, accessToken, refreshToken);
-        // router.replace('/(tabs)'); // useEffect에서 isAuthenticated 변경을 감지하여 이동
-        // setIsLoading(false); // login 액션 내부에서 처리되거나, 화면 전환으로 불필요
-        return true;
       } else {
         showDialog({
           title: '로그인 실패',
-          content: loginResponse.data.message || ERROR_MESSAGES.LOGIN_FAILED,
+          content: result.message || ERROR_MESSAGES.LOGIN_FAILED,
           confirmText: '확인',
         });
-        setIsLoading(false);
-        return false;
       }
-    } catch (error) {
-      showDialog({
-        title: '오류',
-        content: ERROR_MESSAGES.LOGIN_ERROR,
-        confirmText: '확인',
-      });
-      setIsLoading(false);
       return false;
     }
   };
@@ -154,6 +120,7 @@ export default function PinLogin() {
         title="PIN 번호 로그인"
         subtitle="등록된 PIN 번호 6자리를 입력해주세요"
         onComplete={handleComplete}
+        isLoading={isSessionLoading}
       />
     </>
   );

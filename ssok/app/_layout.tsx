@@ -22,10 +22,6 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        console.log(
-          '[RootLayout] prepare 시작. 현재 sessionIsLoading:',
-          sessionIsLoading,
-        );
         await initializeAuth();
       } catch (e) {
         console.warn('[ERROR][RootLayout] 앱 준비 중 에러:', e);
@@ -60,7 +56,7 @@ function RootNavigator() {
   const { isLoading, isAuthenticated } = useSession();
 
   if (isLoading) {
-    return null;
+    return <LoadingIndicator visible={true} />;
   }
 
   return (
