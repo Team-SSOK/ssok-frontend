@@ -16,7 +16,7 @@ import { useAuthStore } from '@/modules/auth/store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
-  const userId = useAuthStore((state) => state.userId);
+  const userId = useAuthStore((state) => state.user?.id);
   const {
     username,
     phoneNumber,

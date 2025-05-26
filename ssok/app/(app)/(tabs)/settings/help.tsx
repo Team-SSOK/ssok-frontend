@@ -94,7 +94,7 @@ export default function HelpScreen() {
         {/* 고객 지원 안내 */}
         <Button
           label="고객센터에 문의하기"
-          onPress={() => router.push('/(tabs)/settings/support')}
+          onPress={() => router.push('/(app)/(tabs)/settings/support')}
           style={styles.supportButton}
         />
       </ScrollView>

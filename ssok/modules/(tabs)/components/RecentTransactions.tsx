@@ -7,9 +7,8 @@ import React, {
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { colors } from '@/constants/colors';
 import TransactionItem from './TransactionItem';
-import { transferApi } from '@/modules/transfer/api/transferApi';
+import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
 import { Text } from '@/components/TextProvider';
-import { Transaction } from '@/utils/types';
 import { typography } from '@/theme/typography';
 
 interface RecentTransactionsProps {
@@ -25,58 +24,29 @@ const RecentTransactions = forwardRef<
   RecentTransactionsRefType,
   RecentTransactionsProps
 >(({ limit = 3 }, ref) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { transactions, isLoading, fetchRecentTransactions, error } =
+    useTransferStore();
 
-  // 최근 거래내역을 가져오는 함수
-  const fetchRecentTransactions = async () => {
-    setIsLoading(true);
-    try {
-      console.log('getRecentTransferHistory');
-      const response = await transferApi.getRecentTransferHistory();
-      if (response.data.isSuccess && response.data.result) {
-        // API 응답 데이터를 Transaction 형식으로 변환
-        const historyData = response.data.result.map((item) => ({
-          transferID: item.transferId,
-          accountId: 0, // 계좌 ID는 필요 없음
-          counterpartAccount: '', // API에서 제공하지 않음
-          counterpartName: item.counterpartName,
-          transferType:
-            item.transferType === 'WITHDRAWAL'
-              ? 'WITHDRAW'
-              : ('DEPOSIT' as 'WITHDRAW' | 'DEPOSIT'),
-          transferMoney: item.transferMoney,
-          currencyCode: item.currencyCode === 'KRW' ? 1 : 2,
-          transferMethod: item.transferMethod === 'GENERAL' ? 0 : 1,
-          createdAt: item.createdAt,
-          balanceAfterTransaction: 0, // API에서 제공하지 않음
-        }));
-        setTransactions(historyData);
-      }
-    } catch (error) {
-      console.error('최근 거래내역 조회 실패:', error);
-      // 오류 발생 시 빈 배열로 설정하여 UI에 빈 상태 표시
-      setTransactions([]);
-    } finally {
-      setIsLoading(false);
-    }
+  // 최근 거래내역을 가져오는 함수 (스토어 액션 호출)
+  const loadTransactions = async () => {
+    await fetchRecentTransactions(limit);
   };
 
-  // ref를 통해 외부에서 호출할 수 있는 함수를 노출
   useImperativeHandle(ref, () => ({
-    refresh: fetchRecentTransactions,
+    refresh: loadTransactions,
   }));
 
   useEffect(() => {
-    fetchRecentTransactions();
-  }, []);
+    loadTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit]);
 
   // 최근 거래내역 최대 limit개만 표시
   const limitedTransactions = transactions.slice(0, limit);
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
+      {isLoading && limitedTransactions.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -93,9 +63,12 @@ const RecentTransactions = forwardRef<
           ))}
         </View>
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>최근 거래내역이 없습니다.</Text>
-        </View>
+        !isLoading &&
+        !error && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>최근 거래내역이 없습니다.</Text>
+          </View>
+        )
       )}
     </View>
   );
@@ -113,34 +86,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 1,
+    minHeight: 150,
   },
   sectionTitle: {
-    color: colors.black,
+    color: colors.text.primary,
     fontWeight: '700',
-  },
-  seeAllText: {
-    color: colors.primary,
-    fontSize: 14,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.silver,
+    marginBottom: 12,
   },
   loadingContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
   },
   emptyContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
   },
   emptyText: {
-    color: colors.grey,
+    color: colors.text.secondary,
     fontSize: 14,
   },
-  transactionsList: {
-    marginTop: 8,
+  errorText: {
+    color: colors.error,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 4,
   },
+  errorTextDetails: {
+    color: colors.text.secondary,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  transactionsList: {},
 });

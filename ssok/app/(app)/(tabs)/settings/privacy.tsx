@@ -210,7 +210,7 @@ export default function PrivacyScreen() {
         {/* 고객센터 안내 */}
         <TouchableOpacity
           style={styles.supportButton}
-          onPress={() => router.push('/(tabs)/settings/support')}
+          onPress={() => router.push('/(app)/(tabs)/settings/support')}
         >
           <Text style={styles.supportButtonText}>개인정보 관련 문의하기</Text>
         </TouchableOpacity>

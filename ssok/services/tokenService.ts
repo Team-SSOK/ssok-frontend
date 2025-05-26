@@ -12,7 +12,7 @@ export async function getItem(key: string): Promise<string | null> {
   try {
     return await SecureStore.getItemAsync(key);
   } catch (error) {
-    if (__DEV__) console.error(`${LOG_TAG} 읽기 오류(${key}):`, error);
+    console.error(`${LOG_TAG} 읽기 오류(${key}):`, error);
     return null;
   }
 }
@@ -22,7 +22,7 @@ export async function setItem(key: string, value: string): Promise<boolean> {
     await SecureStore.setItemAsync(key, value);
     return true;
   } catch (error) {
-    if (__DEV__) console.error(`${LOG_TAG} 저장 오류(${key}):`, error);
+    console.error(`${LOG_TAG} 저장 오류(${key}):`, error);
     return false;
   }
 }
@@ -32,7 +32,7 @@ export async function removeItem(key: string): Promise<boolean> {
     await SecureStore.deleteItemAsync(key);
     return true;
   } catch (error) {
-    if (__DEV__) console.error(`${LOG_TAG} 삭제 오류(${key}):`, error);
+    console.error(`${LOG_TAG} 삭제 오류(${key}):`, error);
     return false;
   }
 }
@@ -62,9 +62,6 @@ export async function saveTokens(
   ]);
 
   const success = accessResult && refreshResult;
-  if (__DEV__ && success) {
-    console.log(`${LOG_TAG} 토큰 저장 완료`);
-  }
 
   return success;
 }
@@ -74,10 +71,6 @@ export async function clearTokens(): Promise<void> {
     removeItem(ACCESS_TOKEN_KEY),
     removeItem(REFRESH_TOKEN_KEY),
   ]);
-
-  if (__DEV__) {
-    console.log(`${LOG_TAG} 토큰 삭제 완료`);
-  }
 }
 
 export async function getAccessToken(): Promise<string | null> {

@@ -5,7 +5,6 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Animated,
   LayoutAnimation,
   Platform,
   UIManager,

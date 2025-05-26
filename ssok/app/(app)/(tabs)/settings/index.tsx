@@ -18,11 +18,11 @@ import { Header, Section, SettingItem } from '@/modules/settings';
 
 // 라우트 타입 정의
 type SettingsRoute =
-  | '/(tabs)/settings/profile'
-  | '/(tabs)/settings/help'
-  | '/(tabs)/settings/privacy'
-  | '/(tabs)/settings/support'
-  | '/(tabs)/settings/app-intro';
+  | '/(app)/(tabs)/settings/profile'
+  | '/(app)/(tabs)/settings/help'
+  | '/(app)/(tabs)/settings/privacy'
+  | '/(app)/(tabs)/settings/support'
+  | '/(app)/(tabs)/settings/app-intro';
 
 export default function SettingsScreen() {
   const [isBluetoothEnabled, setIsBluetoothEnabled] = useState<boolean>(false);
@@ -114,7 +114,7 @@ export default function SettingsScreen() {
           <SettingItem
             icon="person-outline"
             label="내 프로필"
-            onPress={() => navigateTo('/(tabs)/settings/profile')}
+            onPress={() => navigateTo('/(app)/(tabs)/settings/profile')}
           />
           <SettingItem icon="lock-closed-outline" label="PIN 번호 변경" />
         </Section>
@@ -147,17 +147,17 @@ export default function SettingsScreen() {
           <SettingItem
             icon="help-circle-outline"
             label="도움말"
-            onPress={() => navigateTo('/(tabs)/settings/help')}
+            onPress={() => navigateTo('/(app)/(tabs)/settings/help')}
           />
           <SettingItem
             icon="shield-checkmark-outline"
             label="개인정보처리방침"
-            onPress={() => navigateTo('/(tabs)/settings/privacy')}
+            onPress={() => navigateTo('/(app)/(tabs)/settings/privacy')}
           />
           <SettingItem
             icon="call-outline"
             label="고객센터"
-            onPress={() => navigateTo('/(tabs)/settings/support')}
+            onPress={() => navigateTo('/(app)/(tabs)/settings/support')}
           />
         </Section>
       </ScrollView>

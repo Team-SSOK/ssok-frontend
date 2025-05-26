@@ -30,14 +30,14 @@ export default function ConfirmScreen() {
   const { sendMoney, sendMoneyBluetooth } = useTransferStore();
   const { accounts } = useAccountStore();
   const { username, fetchProfile } = useProfileStore();
-  const { userId: authUserId } = useAuthStore();
+  const { user } = useAuthStore();
 
   // 프로필 정보 로드
   useEffect(() => {
-    if (authUserId) {
-      fetchProfile(authUserId);
+    if (user?.id) {
+      fetchProfile(user?.id);
     }
-  }, [authUserId, fetchProfile]);
+  }, [user?.id, fetchProfile]);
 
   const isBluetoothTransfer = isBluetooth === 'true';
 
