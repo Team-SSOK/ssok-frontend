@@ -1,6 +1,6 @@
 import axios from 'axios';
 // import * as SecureStore from 'expo-secure-store'; // tokenService를 사용하므로 직접 호출 제거
-import { authStoreActions } from '@/modules/auth/store/authStore';
+import { useAuthStore } from '@/modules/auth/store/authStore'; // authStoreActions import 제거
 import {
   getTokens as getTokensFromSecureStore,
   saveTokens as saveTokensToSecureStore,
@@ -77,7 +77,7 @@ api.interceptors.response.use(
 
       // 갱신 실패 시 상태 초기화
       console.error('토큰 갱신 실패, 로그아웃 처리:', refreshError);
-      authStoreActions.resetAuth();
+      useAuthStore.getState().resetAuth(); // 스토어의 resetAuth 직접 호출
       return Promise.reject(refreshError);
     }
   },

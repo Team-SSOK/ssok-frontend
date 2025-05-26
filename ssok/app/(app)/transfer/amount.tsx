@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
-import Header from '../../components/Header';
-import AmountDisplay from '../../modules/transfer/components/AmountDisplay';
-import Keypad from '../../modules/transfer/components/Keypad';
-import NextButton from '../../modules/transfer/components/NextButton';
-import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
+import Header from '../../../components/Header';
+import AmountDisplay from '../../../modules/transfer/components/AmountDisplay';
+import Keypad from '../../../modules/transfer/components/Keypad';
+import NextButton from '../../../modules/transfer/components/NextButton';
+import AnimatedLayout from '../../../modules/transfer/components/AnimatedLayout';
 
 /**
  * 송금 금액 입력 화면

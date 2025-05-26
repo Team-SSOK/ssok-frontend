@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
-import Header from '../../components/Header';
-import ConfirmQuestion from '../../modules/transfer/components/ConfirmQuestion';
-import TransactionDetailsCard from '../../modules/transfer/components/TransactionDetailsCard';
-import ConfirmButton from '../../modules/transfer/components/ConfirmButton';
-import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
+import Header from '../../../components/Header';
+import ConfirmQuestion from '../../../modules/transfer/components/ConfirmQuestion';
+import TransactionDetailsCard from '../../../modules/transfer/components/TransactionDetailsCard';
+import ConfirmButton from '../../../modules/transfer/components/ConfirmButton';
+import AnimatedLayout from '../../../modules/transfer/components/AnimatedLayout';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
 import {

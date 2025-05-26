@@ -100,7 +100,7 @@ export default function RegisterAccountScreen() {
             .setPrimaryAccount(registeredAccount.accountId);
 
           // 성공 메시지와 함께 홈으로 이동
-          router.replace('/(tabs)');
+          router.replace('/(app)/(tabs)');
         } else {
           throw new Error('계좌 등록에 실패했습니다.');
         }

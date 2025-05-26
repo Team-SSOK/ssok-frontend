@@ -6,6 +6,7 @@ import {
   saveTokens as saveTokensToSecureStore,
   clearTokens as clearTokensFromSecureStore,
   getTokens as getTokensFromSecureStore,
+  hasValidTokens,
 } from '@/services/tokenService';
 
 // 상태 타입 정의
@@ -14,27 +15,23 @@ interface TokenState {
   refreshToken: string | null;
 }
 
-interface UserState {
-  userId: number | null;
+interface User {
+  id: number | null;
   username: string;
   phoneNumber: string;
   birthDate: string;
-  pin: string;
 }
 
-interface UiState {
-  isLoggedIn: boolean;
+interface AuthStateInternal extends TokenState {
+  user: User | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
+  pin: string;
 }
 
 // 액션 타입 정의
 interface UserActions {
-  setUserId: (userId: number) => void;
-  setUserInfo: (
-    username: string,
-    phoneNumber: string,
-    birthDate: string,
-  ) => void;
   setPin: (pin: string) => void;
   clearPin: () => void;
   saveRegistrationInfo: (
@@ -43,22 +40,20 @@ interface UserActions {
     birthDate: string,
     pin: string,
   ) => void;
-  saveUserRegistration: (phoneNumber: string, pin: string) => Promise<void>;
   isUserRegistered: () => boolean;
 }
 
 interface AuthActions {
-  setAuthTokens: (accessToken: string, refreshToken: string) => void;
-  setIsLoggedIn: (isLoggedIn: boolean) => void;
-  verifyPin: (inputPin: string) => boolean;
-  verifyAndLogin: (inputPin: string) => Promise<boolean>;
+  loginWithPin: (inputPin: string) => Promise<boolean>;
   login: (
-    userId: number,
+    user: User,
     accessToken: string,
     refreshToken: string,
   ) => Promise<void>;
   logout: () => Promise<void>;
-  getAuthTokens: () => TokenState;
+  initialize: () => Promise<void>;
+  clearError: () => void;
+  resetAuth: () => Promise<void>;
 }
 
 interface NavigationActions {
@@ -67,246 +62,272 @@ interface NavigationActions {
 }
 
 // 전체 스토어 타입
-interface AuthState
-  extends UserState,
-    TokenState,
-    UiState,
+export interface AuthStoreState
+  extends AuthStateInternal,
     UserActions,
     AuthActions,
     NavigationActions {}
 
 /**
  * 인증 상태 관리 스토어
- *
- * 사용자 인증, 토큰 관리, 사용자 정보 등을 관리합니다.
- *
- * @example
- * ```ts
- * // 로그인 상태 확인
- * const isLoggedIn = useAuthStore(state => state.isLoggedIn);
- *
- * // 로그인 처리
- * const login = useAuthStore(state => state.login);
- * await login(userId, accessToken, refreshToken);
- *
- * // 로그아웃 처리
- * const logout = useAuthStore(state => state.logout);
- * await logout();
- * ```
  */
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set, get) => ({
       // 초기 상태
-      userId: null,
-      username: '',
-      phoneNumber: '',
-      birthDate: '',
+      user: null,
       pin: '',
       accessToken: null,
       refreshToken: null,
-      isLoggedIn: false,
+      isAuthenticated: false,
       isLoading: false,
+      error: null,
 
       // 사용자 정보 관련 액션
-      setUserId: (userId) => set({ userId }),
-
-      setUserInfo: (username, phoneNumber, birthDate) =>
-        set({ username, phoneNumber, birthDate }),
-
       setPin: (pin) => set({ pin }),
-
       clearPin: () => set({ pin: '' }),
 
       saveRegistrationInfo: (username, phoneNumber, birthDate, pin) => {
-        console.log('[LOG] 사용자 회원 가입 정보 저장');
+        console.log('[LOG][authStore] 사용자 회원 가입 정보 임시 저장');
         set({
-          username,
-          phoneNumber,
-          birthDate,
           pin,
+          user: {
+            ...(get().user || {}),
+            username,
+            phoneNumber,
+            birthDate,
+            id: null,
+          } as User,
         });
       },
 
-      saveUserRegistration: async (phoneNumber, pin) => {
-        try {
-          console.log('[LOG] 사용자 회원 가입 정보 저장');
-          set({ phoneNumber, pin });
-        } catch (error) {
-          console.error('[ERROR] 사용자 등록 정보 저장 실패:', error);
-          throw new Error('사용자 등록 정보 저장 실패');
-        }
-      },
-
       isUserRegistered: () => {
-        const { phoneNumber, pin } = get();
-        const isRegistered = !!phoneNumber && !!pin;
-        return isRegistered;
+        const { pin } = get();
+        return !!pin;
       },
 
       // 인증 관련 액션
-      setAuthTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
-
-      setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
-
-      verifyPin: (inputPin) => {
+      loginWithPin: async (inputPin) => {
+        set({ isLoading: true, error: null });
         const storedPin = get().pin;
-        return storedPin === inputPin;
-      },
-
-      verifyAndLogin: async (inputPin) => {
-        try {
-          const isValid = get().verifyPin(inputPin);
-          if (isValid) {
-            set({ isLoggedIn: true });
+        if (storedPin === inputPin) {
+          const { accessToken, refreshToken } =
+            await getTokensFromSecureStore();
+          if (accessToken && refreshToken) {
+            set({ isAuthenticated: true, isLoading: false });
+            console.log('[LOG][authStore] PIN 로그인 성공 (토큰 존재 가정)');
+            return true;
+          } else {
+            set({
+              isAuthenticated: false,
+              error: '토큰이 없어 PIN으로 로그인할 수 없습니다.',
+              isLoading: false,
+            });
+            console.warn(
+              '[WARN][authStore] PIN은 일치하지만 SecureStore에 토큰 없음',
+            );
+            return false;
           }
-          return isValid;
-        } catch (error) {
-          console.error('[ERROR] PIN 검증 실패:', error);
+        } else {
+          set({
+            isAuthenticated: false,
+            error: 'PIN이 일치하지 않습니다.',
+            isLoading: false,
+          });
           return false;
         }
       },
 
-      login: async (userId, accessToken, refreshToken) => {
-        console.log('[LOG] 로그인 성공, 토큰 저장 시작');
-
+      login: async (user, accessToken, refreshToken) => {
+        set({ isLoading: true, error: null });
+        console.log('[LOG][authStore] 로그인 처리 시작', user);
         try {
-          // SecureStore에 토큰 저장 (tokenService 사용)
           await saveTokensToSecureStore(accessToken, refreshToken);
-
-          // Zustand 상태 업데이트
           set({
-            userId,
+            user,
             accessToken,
             refreshToken,
-            isLoggedIn: true,
+            isAuthenticated: true,
+            isLoading: false,
           });
-
-          console.log(
-            '[LOG] 로그인 완료 (Zustand 및 SecureStore에 토큰 저장됨)',
-          );
+          console.log('[LOG][authStore] 로그인 완료');
         } catch (error) {
-          console.error('[ERROR] 로그인 처리 실패:', error);
-          throw new Error('로그인 처리 실패');
+          const errorMessage =
+            error instanceof Error ? error.message : '로그인 처리 중 오류 발생';
+          console.error('[ERROR][authStore] 로그인 실패:', errorMessage);
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw error;
         }
       },
 
       logout: async () => {
-        console.log('[LOG] 로그아웃');
-
+        set({ isLoading: true, error: null });
+        console.log('[LOG][authStore] 로그아웃 처리 시작');
         try {
-          // SecureStore에서 토큰 제거 (tokenService 사용)
           await clearTokensFromSecureStore();
-
-          // Zustand 상태 업데이트
           set({
+            user: null,
             accessToken: null,
             refreshToken: null,
-            isLoggedIn: false,
+            isAuthenticated: false,
+            pin: get().isUserRegistered() ? get().pin : '',
+            isLoading: false,
           });
+          console.log('[LOG][authStore] 로그아웃 완료');
+          router.replace('/sign-in');
         } catch (error) {
-          console.error('[ERROR] 로그아웃 처리 실패:', error);
-          throw new Error('로그아웃 처리 실패');
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '로그아웃 처리 중 오류 발생';
+          console.error('[ERROR][authStore] 로그아웃 실패:', errorMessage);
+          set({ error: errorMessage, isLoading: false });
+          throw error;
         }
       },
 
-      getAuthTokens: () => {
-        const { accessToken, refreshToken } = get();
-        return { accessToken, refreshToken };
+      initialize: async () => {
+        set({ isLoading: true });
+        console.log('[LOG][authStore] Initialize 시작');
+        try {
+          const tokens = await getTokensFromSecureStore();
+          const persistedUser = get().user;
+          const persistedPin = get().pin;
+
+          console.log(
+            '[LOG][authStore] Initialize - SecureStore tokens:',
+            tokens,
+          );
+          console.log(
+            '[LOG][authStore] Initialize - Zustand persistedUser:',
+            persistedUser,
+          );
+          console.log(
+            '[LOG][authStore] Initialize - Zustand persistedPin:',
+            persistedPin,
+          );
+
+          const isValid = await hasValidTokens();
+          console.log(
+            '[LOG][authStore] Initialize - hasValidTokens 결과:',
+            isValid,
+          );
+
+          if (isValid) {
+            if (persistedUser && persistedUser.id && persistedPin) {
+              set({
+                user: persistedUser,
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                isAuthenticated: true,
+                pin: persistedPin,
+                isLoading: false,
+                error: null,
+              });
+              console.log(
+                '[LOG][authStore] 초기화: 유효한 토큰과 AsyncStorage 사용자 정보/PIN으로 인증됨. isAuthenticated:',
+                get().isAuthenticated,
+              );
+            } else {
+              console.warn(
+                '[LOG][authStore] 초기화: 토큰은 유효하나 AsyncStorage 사용자 정보/PIN 불완전. resetAuth 호출.',
+              );
+              await get().resetAuth();
+            }
+          } else {
+            console.log(
+              '[LOG][authStore] 초기화: 유효한 토큰 없음 (hasValidTokens false). resetAuth 호출.',
+            );
+            await get().resetAuth();
+          }
+        } catch (error) {
+          console.error('[ERROR][authStore] 초기화 중 예외 발생:', error);
+          await get().resetAuth();
+        } finally {
+          set({ isLoading: false });
+          console.log(
+            '[LOG][authStore] Initialize 종료. 최종 isAuthenticated:',
+            get().isAuthenticated,
+          );
+        }
+      },
+
+      clearError: () => set({ error: null }),
+
+      resetAuth: async () => {
+        console.log(
+          '[LOG][authStore] resetAuth 시작. 현재 isAuthenticated:',
+          get().isAuthenticated,
+        );
+        await clearTokensFromSecureStore();
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          error: null,
+          isLoading: false,
+        });
+        console.log(
+          '[LOG][authStore] resetAuth 종료. 최종 isAuthenticated:',
+          get().isAuthenticated,
+        );
       },
 
       // UI 및 네비게이션 관련 액션
       setIsLoading: (isLoading) => set({ isLoading }),
 
       navigateAfterAuthCheck: async () => {
-        try {
-          set({ isLoading: true });
-          const isRegistered = get().isUserRegistered();
-          const { isLoggedIn } = get();
-
-          setTimeout(() => {
-            if (isRegistered && !isLoggedIn) {
-              router.replace('/auth/pin-login');
-            } else if (isLoggedIn) {
-              router.replace('/(tabs)');
-            }
-            set({ isLoading: false });
-          }, 100);
-        } catch (error) {
-          console.error('[ERROR] 인증 확인 후 네비게이션 실패:', error);
-          set({ isLoading: false });
+        console.log(
+          '[LOG][authStore] navigateAfterAuthCheck 호출됨 (현재 사용되지 않을 수 있음)',
+        );
+        const { isAuthenticated, isUserRegistered } = get();
+        if (isAuthenticated) {
+          router.replace('/(app)/(tabs)');
+        } else if (isUserRegistered()) {
+          router.replace('/(auth)/pin-login');
+        } else {
+          router.replace('/sign-in');
         }
       },
     }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        userId: state.userId,
-        username: state.username,
-        phoneNumber: state.phoneNumber,
-        birthDate: state.birthDate,
-        pin: state.pin,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        isLoggedIn: state.isLoggedIn,
-      }),
+      partialize: (state) => ({ user: state.user, pin: state.pin }),
+      onRehydrateStorage: (state) => {
+        console.log(
+          '[LOG][authStore] AsyncStorage로부터 스토어 재수화 시작',
+          state,
+        );
+        return (restoredState, error) => {
+          if (error) {
+            console.error('[ERROR][authStore] AsyncStorage 복원 실패:', error);
+          } else {
+            console.log(
+              '[LOG][authStore] AsyncStorage 복원 완료:',
+              restoredState,
+            );
+          }
+        };
+      },
     },
   ),
 );
 
-/**
- * API 인터셉터에서 사용할 수 있는 정적 메서드들
- */
-export const authStoreActions = {
-  /**
-   * 인증 정보 초기화
-   */
-  resetAuth: async () => {
-    try {
-      // SecureStore에서 토큰 제거 (tokenService 사용)
-      await clearTokensFromSecureStore();
+// User 인터페이스를 export하여 다른 모듈(예: useSession)에서 타입 참조 가능하게 함
+export type { User as AuthUser };
 
-      // 스토어 상태 초기화
-      useAuthStore.setState({
-        accessToken: null,
-        refreshToken: null,
-        isLoggedIn: false,
-      });
-
-      // 로그인 화면으로 이동
-      router.replace('/auth/pin-login?sessionExpired=true');
-    } catch (error) {
-      console.error('[ERROR] 인증 초기화 실패:', error);
-    }
-  },
-
-  /**
-   * 토큰 새로고침
-   */
-  updateTokens: async (accessToken: string, refreshToken: string) => {
-    try {
-      // SecureStore에 토큰 저장 (tokenService 사용)
-      await saveTokensToSecureStore(accessToken, refreshToken);
-
-      // Zustand 상태 업데이트
-      useAuthStore.setState({
-        accessToken,
-        refreshToken,
-        isLoggedIn: true,
-      });
-    } catch (error) {
-      console.error('[ERROR] 토큰 업데이트 실패:', error);
-    }
-  },
-
-  /**
-   * 로그인 상태 확인 (API 인터셉터에서 사용)
-   */
-  isAuthenticated: () => {
-    const state = useAuthStore.getState();
-    // isLoggedIn 상태와 함께 accessToken 유무도 확인 (SecureStore 직접 접근 대신 상태 사용)
-    return !!state.accessToken && state.isLoggedIn;
-  },
-};
+// 개발 중 상태 확인용 (프로덕션에서는 제거)
+// if (__DEV__) {
+//   useAuthStore.subscribe(
+//     (state, prevState) => console.log('[Zustand State Change][authStore]', { newState: state, oldState: prevState })
+//   );
+// }

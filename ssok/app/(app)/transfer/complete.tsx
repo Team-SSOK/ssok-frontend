@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
-import NextButton from '../../modules/transfer/components/NextButton';
-import AnimatedLayout from '../../modules/transfer/components/AnimatedLayout';
-import CompleteMessage from '../../modules/transfer/components/CompleteMessage';
+import NextButton from '../../../modules/transfer/components/NextButton';
+import AnimatedLayout from '../../../modules/transfer/components/AnimatedLayout';
+import CompleteMessage from '../../../modules/transfer/components/CompleteMessage';
 import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
 
 /**
