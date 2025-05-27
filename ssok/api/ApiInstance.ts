@@ -4,7 +4,7 @@ import {
   saveTokens as saveTokensToSecureStore,
 } from '@/services/tokenService';
 
-const BASE_URL = 'http://api.ssok.kr/';
+const BASE_URL = 'https://api.ssok.kr/';
 
 const api = axios.create({
   baseURL: BASE_URL,

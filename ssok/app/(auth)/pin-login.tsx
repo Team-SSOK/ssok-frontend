@@ -17,20 +17,10 @@ import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';
 export default function PinLogin() {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const {
-    pin: storedPin,
-    user: storedUser,
-    login,
-    isLoading,
-    setIsLoading,
-    clearError,
-    isAuthenticated,
-  } = useAuthStore();
-  const {
     signInWithPin,
     isAuthenticated: isSessionAuthenticated,
     isLoading: isSessionLoading,
     error: sessionError,
-    clearAuthError,
   } = useSession();
   const { showDialog, dialogState, hideDialog } = useDialog();
   const params = useLocalSearchParams();

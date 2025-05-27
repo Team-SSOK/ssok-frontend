@@ -86,6 +86,7 @@ export default function Register() {
           confirmText: '확인',
         });
       } else {
+        console.log(response.data);
         // authStore.setError(response.data.message || ERROR_MESSAGES.SEND_CODE_ERROR);
         showDialog({
           title: '오류',
@@ -94,6 +95,7 @@ export default function Register() {
         });
       }
     } catch (err) {
+      console.log(err);
       // authStore.setError(ERROR_MESSAGES.SEND_CODE_ERROR);
       showDialog({
         title: '오류',
