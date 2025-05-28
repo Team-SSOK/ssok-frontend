@@ -52,10 +52,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   }, [handleComplete]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <View style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
 
-      {/* 슬라이드 FlatList */}
+      {/* 슬라이드 FlatList - 풀스크린 */}
       <Animated.FlatList
         ref={flatListRef}
         data={slideData}
@@ -74,41 +78,42 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
         style={styles.flatList}
       />
 
-      {/* 하단 컨트롤 영역 */}
-      <View style={styles.bottomContainer}>
-        {/* 페이지네이션 도트 */}
-
-        {/* 네비게이션 버튼 */}
-        <View style={styles.buttonContainer}>
-          <PaginationDots length={slideData.length} x={x} />
-          <OnboardingButton
-            currentIndex={currentIndex}
-            length={slideData.length}
-            onComplete={handleOnboardingComplete}
-            onNext={handleNext}
-          />
-        </View>
+      {/* 페이지네이션 도트 - Absolute 포지셔닝 */}
+      <View style={styles.paginationContainer}>
+        <PaginationDots length={slideData.length} x={x} />
       </View>
-    </SafeAreaView>
+
+      {/* 네비게이션 버튼 - Absolute 포지셔닝 */}
+      <View style={styles.buttonContainer}>
+        <OnboardingButton
+          currentIndex={currentIndex}
+          length={slideData.length}
+          onComplete={handleOnboardingComplete}
+          onNext={handleNext}
+        />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#000000',
   },
   flatList: {
     flex: 1,
   },
-  bottomContainer: {
-    paddingHorizontal: 40,
-    paddingBottom: 40,
-    backgroundColor: '#FFFFFF',
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 75,
+    left: -250,
+    right: 0,
+    alignItems: 'center',
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    position: 'absolute',
+    bottom: 50,
+    right: 40,
   },
 });
