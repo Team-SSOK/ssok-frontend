@@ -1,5 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  SlideInRight,
+} from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import { useLoadingStore } from '@/stores/loadingStore';
@@ -90,30 +95,40 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
     <View style={styles.container}>
       <ScrollView style={styles.content}>
         {/* 계좌번호 입력 컴포넌트 */}
-        <AccountInput value={accountNumber} onChangeText={setAccountNumber} />
+        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+          <AccountInput value={accountNumber} onChangeText={setAccountNumber} />
+        </Animated.View>
 
         {/* 은행 선택 컴포넌트 */}
-        <BankSelector
-          selectedBankId={selectedBank?.id || null}
-          onBankSelect={handleBankSelect}
-        />
+        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+          <BankSelector
+            selectedBankId={selectedBank?.id || null}
+            onBankSelect={handleBankSelect}
+          />
+        </Animated.View>
 
         {/* 에러 메시지 */}
         {errorMessage && (
-          <View style={styles.errorContainer}>
+          <Animated.View
+            entering={FadeInDown.delay(100).duration(400)}
+            style={styles.errorContainer}
+          >
             <Text style={styles.errorText}>{errorMessage}</Text>
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
 
       {/* 하단 버튼 */}
-      <View style={styles.footer}>
+      <Animated.View
+        entering={FadeInUp.delay(600).duration(500)}
+        style={styles.footer}
+      >
         <NextButton
           onPress={handleNextPress}
           enabled={isNextButtonEnabled && !isLoading}
           title="다음"
         />
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -130,11 +145,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   errorContainer: {
-    padding: 10,
-    marginTop: 10,
+    padding: 16,
   },
   errorText: {
     color: colors.error,
-    textAlign: 'center',
   },
 });

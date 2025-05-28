@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { colors } from '@/constants/colors';
 import { StepComponentProps } from '../../types/transferFlow';
 
 // 기존 컴포넌트 재사용
