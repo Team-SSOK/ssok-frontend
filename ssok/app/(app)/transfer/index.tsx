@@ -158,8 +158,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 26,
+    paddingHorizontal: 36,
   },
   footer: {
     padding: 16,

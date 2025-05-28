@@ -13,10 +13,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { OnboardingItemProps } from '../types';
 
-/**
- * 개별 온보딩 슬라이드 아이템 컴포넌트
- * 배경 이미지와 오버레이를 사용한 풀스크린 레이아웃
- */
 export const OnboardingItem: React.FC<OnboardingItemProps> = ({
   item,
   index,
@@ -49,7 +45,7 @@ export const OnboardingItem: React.FC<OnboardingItemProps> = ({
         index * SCREEN_WIDTH,
         (index + 1) * SCREEN_WIDTH,
       ],
-      [-100, 0, 100],
+      [70, 0, 0],
       Extrapolation.CLAMP,
     );
 
@@ -96,7 +92,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // 40% 투명도의 검정색 오버레이
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // 40% 투명도의 검정색 오버레이
   },
   contentContainer: {
     flex: 1,

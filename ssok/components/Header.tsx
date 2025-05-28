@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="black" />
+        <Ionicons name="chevron-back" size={28} color="black" />
       </TouchableOpacity>
       <Text style={[typography.h3, styles.headerTitle]}>{title}</Text>
       <View style={styles.rightPlaceholder} />
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 20,
     marginTop: 10,
   },
   backButton: {

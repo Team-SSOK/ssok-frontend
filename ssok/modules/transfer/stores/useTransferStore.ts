@@ -7,6 +7,19 @@ import {
   RecentTransferHistory,
 } from '../api/transferApi';
 import { Transaction } from '@/utils/types';
+import { getBankCodeByName } from '../utils/bankUtils';
+
+interface TransferProcessData {
+  amount: number;
+  userName: string;
+  accountNumber?: string;
+  bankName?: string;
+  userId?: string;
+  isBluetoothTransfer: boolean;
+  senderName: string;
+  sendAccountId: number;
+  sendBankCode: number;
+}
 
 interface TransferState {
   isLoading: boolean;
@@ -16,6 +29,9 @@ interface TransferState {
   sendMoney: (data: TransferRequest) => Promise<TransferResponse | null>;
   sendMoneyBluetooth: (
     data: BluetoothTransferRequest,
+  ) => Promise<TransferResponse | null>;
+  processTransfer: (
+    data: TransferProcessData,
   ) => Promise<TransferResponse | null>;
   fetchRecentTransactions: (limit?: number) => Promise<void>;
 }
@@ -78,6 +94,57 @@ export const useTransferStore = create<TransferState>((set, get) => ({
         isLoading: false,
       });
       return null;
+    }
+  },
+
+  processTransfer: async (data: TransferProcessData) => {
+    set({ isLoading: true, error: null });
+    try {
+      let response: TransferResponse | null = null;
+
+      if (data.isBluetoothTransfer && data.userId) {
+        // 블루투스 송금 처리
+        const bluetoothTransferData: BluetoothTransferRequest = {
+          sendAccountId: data.sendAccountId,
+          sendBankCode: data.sendBankCode,
+          sendName: data.senderName,
+          recvUserId: Number(data.userId),
+          amount: data.amount,
+        };
+
+        response = await get().sendMoneyBluetooth(bluetoothTransferData);
+      } else if (data.accountNumber && data.bankName) {
+        // 일반 계좌 송금 처리
+        const transferData: TransferRequest = {
+          sendAccountId: data.sendAccountId,
+          sendBankCode: data.sendBankCode,
+          sendName: data.senderName,
+          recvAccountNumber: data.accountNumber,
+          recvBankCode: getBankCodeByName(data.bankName),
+          recvName: data.userName,
+          amount: data.amount,
+        };
+
+        response = await get().sendMoney(transferData);
+      } else {
+        throw new Error('송금에 필요한 정보가 부족합니다.');
+      }
+
+      if (!response) {
+        throw new Error('송금 처리에 실패했습니다.');
+      }
+
+      return response;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '송금 처리 중 오류가 발생했습니다.';
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error; // 에러를 다시 throw하여 complete 페이지에서 처리할 수 있도록 함
     }
   },
 

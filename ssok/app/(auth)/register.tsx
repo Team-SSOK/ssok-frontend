@@ -9,7 +9,6 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { router } from 'expo-router';
-// import AsyncStorage from '@react-native-async-storage/async-storage'; // AsyncStorage 직접 사용 제거
 
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,19 +16,16 @@ import Button from '@/components/Button';
 import Header from '@/components/Header';
 import CustomTextInput from '@/components/CustomTextInput';
 import { Text } from '@/components/TextProvider';
-// import { useLoadingStore } from '@/stores/loadingStore'; // authStore의 isLoading 사용으로 대체
 import { useAuthStore, type AuthUser } from '@/modules/auth/store/authStore'; // useAuthStore, AuthUser import
 
 // Auth 모듈 임포트
 import { authApi } from '@/modules/auth/api'; // authApi는 계속 사용
 import { useRegisterForm } from '@/modules/auth/hooks/useRegisterForm';
-// import { useRegisterState } from '@/modules/auth/hooks/useRegisterState'; // useAuthStore로 대체
 import {
   PhoneVerificationInput,
   CodeVerificationInput,
 } from '@/modules/auth/components';
 import {
-  // STORAGE_KEYS, // AsyncStorage 직접 사용 제거
   SUCCESS_MESSAGES,
   ERROR_MESSAGES,
 } from '@/modules/auth/utils/constants';
@@ -95,8 +91,8 @@ export default function Register() {
         });
       }
     } catch (err) {
-      console.log(err);
       // authStore.setError(ERROR_MESSAGES.SEND_CODE_ERROR);
+      console.log(err);
       showDialog({
         title: '오류',
         content: ERROR_MESSAGES.SEND_CODE_ERROR,
@@ -125,6 +121,7 @@ export default function Register() {
         phoneNumber: form.phoneNumber,
         verificationCode: form.verificationCode,
       });
+
       if (response.data.isSuccess) {
         setVerificationConfirmedLocal(true);
         showDialog({
@@ -140,6 +137,7 @@ export default function Register() {
         // authStore.setError(ERROR_MESSAGES.INVALID_VERIFICATION_CODE);
       }
     } catch (err) {
+      console.log(err);
       // authStore.setError(ERROR_MESSAGES.VERIFY_CODE_ERROR);
       showDialog({
         title: '오류',
@@ -292,7 +290,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 40,
+    paddingVertical: 40,
+    paddingHorizontal: 36,
   },
   termsContainer: {
     flexDirection: 'row',
