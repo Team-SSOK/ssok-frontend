@@ -34,10 +34,8 @@ export default function CompleteMessage({
   useEffect(() => {
     if (!isLoading) {
       // 약간의 딜레이 후 성공 애니메이션 표시
-      const timer = setTimeout(() => {
-        setShowSuccess(true);
-      }, 2000);
-      return () => clearTimeout(timer);
+      setShowSuccess(true);
+      return;
     }
   }, [isLoading]);
 
