@@ -196,7 +196,7 @@ export const formatPrice = (price: number) =>
 ## 12. 디렉토리 구조 및 모듈화 (지향하다)
 
 ```bash
-src/
+ssok/
 ├── components/       # 공용 UI
 ├── hooks/            # 공용 훅
 ├── utils/            # 공용 유틸 함수

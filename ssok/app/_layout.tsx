@@ -62,7 +62,7 @@ function RootNavigator() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!isAuthenticated}>
-        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
       <Stack.Protected guard={isAuthenticated}>

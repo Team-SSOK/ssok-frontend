@@ -59,7 +59,10 @@
         "react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
-          "modes": ["peripheral", "central"],
+          "modes": [
+            "peripheral",
+            "central"
+          ],
           "bluetoothAlwaysPermission": "$(PRODUCT_NAME)이(가) 블루투스 기기에 연결하는 것을 허용하시겠습니까?"
         }
       ],
@@ -71,7 +74,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-video"
+      "expo-video",
+      "expo-background-task"
     ],
     "experiments": {
       "typedRoutes": true

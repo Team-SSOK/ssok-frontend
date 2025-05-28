@@ -8,8 +8,8 @@ import {
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
-import SlideShow from '@/modules/onboarding/components/SlideShow';
-import { onboardingSlides } from '@/modules/onboarding/utils/slides';
+// import SlideShow from '@/modules/onboarding/components/SlideShow';
+// import { onboardingSlides } from '@/modules/onboarding/utils/slides';
 import { Header } from '@/modules/settings';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
@@ -25,7 +25,7 @@ export default function AppIntroScreen() {
 
       {/* 슬라이드쇼 */}
       <View style={styles.slideContainer}>
-        <SlideShow
+        {/* <SlideShow
           data={onboardingSlides}
           showPagination={true}
           EndComponent={
@@ -40,8 +40,8 @@ export default function AppIntroScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          }
-        />
+          } */}
+        {/* /> */}
       </View>
     </SafeAreaView>
   );
