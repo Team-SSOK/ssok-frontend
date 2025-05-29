@@ -61,27 +61,36 @@ export const useTransferFlow = (initialStep: TransferStep = 'account') => {
    * 이전 스텝으로 이동
    */
   const goToPrevious = useCallback(() => {
+    console.log('goToPrevious called');
+
     // 애니메이션 트리거
     createStepTransition();
 
     setState((prevState) => {
+      console.log('Current state in goToPrevious:', prevState.currentStep);
       let previousStep: TransferStep = prevState.currentStep;
 
       // 이전 스텝 결정
       switch (prevState.currentStep) {
         case 'amount':
           previousStep = 'account';
+          console.log('Moving from amount to account');
           break;
         case 'confirm':
           previousStep = 'amount';
+          console.log('Moving from confirm to amount');
           break;
         case 'complete':
           previousStep = 'confirm';
+          console.log('Moving from complete to confirm');
           break;
         case 'account':
+          console.log('Already at account step, not moving');
           // 첫 번째 스텝에서는 더 이상 뒤로 가지 않음
           break;
       }
+
+      console.log('New step will be:', previousStep);
 
       return {
         ...prevState,

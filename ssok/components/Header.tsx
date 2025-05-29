@@ -11,10 +11,16 @@ interface HeaderProps {
   onBackPress?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title }) => {
+const Header: React.FC<HeaderProps> = ({ title, onBackPress }) => {
   const handleBackPress = () => {
-    router.back();
+    console.log('Header back button pressed, onBackPress:', !!onBackPress);
+    if (onBackPress) {
+      onBackPress();
+    } else {
+      router.back();
+    }
   };
+
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>

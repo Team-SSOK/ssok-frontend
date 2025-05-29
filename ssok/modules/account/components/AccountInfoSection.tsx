@@ -16,6 +16,11 @@ import { typography } from '@/theme/typography';
 
 interface AccountInfoSectionProps {
   /**
+   * 계좌 ID
+   */
+  accountId: number;
+
+  /**
    * 계좌번호
    */
   accountNumber: string;
@@ -37,6 +42,7 @@ interface AccountInfoSectionProps {
  * 계좌번호, 잔액 등 계좌 기본 정보를 표시하고, 계좌번호 복사 및 송금 기능을 제공합니다.
  */
 const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
+  accountId,
   accountNumber,
   accountType,
   balance,
@@ -45,7 +51,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
 
   // 송금 화면으로 이동 (단순 라우팅 함수이므로 useCallback 불필요)
   const handleTransferPress = () => {
-    router.push('/transfer');
+    router.push(`/transfer?accountId=${accountId}` as any);
   };
 
   // 계좌번호 복사 (useCallback 유지: Clipboard 같은 비동기 함수이므로 의미있음)

@@ -14,11 +14,15 @@ import AmountStep from './steps/AmountStep';
 import ConfirmStep from './steps/ConfirmStep';
 import CompleteStep from './steps/CompleteStep';
 
+interface TransferFlowProps {
+  sourceAccountId?: string;
+}
+
 /**
  * 송금 플로우 메인 컴포넌트
  * 모든 송금 스텝을 하나의 페이지에서 관리합니다
  */
-export default function TransferFlow() {
+export default function TransferFlow({ sourceAccountId }: TransferFlowProps) {
   const { currentStep, data, isLoading, error, goToNext, goToPrevious, reset } =
     useTransferFlow();
 
@@ -51,16 +55,32 @@ export default function TransferFlow() {
 
   // 뒤로가기 처리
   const handleBack = () => {
+    console.log('=== TransferFlow handleBack ===');
+    console.log('currentStep:', currentStep);
+    console.log('sourceAccountId:', sourceAccountId);
+
     if (currentStep === 'account') {
+      console.log('Going back from account step');
       // 첫 번째 스텝에서는 이전 화면으로 돌아가기
-      router.back();
+      if (sourceAccountId) {
+        console.log('Navigating to account detail:', sourceAccountId);
+        // 계좌 ID가 있으면 해당 계좌 상세 화면으로 이동
+        router.replace(`/account/${sourceAccountId}` as any);
+      } else {
+        console.log('Using router.back()');
+        // 계좌 ID가 없으면 일반적인 뒤로가기
+        router.back();
+      }
     } else if (currentStep === 'complete') {
+      console.log('Going back from complete step');
       // 완료 스텝에서는 홈으로 이동
       router.replace('/(tabs)' as any);
     } else {
+      console.log('Going to previous step from:', currentStep);
       // 다른 스텝에서는 이전 스텝으로 이동
       goToPrevious();
     }
+    console.log('=== End handleBack ===');
   };
 
   // 현재 스텝에 따른 컴포넌트 렌더링

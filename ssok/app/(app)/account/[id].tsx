@@ -121,6 +121,7 @@ export default function AccountDetailScreen() {
       <ScrollView style={styles.scrollView}>
         {/* 계좌 정보 섹션 */}
         <AccountInfoSection
+          accountId={accountId}
           accountNumber={currentAccount.accountNumber}
           accountType={
             currentAccount.accountAlias || currentAccount.accountTypeCode

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import TransferFlow from '@/modules/transfer/components/TransferFlow';
 
 /**
@@ -6,5 +7,7 @@ import TransferFlow from '@/modules/transfer/components/TransferFlow';
  * 모든 송금 스텝을 하나의 플로우로 관리합니다
  */
 export default function TransferScreen() {
-  return <TransferFlow />;
+  const { accountId } = useLocalSearchParams();
+
+  return <TransferFlow sourceAccountId={accountId as string} />;
 }
