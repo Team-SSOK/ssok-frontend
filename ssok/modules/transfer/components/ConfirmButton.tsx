@@ -1,5 +1,13 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
@@ -20,19 +28,61 @@ export default function ConfirmButton({
   variant = 'primary',
   style,
 }: ConfirmButtonProps) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+
   const buttonStyle =
     variant === 'primary' ? styles.primaryButton : styles.secondaryButton;
   const textStyle =
     variant === 'primary' ? styles.primaryText : styles.secondaryText;
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96, {
+      duration: 150,
+      dampingRatio: 0.8,
+    });
+    opacity.value = withTiming(0.8, {
+      duration: 150,
+      easing: Easing.out(Easing.quad),
+    });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, {
+      duration: 200,
+      dampingRatio: 0.8,
+    });
+    opacity.value = withTiming(1, {
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+    });
+  };
+
+  const handlePress = () => {
+    // 햅틱 피드백
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onPress();
+  };
+
   return (
-    <TouchableOpacity
-      style={[buttonStyle, style]}
-      activeOpacity={0.8}
-      onPress={onPress}
-    >
-      <Text style={[typography.button, textStyle]}>{title}</Text>
-    </TouchableOpacity>
+    <Animated.View style={[animatedStyle, style]}>
+      <TouchableOpacity
+        style={buttonStyle}
+        activeOpacity={1}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        delayPressIn={0}
+        delayPressOut={0}
+      >
+        <Text style={[typography.button, textStyle]}>{title}</Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 

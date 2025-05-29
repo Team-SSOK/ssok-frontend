@@ -1,12 +1,15 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   FadeInUp,
   FadeOutDown,
+  FadeOut,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
+  withSpring,
   Easing,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
@@ -100,13 +103,48 @@ export default function TransferKeypad({
     onPress: () => void;
     style?: any;
     index: number;
-  }) => (
-    <Animated.View style={getButtonAnimatedStyle(index)}>
-      <TouchableOpacity style={[styles.keypadButton, style]} onPress={onPress}>
-        <Text style={styles.keypadButtonText}>{value}</Text>
-      </TouchableOpacity>
-    </Animated.View>
-  );
+  }) => {
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const handlePress = () => {
+      // 햅틱 피드백
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      // 즉각적인 시각적 피드백
+      scale.value = withSpring(0.95, {
+        duration: 100,
+        dampingRatio: 0.8,
+      });
+
+      setTimeout(() => {
+        scale.value = withSpring(1, {
+          duration: 150,
+          dampingRatio: 0.8,
+        });
+      }, 100);
+
+      // 즉시 onPress 실행
+      onPress();
+    };
+
+    return (
+      <Animated.View style={[getButtonAnimatedStyle(index), animatedStyle]}>
+        <TouchableOpacity
+          style={[styles.keypadButton, style]}
+          onPress={handlePress}
+          activeOpacity={0.7}
+          delayPressIn={0}
+          delayPressOut={0}
+        >
+          <Text style={styles.keypadButtonText}>{value}</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   // 백스페이스 버튼
   const BackspaceButton = ({
@@ -115,13 +153,48 @@ export default function TransferKeypad({
   }: {
     onPress: () => void;
     index: number;
-  }) => (
-    <Animated.View style={getButtonAnimatedStyle(index)}>
-      <TouchableOpacity style={styles.keypadButton} onPress={onPress}>
-        <Text style={styles.keypadButtonText}>←</Text>
-      </TouchableOpacity>
-    </Animated.View>
-  );
+  }) => {
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+    }));
+
+    const handlePress = () => {
+      // 햅틱 피드백
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      // 즉각적인 시각적 피드백
+      scale.value = withSpring(0.95, {
+        duration: 100,
+        dampingRatio: 0.8,
+      });
+
+      setTimeout(() => {
+        scale.value = withSpring(1, {
+          duration: 150,
+          dampingRatio: 0.8,
+        });
+      }, 100);
+
+      // 즉시 onPress 실행
+      onPress();
+    };
+
+    return (
+      <Animated.View style={[getButtonAnimatedStyle(index), animatedStyle]}>
+        <TouchableOpacity
+          style={styles.keypadButton}
+          onPress={handlePress}
+          activeOpacity={0.7}
+          delayPressIn={0}
+          delayPressOut={0}
+        >
+          <Text style={styles.keypadButtonText}>←</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
     <Animated.View style={[styles.container, keypadAnimatedStyle]}>
@@ -130,7 +203,7 @@ export default function TransferKeypad({
         {showNextButton && (
           <Animated.View
             entering={FadeInUp.duration(400).easing(Easing.out(Easing.quad))}
-            exiting={FadeOutDown.duration(300).easing(Easing.in(Easing.quad))}
+            exiting={FadeOut.duration(400).easing(Easing.out(Easing.cubic))}
             style={styles.nextButtonContainer}
           >
             <TouchableOpacity style={styles.nextButton} onPress={onNext}>

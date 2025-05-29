@@ -12,6 +12,7 @@ import Animated, {
   SlideInUp,
   SlideOutDown,
   runOnJS,
+  FadeInUp,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
@@ -35,6 +36,7 @@ export default function AmountStep({
   const [amount, setAmount] = useState<string>('');
   const [btnEnabled, setBtnEnabled] = useState<boolean>(false);
   const [isConfirmMode, setIsConfirmMode] = useState<boolean>(false);
+  const [showNextButton, setShowNextButton] = useState<boolean>(false);
 
   const { accounts } = useAccountStore();
 
@@ -54,7 +56,9 @@ export default function AmountStep({
   // 금액 입력 상태에 따른 버튼 활성화
   useEffect(() => {
     const numericAmount = parseInt(amount.replace(/,/g, '')) || 0;
-    setBtnEnabled(numericAmount > 0);
+    const shouldShowButton = numericAmount > 0;
+    setBtnEnabled(shouldShowButton);
+    setShowNextButton(shouldShowButton);
   }, [amount]);
 
   // 숫자 포맷팅 (천 단위 콤마)
@@ -101,60 +105,73 @@ export default function AmountStep({
 
   // 확인 모드로 전환
   const handleConfirmMode = () => {
-    // 3단계 애니메이션: 기존 요소 fade out → 확인 질문 등장 → 확인 버튼 등장
+    // 먼저 다음 버튼을 숨김 (부드러운 사라짐을 위해)
+    setShowNextButton(false);
+
+    // 1단계: 기존 요소들을 부드럽게 fade out하면서 위로 살짝 이동
     inputElementsOpacity.value = withTiming(0, {
-      duration: 300,
-      easing: Easing.out(Easing.quad),
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
     });
 
-    // 확인 요소들 등장
+    // 2단계: 확인 요소들이 아래에서 위로 부드럽게 등장
     setTimeout(() => {
       runOnJS(setIsConfirmMode)(true);
-      confirmElementsOpacity.value = withSequence(
-        withDelay(
-          100,
-          withTiming(1, {
-            duration: 400,
-            easing: Easing.out(Easing.cubic),
-          }),
-        ),
-      );
-      confirmElementsTranslateY.value = withSequence(
-        withDelay(
-          100,
-          withTiming(0, {
-            duration: 400,
-            easing: Easing.out(Easing.back(1.2)),
-          }),
-        ),
-      );
-    }, 200);
+
+      // 확인 질문이 중앙에서 부드럽게 등장
+      confirmElementsOpacity.value = withTiming(1, {
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+      });
+
+      // 아래에서 위로 부드럽게 슬라이드
+      confirmElementsTranslateY.value = withTiming(0, {
+        duration: 600,
+        easing: Easing.out(Easing.back(1.1)),
+      });
+    }, 250);
   };
 
   // 입력 모드로 돌아가기
   const handleBackToInput = () => {
+    // 확인 요소들이 아래로 사라지면서 fade out
     confirmElementsOpacity.value = withTiming(0, {
-      duration: 250,
-      easing: Easing.in(Easing.quad),
+      duration: 350,
+      easing: Easing.in(Easing.cubic),
     });
-    confirmElementsTranslateY.value = withTiming(50, {
-      duration: 250,
-      easing: Easing.in(Easing.quad),
+    confirmElementsTranslateY.value = withTiming(30, {
+      duration: 350,
+      easing: Easing.in(Easing.cubic),
     });
 
+    // 입력 요소들이 부드럽게 다시 등장
     setTimeout(() => {
       runOnJS(setIsConfirmMode)(false);
       inputElementsOpacity.value = withTiming(1, {
-        duration: 300,
+        duration: 400,
         easing: Easing.out(Easing.quad),
       });
-    }, 150);
+      // 다음 버튼도 다시 표시 (금액이 있다면)
+      const numericAmount = parseInt(amount.replace(/,/g, '')) || 0;
+      if (numericAmount > 0) {
+        runOnJS(setShowNextButton)(true);
+      }
+    }, 200);
   };
 
   // 송금 확인
   const handleConfirm = () => {
     const numericAmount = parseInt(amount.replace(/,/g, '')) || 0;
-    onNext({ amount: numericAmount, isConfirmed: true });
+
+    // 확인 버튼 클릭 시 부드러운 fade out
+    confirmElementsOpacity.value = withTiming(0, {
+      duration: 300,
+      easing: Easing.in(Easing.quad),
+    });
+
+    setTimeout(() => {
+      onNext({ amount: numericAmount, isConfirmed: true });
+    }, 150);
   };
 
   // 애니메이션 스타일
@@ -162,8 +179,15 @@ export default function AmountStep({
     opacity: inputElementsOpacity.value,
     transform: [
       {
-        translateY: withTiming(inputElementsOpacity.value === 0 ? -20 : 0, {
-          duration: 300,
+        translateY: withTiming(inputElementsOpacity.value === 0 ? -15 : 0, {
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
+        }),
+      },
+      {
+        scale: withTiming(inputElementsOpacity.value === 0 ? 0.98 : 1, {
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
         }),
       },
     ],
@@ -171,7 +195,15 @@ export default function AmountStep({
 
   const confirmElementsStyle = useAnimatedStyle(() => ({
     opacity: confirmElementsOpacity.value,
-    transform: [{ translateY: confirmElementsTranslateY.value }],
+    transform: [
+      { translateY: confirmElementsTranslateY.value },
+      {
+        scale: withTiming(confirmElementsOpacity.value === 1 ? 1 : 0.95, {
+          duration: 600,
+          easing: Easing.out(Easing.back(1.1)),
+        }),
+      },
+    ],
   }));
 
   return (
@@ -201,7 +233,7 @@ export default function AmountStep({
           <TransferKeypad
             onKeyPress={handleKeyPress}
             onNext={handleConfirmMode}
-            showNextButton={btnEnabled}
+            showNextButton={showNextButton}
           />
         </Animated.View>
       ) : (
@@ -216,18 +248,30 @@ export default function AmountStep({
 
             {/* 확인 버튼들 */}
             <View style={styles.confirmButtons}>
-              <ConfirmButton
-                title="이전"
-                variant="secondary"
-                onPress={handleBackToInput}
+              <Animated.View
+                entering={FadeInUp.delay(700)
+                  .duration(400)
+                  .easing(Easing.out(Easing.back(1.2)))}
                 style={styles.backButton}
-              />
-              <ConfirmButton
-                title="보내기"
-                variant="primary"
-                onPress={handleConfirm}
+              >
+                <ConfirmButton
+                  title="이전"
+                  variant="secondary"
+                  onPress={handleBackToInput}
+                />
+              </Animated.View>
+              <Animated.View
+                entering={FadeInUp.delay(800)
+                  .duration(400)
+                  .easing(Easing.out(Easing.back(1.2)))}
                 style={styles.confirmButton}
-              />
+              >
+                <ConfirmButton
+                  title="보내기"
+                  variant="primary"
+                  onPress={handleConfirm}
+                />
+              </Animated.View>
             </View>
           </View>
         </Animated.View>
