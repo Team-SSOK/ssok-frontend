@@ -1,15 +1,13 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   FadeInUp,
-  FadeOutDown,
   FadeOut,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
-  withSpring,
   Easing,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
@@ -30,18 +28,11 @@ export default function TransferKeypad({
   onNext,
   showNextButton,
 }: TransferKeypadProps) {
-  // 애니메이션을 위한 shared value
+  // 초기 렌더링 애니메이션만 유지
   const keypadOpacity = useSharedValue(0);
   const keypadTranslateY = useSharedValue(20);
 
-  // 각 키패드 버튼의 애니메이션을 위한 shared values
-  const buttonOpacities = Array.from({ length: 12 }, () => useSharedValue(0));
-  const buttonTranslateYs = Array.from({ length: 12 }, () =>
-    useSharedValue(15),
-  );
-
   React.useEffect(() => {
-    // 부드러운 키패드 전체 애니메이션
     keypadOpacity.value = withDelay(
       250,
       withTiming(1, {
@@ -56,149 +47,58 @@ export default function TransferKeypad({
         easing: Easing.out(Easing.quad),
       }),
     );
-
-    // 각 버튼의 staggered 애니메이션
-    buttonOpacities.forEach((opacity, index) => {
-      opacity.value = withDelay(
-        300 + index * 50,
-        withTiming(1, {
-          duration: 400,
-          easing: Easing.out(Easing.quad),
-        }),
-      );
-    });
-
-    buttonTranslateYs.forEach((translateY, index) => {
-      translateY.value = withDelay(
-        300 + index * 50,
-        withTiming(0, {
-          duration: 400,
-          easing: Easing.out(Easing.quad),
-        }),
-      );
-    });
   }, []);
 
-  // 애니메이션 스타일
   const keypadAnimatedStyle = useAnimatedStyle(() => ({
     opacity: keypadOpacity.value,
     transform: [{ translateY: keypadTranslateY.value }],
   }));
 
-  // 개별 버튼 애니메이션 스타일 생성 함수
-  const getButtonAnimatedStyle = (index: number) =>
-    useAnimatedStyle(() => ({
-      opacity: buttonOpacities[index].value,
-      transform: [{ translateY: buttonTranslateYs[index].value }],
-    }));
-
-  // 키패드 버튼 컴포넌트
+  // 키패드 버튼 컴포넌트 - 간단하게 정리
   const KeypadButton = ({
     value,
     onPress,
-    style,
-    index,
   }: {
     value: string;
     onPress: () => void;
-    style?: any;
-    index: number;
   }) => {
-    const scale = useSharedValue(1);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
-    }));
-
     const handlePress = () => {
-      // 햅틱 피드백
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      // 즉각적인 시각적 피드백
-      scale.value = withSpring(0.95, {
-        duration: 100,
-        dampingRatio: 0.8,
-      });
-
-      setTimeout(() => {
-        scale.value = withSpring(1, {
-          duration: 150,
-          dampingRatio: 0.8,
-        });
-      }, 100);
-
-      // 즉시 onPress 실행
       onPress();
     };
 
     return (
-      <Animated.View style={[getButtonAnimatedStyle(index), animatedStyle]}>
-        <TouchableOpacity
-          style={[styles.keypadButton, style]}
-          onPress={handlePress}
-          activeOpacity={0.7}
-          delayPressIn={0}
-          delayPressOut={0}
-        >
-          <Text style={styles.keypadButtonText}>{value}</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <Pressable
+        style={styles.keypadButton}
+        onPress={handlePress}
+        android_ripple={{ color: colors.primary + '20', borderless: true }}
+      >
+        <Text style={styles.keypadButtonText}>{value}</Text>
+      </Pressable>
     );
   };
 
   // 백스페이스 버튼
-  const BackspaceButton = ({
-    onPress,
-    index,
-  }: {
-    onPress: () => void;
-    index: number;
-  }) => {
-    const scale = useSharedValue(1);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
-    }));
-
+  const BackspaceButton = ({ onPress }: { onPress: () => void }) => {
     const handlePress = () => {
-      // 햅틱 피드백
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      // 즉각적인 시각적 피드백
-      scale.value = withSpring(0.95, {
-        duration: 100,
-        dampingRatio: 0.8,
-      });
-
-      setTimeout(() => {
-        scale.value = withSpring(1, {
-          duration: 150,
-          dampingRatio: 0.8,
-        });
-      }, 100);
-
-      // 즉시 onPress 실행
       onPress();
     };
 
     return (
-      <Animated.View style={[getButtonAnimatedStyle(index), animatedStyle]}>
-        <TouchableOpacity
-          style={styles.keypadButton}
-          onPress={handlePress}
-          activeOpacity={0.7}
-          delayPressIn={0}
-          delayPressOut={0}
-        >
-          <Text style={styles.keypadButtonText}>←</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <Pressable
+        style={styles.keypadButton}
+        onPress={handlePress}
+        android_ripple={{ color: colors.primary + '20', borderless: true }}
+      >
+        <Text style={styles.keypadButtonText}>←</Text>
+      </Pressable>
     );
   };
 
   return (
     <Animated.View style={[styles.container, keypadAnimatedStyle]}>
-      {/* 다음 버튼 - 금액 입력 시에만 표시 */}
+      {/* 다음 버튼 */}
       <View style={styles.nextButtonWrapper}>
         {showNextButton && (
           <Animated.View
@@ -206,34 +106,38 @@ export default function TransferKeypad({
             exiting={FadeOut.duration(400).easing(Easing.out(Easing.cubic))}
             style={styles.nextButtonContainer}
           >
-            <TouchableOpacity style={styles.nextButton} onPress={onNext}>
+            <Pressable
+              style={styles.nextButton}
+              onPress={onNext}
+              android_ripple={{ color: colors.white + '30' }}
+            >
               <Text style={styles.nextButtonText}>다음</Text>
-            </TouchableOpacity>
+            </Pressable>
           </Animated.View>
         )}
       </View>
 
-      {/* 키패드 버튼들 - staggered 애니메이션 */}
+      {/* 키패드 버튼들 */}
       <View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="1" onPress={() => onKeyPress('1')} index={0} />
-          <KeypadButton value="2" onPress={() => onKeyPress('2')} index={1} />
-          <KeypadButton value="3" onPress={() => onKeyPress('3')} index={2} />
+          <KeypadButton value="1" onPress={() => onKeyPress('1')} />
+          <KeypadButton value="2" onPress={() => onKeyPress('2')} />
+          <KeypadButton value="3" onPress={() => onKeyPress('3')} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="4" onPress={() => onKeyPress('4')} index={3} />
-          <KeypadButton value="5" onPress={() => onKeyPress('5')} index={4} />
-          <KeypadButton value="6" onPress={() => onKeyPress('6')} index={5} />
+          <KeypadButton value="4" onPress={() => onKeyPress('4')} />
+          <KeypadButton value="5" onPress={() => onKeyPress('5')} />
+          <KeypadButton value="6" onPress={() => onKeyPress('6')} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="7" onPress={() => onKeyPress('7')} index={6} />
-          <KeypadButton value="8" onPress={() => onKeyPress('8')} index={7} />
-          <KeypadButton value="9" onPress={() => onKeyPress('9')} index={8} />
+          <KeypadButton value="7" onPress={() => onKeyPress('7')} />
+          <KeypadButton value="8" onPress={() => onKeyPress('8')} />
+          <KeypadButton value="9" onPress={() => onKeyPress('9')} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="00" onPress={() => onKeyPress('00')} index={9} />
-          <KeypadButton value="0" onPress={() => onKeyPress('0')} index={10} />
-          <BackspaceButton onPress={() => onKeyPress('delete')} index={11} />
+          <KeypadButton value="00" onPress={() => onKeyPress('00')} />
+          <KeypadButton value="0" onPress={() => onKeyPress('0')} />
+          <BackspaceButton onPress={() => onKeyPress('delete')} />
         </View>
       </View>
     </Animated.View>
@@ -260,6 +164,7 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   nextButtonText: {
     fontSize: 18,
@@ -277,6 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
+    overflow: 'hidden',
   },
   keypadButtonText: {
     fontSize: 24,

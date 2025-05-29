@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSequence,
-  withDelay,
   Easing,
-  FadeIn,
-  FadeOut,
-  SlideInUp,
-  SlideOutDown,
   runOnJS,
   FadeInUp,
 } from 'react-native-reanimated';
