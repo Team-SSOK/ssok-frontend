@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withDelay,
+  Easing,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
@@ -28,17 +29,30 @@ export default function AmountHeader({
 }: AmountHeaderProps) {
   // 애니메이션을 위한 shared value
   const headerOpacity = useSharedValue(0);
+  const headerTranslateY = useSharedValue(-15);
 
   React.useEffect(() => {
-    headerOpacity.value = withDelay(100, withTiming(1, { duration: 600 }));
+    // 더 부드러운 easing과 짧은 딜레이로 자연스러운 애니메이션
+    headerOpacity.value = withDelay(
+      50,
+      withTiming(1, {
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+      }),
+    );
+    headerTranslateY.value = withDelay(
+      50,
+      withTiming(0, {
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+      }),
+    );
   }, []);
 
   // 애니메이션 스타일
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
-    transform: [
-      { translateY: withTiming(headerOpacity.value === 1 ? 0 : -20) },
-    ],
+    transform: [{ translateY: headerTranslateY.value }],
   }));
 
   return (

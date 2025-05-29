@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withDelay,
+  Easing,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
@@ -26,15 +27,41 @@ export default function AmountDisplay({
 }: AmountDisplayProps) {
   // 애니메이션을 위한 shared value
   const amountOpacity = useSharedValue(0);
+  const amountScale = useSharedValue(0.95);
+  const amountTranslateY = useSharedValue(10);
 
   React.useEffect(() => {
-    amountOpacity.value = withDelay(300, withTiming(1, { duration: 600 }));
+    // 더 자연스러운 spring-like 애니메이션
+    amountOpacity.value = withDelay(
+      150,
+      withTiming(1, {
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
+    amountScale.value = withDelay(
+      150,
+      withTiming(1, {
+        duration: 700,
+        easing: Easing.out(Easing.back(1.1)),
+      }),
+    );
+    amountTranslateY.value = withDelay(
+      150,
+      withTiming(0, {
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
   }, []);
 
   // 애니메이션 스타일
   const amountAnimatedStyle = useAnimatedStyle(() => ({
     opacity: amountOpacity.value,
-    transform: [{ scale: withTiming(amountOpacity.value === 1 ? 1 : 0.9) }],
+    transform: [
+      { scale: amountScale.value },
+      { translateY: amountTranslateY.value },
+    ],
   }));
 
   return (

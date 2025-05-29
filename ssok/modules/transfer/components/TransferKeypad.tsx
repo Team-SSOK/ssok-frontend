@@ -7,6 +7,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withDelay,
+  Easing,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
@@ -28,37 +29,98 @@ export default function TransferKeypad({
 }: TransferKeypadProps) {
   // 애니메이션을 위한 shared value
   const keypadOpacity = useSharedValue(0);
+  const keypadTranslateY = useSharedValue(20);
+
+  // 각 키패드 버튼의 애니메이션을 위한 shared values
+  const buttonOpacities = Array.from({ length: 12 }, () => useSharedValue(0));
+  const buttonTranslateYs = Array.from({ length: 12 }, () =>
+    useSharedValue(15),
+  );
 
   React.useEffect(() => {
-    keypadOpacity.value = withDelay(500, withTiming(1, { duration: 600 }));
+    // 부드러운 키패드 전체 애니메이션
+    keypadOpacity.value = withDelay(
+      250,
+      withTiming(1, {
+        duration: 600,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
+    keypadTranslateY.value = withDelay(
+      250,
+      withTiming(0, {
+        duration: 600,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
+
+    // 각 버튼의 staggered 애니메이션
+    buttonOpacities.forEach((opacity, index) => {
+      opacity.value = withDelay(
+        300 + index * 50,
+        withTiming(1, {
+          duration: 400,
+          easing: Easing.out(Easing.quad),
+        }),
+      );
+    });
+
+    buttonTranslateYs.forEach((translateY, index) => {
+      translateY.value = withDelay(
+        300 + index * 50,
+        withTiming(0, {
+          duration: 400,
+          easing: Easing.out(Easing.quad),
+        }),
+      );
+    });
   }, []);
 
   // 애니메이션 스타일
   const keypadAnimatedStyle = useAnimatedStyle(() => ({
     opacity: keypadOpacity.value,
-    transform: [{ translateY: withTiming(keypadOpacity.value === 1 ? 0 : 30) }],
+    transform: [{ translateY: keypadTranslateY.value }],
   }));
+
+  // 개별 버튼 애니메이션 스타일 생성 함수
+  const getButtonAnimatedStyle = (index: number) =>
+    useAnimatedStyle(() => ({
+      opacity: buttonOpacities[index].value,
+      transform: [{ translateY: buttonTranslateYs[index].value }],
+    }));
 
   // 키패드 버튼 컴포넌트
   const KeypadButton = ({
     value,
     onPress,
     style,
+    index,
   }: {
     value: string;
     onPress: () => void;
     style?: any;
+    index: number;
   }) => (
-    <TouchableOpacity style={[styles.keypadButton, style]} onPress={onPress}>
-      <Text style={styles.keypadButtonText}>{value}</Text>
-    </TouchableOpacity>
+    <Animated.View style={getButtonAnimatedStyle(index)}>
+      <TouchableOpacity style={[styles.keypadButton, style]} onPress={onPress}>
+        <Text style={styles.keypadButtonText}>{value}</Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 
   // 백스페이스 버튼
-  const BackspaceButton = ({ onPress }: { onPress: () => void }) => (
-    <TouchableOpacity style={styles.keypadButton} onPress={onPress}>
-      <Text style={styles.keypadButtonText}>←</Text>
-    </TouchableOpacity>
+  const BackspaceButton = ({
+    onPress,
+    index,
+  }: {
+    onPress: () => void;
+    index: number;
+  }) => (
+    <Animated.View style={getButtonAnimatedStyle(index)}>
+      <TouchableOpacity style={styles.keypadButton} onPress={onPress}>
+        <Text style={styles.keypadButtonText}>←</Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 
   return (
@@ -67,8 +129,8 @@ export default function TransferKeypad({
       <View style={styles.nextButtonWrapper}>
         {showNextButton && (
           <Animated.View
-            entering={FadeInUp.duration(300)}
-            exiting={FadeOutDown.duration(200)}
+            entering={FadeInUp.duration(400).easing(Easing.out(Easing.quad))}
+            exiting={FadeOutDown.duration(300).easing(Easing.in(Easing.quad))}
             style={styles.nextButtonContainer}
           >
             <TouchableOpacity style={styles.nextButton} onPress={onNext}>
@@ -78,27 +140,27 @@ export default function TransferKeypad({
         )}
       </View>
 
-      {/* 키패드 버튼들 */}
+      {/* 키패드 버튼들 - staggered 애니메이션 */}
       <View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="1" onPress={() => onKeyPress('1')} />
-          <KeypadButton value="2" onPress={() => onKeyPress('2')} />
-          <KeypadButton value="3" onPress={() => onKeyPress('3')} />
+          <KeypadButton value="1" onPress={() => onKeyPress('1')} index={0} />
+          <KeypadButton value="2" onPress={() => onKeyPress('2')} index={1} />
+          <KeypadButton value="3" onPress={() => onKeyPress('3')} index={2} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="4" onPress={() => onKeyPress('4')} />
-          <KeypadButton value="5" onPress={() => onKeyPress('5')} />
-          <KeypadButton value="6" onPress={() => onKeyPress('6')} />
+          <KeypadButton value="4" onPress={() => onKeyPress('4')} index={3} />
+          <KeypadButton value="5" onPress={() => onKeyPress('5')} index={4} />
+          <KeypadButton value="6" onPress={() => onKeyPress('6')} index={5} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="7" onPress={() => onKeyPress('7')} />
-          <KeypadButton value="8" onPress={() => onKeyPress('8')} />
-          <KeypadButton value="9" onPress={() => onKeyPress('9')} />
+          <KeypadButton value="7" onPress={() => onKeyPress('7')} index={6} />
+          <KeypadButton value="8" onPress={() => onKeyPress('8')} index={7} />
+          <KeypadButton value="9" onPress={() => onKeyPress('9')} index={8} />
         </View>
         <View style={styles.keypadRow}>
-          <KeypadButton value="00" onPress={() => onKeyPress('00')} />
-          <KeypadButton value="0" onPress={() => onKeyPress('0')} />
-          <BackspaceButton onPress={() => onKeyPress('delete')} />
+          <KeypadButton value="00" onPress={() => onKeyPress('00')} index={9} />
+          <KeypadButton value="0" onPress={() => onKeyPress('0')} index={10} />
+          <BackspaceButton onPress={() => onKeyPress('delete')} index={11} />
         </View>
       </View>
     </Animated.View>
