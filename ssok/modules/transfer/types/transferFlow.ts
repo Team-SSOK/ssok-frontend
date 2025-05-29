@@ -3,7 +3,7 @@ import { Bank } from '@/mocks/bankData';
 /**
  * 송금 플로우 스텝 타입
  */
-export type TransferStep = 'account' | 'amount' | 'confirm' | 'complete';
+export type TransferStep = 'account' | 'amount' | 'complete';
 
 /**
  * 송금 플로우 데이터 타입

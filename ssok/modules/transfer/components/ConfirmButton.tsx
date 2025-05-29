@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
@@ -7,6 +7,8 @@ import { typography } from '@/theme/typography';
 interface ConfirmButtonProps {
   onPress: () => void;
   title?: string;
+  variant?: 'primary' | 'secondary';
+  style?: ViewStyle;
 }
 
 /**
@@ -15,27 +17,46 @@ interface ConfirmButtonProps {
 export default function ConfirmButton({
   onPress,
   title = '송금하기',
+  variant = 'primary',
+  style,
 }: ConfirmButtonProps) {
+  const buttonStyle =
+    variant === 'primary' ? styles.primaryButton : styles.secondaryButton;
+  const textStyle =
+    variant === 'primary' ? styles.primaryText : styles.secondaryText;
+
   return (
     <TouchableOpacity
-      style={styles.button}
+      style={[buttonStyle, style]}
       activeOpacity={0.8}
       onPress={onPress}
     >
-      <Text style={[typography.button, styles.buttonText]}>{title}</Text>
+      <Text style={[typography.button, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  primaryButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
+  secondaryButton: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  primaryText: {
     color: colors.white,
+  },
+  secondaryText: {
+    color: colors.text.secondary,
   },
 });

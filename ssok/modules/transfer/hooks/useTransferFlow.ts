@@ -38,9 +38,7 @@ export const useTransferFlow = (initialStep: TransferStep = 'account') => {
           nextStep = 'amount';
           break;
         case 'amount':
-          nextStep = 'confirm';
-          break;
-        case 'confirm':
+          // isConfirmed 플래그가 있으면 바로 complete로 이동
           nextStep = 'complete';
           break;
         case 'complete':
@@ -76,13 +74,9 @@ export const useTransferFlow = (initialStep: TransferStep = 'account') => {
           previousStep = 'account';
           console.log('Moving from amount to account');
           break;
-        case 'confirm':
-          previousStep = 'amount';
-          console.log('Moving from confirm to amount');
-          break;
         case 'complete':
-          previousStep = 'confirm';
-          console.log('Moving from complete to confirm');
+          previousStep = 'amount';
+          console.log('Moving from complete to amount');
           break;
         case 'account':
           console.log('Already at account step, not moving');

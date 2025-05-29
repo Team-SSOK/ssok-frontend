@@ -11,7 +11,6 @@ import { createTextFadeTransition } from '../utils/animations';
 // 스텝 컴포넌트들
 import AccountStep from './steps/AccountStep';
 import AmountStep from './steps/AmountStep';
-import ConfirmStep from './steps/ConfirmStep';
 import CompleteStep from './steps/CompleteStep';
 
 interface TransferFlowProps {
@@ -35,8 +34,6 @@ export default function TransferFlow({ sourceAccountId }: TransferFlowProps) {
         return '어디로 보낼까요?';
       case 'amount':
         return '얼마를 보낼까요?';
-      case 'confirm':
-        return '송금 확인';
       case 'complete':
         return '송금 완료';
       default:
@@ -96,8 +93,6 @@ export default function TransferFlow({ sourceAccountId }: TransferFlowProps) {
         return <AccountStep {...stepProps} />;
       case 'amount':
         return <AmountStep {...stepProps} />;
-      case 'confirm':
-        return <ConfirmStep {...stepProps} />;
       case 'complete':
         return <CompleteStep {...stepProps} />;
       default:
