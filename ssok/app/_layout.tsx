@@ -5,6 +5,7 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { SessionProvider, useSession } from '@/contexts/useSession';
+import { AppStateManager } from '@/components/AppStateManager';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
@@ -46,6 +47,7 @@ export default function RootLayout() {
         <FontProvider>
           <RootNavigator />
           <LoadingIndicator visible={globalLoading && appIsReady} />
+          <AppStateManager />
         </FontProvider>
       </PaperProvider>
     </SessionProvider>
@@ -67,6 +69,14 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen
+          name="reauth"
+          options={{
+            presentation: 'modal',
+            gestureEnabled: false, // 스와이프로 닫기 방지
+            headerShown: false,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

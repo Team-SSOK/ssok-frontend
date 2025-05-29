@@ -11,7 +11,6 @@ export { default as usePinInput } from './hooks/usePin';
 
 // Utils
 export * from './utils/constants';
-export * from './utils/authUtils';
 
 // Types
 export interface AuthUser {

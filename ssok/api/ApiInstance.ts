@@ -40,7 +40,21 @@ api.interceptors.request.use(async (config) => {
 
 // 응답 인터셉터: 401 → 토큰 갱신 → 원래 요청 재시도
 api.interceptors.response.use(
-  (res) => res,
+  async (res) => {
+    // foreground API 응답에서 토큰 자동 저장
+    if (
+      res.config.url?.includes('/api/auth/foreground') &&
+      res.data.isSuccess &&
+      res.data.result?.accessToken &&
+      res.data.result?.refreshToken
+    ) {
+      const { accessToken, refreshToken } = res.data.result;
+      console.log('Foreground API 응답에서 토큰 자동 저장');
+      await saveTokensToSecureStore(accessToken, refreshToken);
+    }
+
+    return res;
+  },
   async (err) => {
     const { response, config: originalRequest } = err; // config를 originalRequest로 명명
 

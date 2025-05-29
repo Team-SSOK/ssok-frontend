@@ -451,10 +451,7 @@ export const useAuthStore = create<AuthStoreState>()(
         await clearTokensFromSecureStore();
         const currentPin = get().pin;
         set({
-          user: null,
           accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
           error: null,
           isLoading: false,
           pin: currentPin,

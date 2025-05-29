@@ -113,8 +113,6 @@
   | 4015   | 로그인 제한 (5회 오입력 시)  | `{ remainingSeconds, unlockTime }`    |
   | 4016   | 계정 잠금 (24시간)           | `{ remainingHours, unlockTime }`      |
 
----
-
 ### 3-2. 토큰 갱신
 - **URL**: `POST /api/auth/refresh`
 - **Request Body**
@@ -156,3 +154,56 @@
     "message": "로그아웃에 성공하였습니다."
   }
   ```
+
+---
+
+## 5. 앱 백그라운드 전환 API
+
+- **URL**: `POST /api/auth/background`
+- **Description**: 앱이 백그라운드로 전환될 때 호출하여 현재 Access Token을 블랙리스트에 추가합니다.
+- **Headers**  
+  ```
+  Authorization: Bearer {accessToken}
+  ```
+- **Response** (200)
+  ```json
+  {
+    "isSuccess": true,
+    "code": 2000,
+    "message": "요청에 성공하였습니다."
+  }
+  ```
+- **Error Responses**
+  - 401 Unauthorized: 유효하지 않은 토큰
+
+---
+
+## 6. 앱 포그라운드 복귀 API
+
+- **URL**: `POST /api/auth/foreground`
+- **Description**: 앱이 포그라운드로 복귀할 때 호출하여 PIN 코드 재인증 후 새로운 토큰을 발급받습니다.
+- **Request Body**
+  ```json
+  {
+    "userId": 1,
+    "pinCode": 123456
+  }
+  ```
+- **Response** (200)
+  ```json
+  {
+    "isSuccess": true,
+    "code": 2001,
+    "message": "로그인에 성공하였습니다.",
+    "result": {
+      "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+      "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
+      "accessTokenExpiresIn": 900
+    }
+  }
+  ```
+- **Error Responses**
+  - 401 Unauthorized: 유효하지 않은 PIN 코드
+  - 401 Unauthorized: 로그인 시도 횟수 초과
+  - 401 Unauthorized: 계정 잠금
+  - 404 Not Found: 사용자를 찾을 수 없음

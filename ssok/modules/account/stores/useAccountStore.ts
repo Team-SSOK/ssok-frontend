@@ -70,7 +70,6 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await accountApi.getAccountsWithBalance();
-      console.log('[LOG][useAccountStore] fetchAccounts:', response);
       const accounts = handleApiResponse<RegisteredAccount[]>(
         response,
         '계좌 정보를 불러오는데 실패했습니다.',

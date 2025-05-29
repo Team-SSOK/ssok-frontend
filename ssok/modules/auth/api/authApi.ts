@@ -45,6 +45,12 @@ export interface AuthRequestTypes {
   RefreshToken: {
     refreshToken: string;
   };
+
+  // 포그라운드 복귀 요청 (PIN 재인증)
+  Foreground: {
+    userId: number;
+    pinCode: number;
+  };
 }
 
 /**
@@ -136,6 +142,30 @@ export const authApi = {
   logout: () => {
     console.log(`${LOG_TAG} logout: `);
     return api.post<ApiResponse>('/api/auth/logout');
+  },
+
+  /**
+   * 앱 백그라운드 전환
+   * 현재 Access Token을 블랙리스트에 추가
+   * @returns API 응답
+   */
+  background: () => {
+    console.log(`${LOG_TAG} background: `);
+    return api.post<ApiResponse>('/api/auth/background');
+  },
+
+  /**
+   * 앱 포그라운드 복귀
+   * PIN 코드 재인증 후 새로운 토큰 발급
+   * @param data 요청 데이터 (사용자 ID, PIN 코드)
+   * @returns API 응답 (새 액세스 토큰, 리프레시 토큰 포함)
+   */
+  foreground: (data: AuthRequestTypes['Foreground']) => {
+    console.log(`${LOG_TAG} foreground: `, data);
+    return api.post<ApiResponse<AuthResponseTypes['TokenResponse']>>(
+      '/api/auth/foreground',
+      data,
+    );
   },
 };
 
