@@ -5,7 +5,7 @@ import { colors } from '@/constants/colors';
 import Header from '@/components/Header';
 import { Text } from '@/components/TextProvider';
 import { useTransferFlow } from '../hooks/useTransferFlow';
-import { TransferStep } from '../types/transferFlow';
+import { TransferStep, TransferFlowData } from '../types/transferFlow';
 import { createTextFadeTransition } from '../utils/animations';
 
 // 스텝 컴포넌트들
@@ -15,17 +15,38 @@ import CompleteStep from './steps/CompleteStep';
 
 interface TransferFlowProps {
   sourceAccountId?: string;
+  initialStep?: TransferStep;
+  initialData?: Partial<TransferFlowData>;
 }
 
 /**
  * 송금 플로우 메인 컴포넌트
  * 모든 송금 스텝을 하나의 페이지에서 관리합니다
  */
-export default function TransferFlow({ sourceAccountId }: TransferFlowProps) {
-  const { currentStep, data, isLoading, error, goToNext, goToPrevious, reset } =
-    useTransferFlow();
+export default function TransferFlow({
+  sourceAccountId,
+  initialStep = 'account',
+  initialData = {},
+}: TransferFlowProps) {
+  const {
+    currentStep,
+    data,
+    isLoading,
+    error,
+    goToNext,
+    goToPrevious,
+    reset,
+    updateData,
+  } = useTransferFlow(initialStep);
 
   const [headerTitle, setHeaderTitle] = useState('');
+
+  // 초기 데이터 설정
+  useEffect(() => {
+    if (Object.keys(initialData).length > 0) {
+      updateData(initialData);
+    }
+  }, [initialData, updateData]);
 
   // 스텝별 헤더 타이틀
   const getHeaderTitle = (step: TransferStep): string => {
@@ -33,7 +54,9 @@ export default function TransferFlow({ sourceAccountId }: TransferFlowProps) {
       case 'account':
         return '어디로 보낼까요?';
       case 'amount':
-        return '얼마를 보낼까요?';
+        return data.isBluetoothTransfer
+          ? `${data.userName}님에게 송금`
+          : '얼마를 보낼까요?';
       case 'complete':
         return '송금 완료';
       default:

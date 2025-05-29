@@ -14,7 +14,7 @@ interface AmountHeaderProps {
   accountDisplayName: string;
   recipientName: string;
   bankName: string;
-  accountNumber: string;
+  accountNumber?: string; // 블루투스 송금 시에는 계좌번호가 없을 수 있음
 }
 
 /**
@@ -68,7 +68,8 @@ export default function AmountHeader({
         <View style={styles.recipientInfo}>
           <Text style={styles.bankIcon}>✓</Text>
           <Text style={styles.accountInfo}>
-            {bankName} {accountNumber}
+            {bankName}
+            {accountNumber ? ` ${accountNumber}` : ''}
           </Text>
         </View>
       </View>

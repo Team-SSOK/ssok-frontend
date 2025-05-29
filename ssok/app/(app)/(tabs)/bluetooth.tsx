@@ -201,7 +201,7 @@ const BluetoothScreen: React.FC = () => {
 
       // 송금 페이지로 이동 (userId 포함하여 전달)
       router.push({
-        pathname: '/transfer/amount',
+        pathname: '/transfer',
         params: {
           userId: matchedUser.userId.toString(),
           userName: matchedUser.username,

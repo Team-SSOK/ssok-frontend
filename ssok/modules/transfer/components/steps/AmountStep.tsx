@@ -216,7 +216,9 @@ export default function AmountStep({
             accountDisplayName={accountDisplayName}
             recipientName={data.userName || '수취인'}
             bankName={data.selectedBank?.name || ''}
-            accountNumber={data.accountNumber || ''}
+            accountNumber={
+              data.isBluetoothTransfer ? undefined : data.accountNumber || ''
+            }
           />
 
           {/* 금액 표시 및 입력 */}
