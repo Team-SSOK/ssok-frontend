@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { colors } from '@/constants/colors';
 import { StepComponentProps } from '../../types/transferFlow';
 import { useTransferStore } from '../../stores/useTransferStore';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
@@ -140,7 +139,7 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
     // 약간의 딜레이를 주어 UI가 안정화된 후 실행
     const timer = setTimeout(() => {
       executeTransfer();
-    }, 300);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []); // 의존성 배열을 비워서 한 번만 실행
