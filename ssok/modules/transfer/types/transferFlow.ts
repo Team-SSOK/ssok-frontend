@@ -36,6 +36,7 @@ export interface StepComponentProps {
   data: TransferFlowData;
   onNext: (updates: Partial<TransferFlowData>) => void;
   onBack?: () => void;
+  onAmountChange?: (amount: number) => void;
 }
 
 /**

@@ -1,10 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  SlideInRight,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { useAccountStore } from '@/modules/account/stores/useAccountStore';
 import { useLoadingStore } from '@/stores/loadingStore';
