@@ -73,7 +73,7 @@ function RootNavigator() {
           name="reauth"
           options={{
             presentation: 'modal',
-            gestureEnabled: false, // 스와이프로 닫기 방지
+            gestureEnabled: false,
             headerShown: false,
           }}
         />
