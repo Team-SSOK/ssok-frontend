@@ -11,6 +11,7 @@ interface ProfileState {
 
   // 액션
   fetchProfile: (userId: number) => Promise<void>;
+  setProfileImage: (imageUrl: string | null) => void;
   reset: () => void;
 }
 
@@ -54,6 +55,8 @@ export const useProfileStore = create<ProfileState>((set) => ({
       });
     }
   },
+
+  setProfileImage: (imageUrl: string | null) => set({ profileImage: imageUrl }),
 
   reset: () =>
     set({

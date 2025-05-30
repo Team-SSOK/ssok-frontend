@@ -37,18 +37,18 @@ api.interceptors.request.use(async (config) => {
   }
 
   // 요청 디버깅 로그
-  console.log('🚀 API 요청:', {
-    method: config.method?.toUpperCase(),
-    url: config.url,
-    baseURL: config.baseURL,
-    fullURL: `${config.baseURL}${config.url}`,
-    headers: {
-      'Content-Type': config.headers['Content-Type'],
-      Authorization: config.headers.Authorization ? 'Bearer [TOKEN]' : 'None',
-      'X-User-Id': config.headers['X-User-Id'] || 'None',
-    },
-    data: config.data instanceof FormData ? 'FormData' : config.data,
-  });
+  // console.log('🚀 API 요청:', {
+  //   method: config.method?.toUpperCase(),
+  //   url: config.url,
+  //   baseURL: config.baseURL,
+  //   fullURL: `${config.baseURL}${config.url}`,
+  //   headers: {
+  //     'Content-Type': config.headers['Content-Type'],
+  //     Authorization: config.headers.Authorization ? 'Bearer [TOKEN]' : 'None',
+  //     'X-User-Id': config.headers['X-User-Id'] || 'None',
+  //   },
+  //   data: config.data instanceof FormData ? 'FormData' : config.data,
+  // });
 
   return config;
 });

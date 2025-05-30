@@ -1,32 +1,47 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
+import { useProfileImageManager } from '../hooks/useProfileImageManager';
 
 // 프로필 이미지 컴포넌트
 type ProfileImageProps = {
-  onEditPress?: () => void;
   imageUrl?: string | null;
 };
 
-export const ProfileImage: React.FC<ProfileImageProps> = ({
-  onEditPress,
-  imageUrl,
-}) => {
+export const ProfileImage: React.FC<ProfileImageProps> = ({ imageUrl }) => {
+  const { isUploading, showImageOptions } = useProfileImageManager({
+    imagePickerOptions: {
+      quality: 0.8,
+      aspect: [1, 1],
+      allowsEditing: true,
+    },
+  });
+
+  console.log('imageUrl', imageUrl);
+
   return (
     <View style={styles.profileImageContainer}>
-      <View style={styles.profileImage}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.image} />
-        ) : (
-          <Ionicons name="person" size={50} color={colors.white} />
+      <Pressable
+        style={styles.profileImage}
+        onPress={() => showImageOptions(!!imageUrl)}
+        disabled={isUploading}
+      >
+        <Image
+          source={
+            imageUrl
+              ? { uri: imageUrl }
+              : require('@/assets/images/profile.webp')
+          }
+          style={styles.image}
+        />
+        {isUploading && (
+          <View style={styles.uploadingOverlay}>
+            <Ionicons name="cloud-upload" size={30} color={colors.white} />
+          </View>
         )}
-      </View>
-      {onEditPress && (
-        <TouchableOpacity style={styles.editImageButton} onPress={onEditPress}>
-          <Ionicons name="camera" size={20} color={colors.white} />
-        </TouchableOpacity>
-      )}
+      </Pressable>
     </View>
   );
 };
@@ -76,8 +91,10 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 100,
     height: 100,
+    borderWidth: 1,
+    borderColor: colors.silver,
     borderRadius: 50,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -86,19 +103,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
-  },
-  editImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: '35%',
-    backgroundColor: colors.primary,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.white,
   },
   section: {
     marginBottom: 30,
@@ -136,5 +140,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.black,
     marginRight: 10,
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

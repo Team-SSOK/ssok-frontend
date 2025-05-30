@@ -3,6 +3,7 @@
 ## 1. 휴대폰 본인 인증
 
 ### 1-1. 인증코드 발송
+
 - **URL**: `POST /api/users/phone`
 - **Request Body**
   ```json
@@ -20,6 +21,7 @@
   ```
 
 ### 1-2. 인증코드 확인
+
 - **URL**: `POST /api/users/phone/verify`
 - **Request Body**
   ```json
@@ -73,17 +75,18 @@
   ```
 - **주요 에러 코드**
 
-  | 상태 코드 | 의미                   |
-  | --------- | ---------------------- |
-  | 400       | 유효성 검증 실패       |
-  | 409       | 이미 존재하는 사용자   |
-  | 500       | 서버 오류              |
+  | 상태 코드 | 의미                 |
+  | --------- | -------------------- |
+  | 400       | 유효성 검증 실패     |
+  | 409       | 이미 존재하는 사용자 |
+  | 500       | 서버 오류            |
 
 ---
 
 ## 3. 인증·토큰 관리
 
 ### 3-1. 로그인
+
 - **URL**: `POST /api/auth/login`
 - **Request Body**
   ```json
@@ -107,13 +110,14 @@
   ```
 - **주요 에러**
 
-  | 코드   | 상황                         | 추가 정보 예시                        |
-  | ------ | ---------------------------- | ------------------------------------- |
-  | 4000   | PIN 번호 오류                | `{ remainingAttempts: 3 }`            |
-  | 4015   | 로그인 제한 (5회 오입력 시)  | `{ remainingSeconds, unlockTime }`    |
-  | 4016   | 계정 잠금 (24시간)           | `{ remainingHours, unlockTime }`      |
+  | 코드 | 상황                        | 추가 정보 예시                     |
+  | ---- | --------------------------- | ---------------------------------- |
+  | 4000 | PIN 번호 오류               | `{ remainingAttempts: 3 }`         |
+  | 4015 | 로그인 제한 (5회 오입력 시) | `{ remainingSeconds, unlockTime }` |
+  | 4016 | 계정 잠금 (24시간)          | `{ remainingHours, unlockTime }`   |
 
 ### 3-2. 토큰 갱신
+
 - **URL**: `POST /api/auth/refresh`
 - **Request Body**
   ```json
@@ -215,11 +219,11 @@
 - **URL**: `POST /api/profiles`
 - **Description**: 사용자의 프로필 이미지를 AWS S3에 업로드합니다.
 - **Headers**
-  | 헤더명         | 설명                 |
+  | 헤더명 | 설명 |
   | -------------- | -------------------- |
-  | Content-Type   | multipart/form-data  |
-  | Authorization  | Bearer {accessToken} |
-  | X-User-Id      | 유저 ID              |
+  | Content-Type | multipart/form-data |
+  | Authorization | Bearer {accessToken} |
+  | X-User-Id | 유저 ID |
 - **Request** (multipart/form-data)
   - `file`: 이미지 파일 (image/jpeg, image/png, image/gif)
 - **File Constraints**
@@ -271,54 +275,16 @@
 
 ---
 
-## 8. 프로필 이미지 수정
-
-- **URL**: `PUT /api/profiles`
-- **Description**: 사용자의 프로필 이미지를 새로운 이미지로 교체합니다. 기존 이미지는 S3에서 자동 삭제됩니다.
-- **Headers**
-  | 헤더명         | 설명                 |
-  | -------------- | -------------------- |
-  | Content-Type   | multipart/form-data  |
-  | Authorization  | Bearer {accessToken} |
-  | X-User-Id      | 유저 ID              |
-- **Request** (multipart/form-data)
-  - `file`: 새로운 이미지 파일
-- **Success Response** (200 OK)
-  ```json
-  {
-    "isSuccess": true,
-    "code": 2000,
-    "message": "요청에 성공하였습니다.",
-    "result": {
-      "id": 1,
-      "url": "https://ssok-project-bucket.s3.ap-northeast-2.amazonaws.com/profile-images/123_f9c2e5d1-8df2-789a.jpg",
-      "contentType": "image/jpeg"
-    }
-  }
-  ```
-- **Error Response**
-  - 5020: 기존 프로필 이미지 없음
-    ```json
-    {
-      "isSuccess": false,
-      "code": 5020,
-      "message": "프로필 이미지를 찾을 수 없습니다.",
-      "result": null
-    }
-    ```
-
----
-
-## 9. 프로필 이미지 삭제
+## 8. 프로필 이미지 삭제
 
 - **URL**: `DELETE /api/profiles`
 - **Description**: 사용자의 프로필 이미지를 S3와 DB에서 완전히 삭제합니다.
 - **Headers**
-  | 헤더명         | 설명                 |
+  | 헤더명 | 설명 |
   | -------------- | -------------------- |
-  | Content-Type   | application/json     |
-  | Authorization  | Bearer {accessToken} |
-  | X-User-Id      | 유저 ID              |
+  | Content-Type | application/json |
+  | Authorization | Bearer {accessToken} |
+  | X-User-Id | 유저 ID |
 - **Success Response** (200 OK)
   ```json
   {
@@ -347,4 +313,3 @@
       "result": null
     }
     ```
-
