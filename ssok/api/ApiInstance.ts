@@ -4,8 +4,8 @@ import {
   saveTokens as saveTokensToSecureStore,
 } from '@/services/tokenService';
 
-// const BASE_URL = 'https://api.ssok.kr/';
-const BASE_URL = 'http://kudong.kr:55030/';
+const BASE_URL = 'https://api.ssok.kr/';
+// const BASE_URL = 'http://kudong.kr:55030/';
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -35,12 +35,34 @@ api.interceptors.request.use(async (config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+
+  // 요청 디버깅 로그
+  console.log('🚀 API 요청:', {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    baseURL: config.baseURL,
+    fullURL: `${config.baseURL}${config.url}`,
+    headers: {
+      'Content-Type': config.headers['Content-Type'],
+      Authorization: config.headers.Authorization ? 'Bearer [TOKEN]' : 'None',
+      'X-User-Id': config.headers['X-User-Id'] || 'None',
+    },
+    data: config.data instanceof FormData ? 'FormData' : config.data,
+  });
+
   return config;
 });
 
 // 응답 인터셉터: 401 → 토큰 갱신 → 원래 요청 재시도
 api.interceptors.response.use(
   async (res) => {
+    // // 응답 성공 디버깅 로그
+    // console.log('✅ API 응답 성공:', {
+    //   status: res.status,
+    //   url: res.config.url,
+    //   data: res.data,
+    // });
+
     // foreground API 응답에서 토큰 자동 저장
     if (
       res.config.url?.includes('/api/auth/foreground') &&
@@ -56,6 +78,18 @@ api.interceptors.response.use(
     return res;
   },
   async (err) => {
+    // 응답 에러 디버깅 로그
+    // console.log('❌ API 응답 에러:', {
+    //   status: err.response?.status,
+    //   statusText: err.response?.statusText,
+    //   url: err.config?.url,
+    //   method: err.config?.method?.toUpperCase(),
+    //   fullURL: `${err.config?.baseURL}${err.config?.url}`,
+    //   headers: err.config?.headers,
+    //   data: err.response?.data,
+    //   message: err.message,
+    // });
+
     const { response, config: originalRequest } = err; // config를 originalRequest로 명명
 
     if (response?.status !== 401 || (originalRequest as any)._retry) {

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/modules/auth/store/authStore';
 import { backgroundService } from '@/services/backgroundService';
 
 const LOG_TAG = '[LOG][useAppState]';
+const BACKGROUND_THRESHOLD = 30000;
 
 /**
  * 앱 상태 변화를 감지하고 백그라운드/포그라운드 전환 시 보안 로직을 처리하는 훅
@@ -15,6 +16,8 @@ export const useAppState = () => {
   );
   const [needsReauth, setNeedsReauth] = useState(false);
   const appStateRef = useRef(AppState.currentState);
+  const backgroundTimerRef = useRef<number | null>(null);
+  const backgroundStartTimeRef = useRef<number | null>(null);
   const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
@@ -36,29 +39,66 @@ export const useAppState = () => {
         nextAppState === 'background'
       ) {
         console.log(
-          `${LOG_TAG} App going to background, calling background API`,
+          `${LOG_TAG} App going to background, starting ${BACKGROUND_THRESHOLD / 1000}s timer`,
         );
+
+        // 백그라운드 시작 시간 기록
+        backgroundStartTimeRef.current = Date.now();
 
         // 백그라운드 서비스 상태 업데이트
         backgroundService.onAppBackground();
 
-        try {
-          await authApi.background();
-          console.log(`${LOG_TAG} Background API call successful`);
-        } catch (error) {
-          console.error(`${LOG_TAG} Background API call failed:`, error);
-        }
+        // 30초 후에 background API 호출하는 타이머 설정
+        backgroundTimerRef.current = setTimeout(async () => {
+          console.log(
+            `${LOG_TAG} Background timer expired (${BACKGROUND_THRESHOLD / 1000}s), calling background API`,
+          );
+
+          try {
+            await authApi.background();
+            console.log(`${LOG_TAG} Background API call successful`);
+          } catch (error) {
+            console.error(`${LOG_TAG} Background API call failed:`, error);
+          }
+        }, BACKGROUND_THRESHOLD);
       }
 
       // 백그라운드 → 포그라운드 전환
       if (appStateRef.current === 'background' && nextAppState === 'active') {
-        console.log(`${LOG_TAG} App returning to foreground, requiring reauth`);
+        const backgroundDuration = backgroundStartTimeRef.current
+          ? Date.now() - backgroundStartTimeRef.current
+          : 0;
+
+        console.log(
+          `${LOG_TAG} App returning to foreground after ${backgroundDuration}ms`,
+        );
+
+        // 백그라운드 타이머가 있으면 취소
+        if (backgroundTimerRef.current) {
+          console.log(
+            `${LOG_TAG} Cancelling background timer (returned before ${BACKGROUND_THRESHOLD / 1000}s)`,
+          );
+          clearTimeout(backgroundTimerRef.current);
+          backgroundTimerRef.current = null;
+        }
 
         // 백그라운드 서비스 상태 업데이트
         backgroundService.onAppForeground();
 
-        console.log(`${LOG_TAG} Setting needsReauth to true`);
-        setNeedsReauth(true);
+        // 30초 이상 백그라운드에 있었던 경우에만 재인증 요구
+        if (backgroundDuration >= BACKGROUND_THRESHOLD) {
+          console.log(
+            `${LOG_TAG} Background duration exceeded threshold, requiring reauth`,
+          );
+          setNeedsReauth(true);
+        } else {
+          console.log(
+            `${LOG_TAG} Background duration under threshold, no reauth required`,
+          );
+        }
+
+        // 백그라운드 시작 시간 초기화
+        backgroundStartTimeRef.current = null;
       }
 
       appStateRef.current = nextAppState;
@@ -72,6 +112,10 @@ export const useAppState = () => {
 
     return () => {
       subscription?.remove();
+      // 컴포넌트 언마운트 시 타이머 정리
+      if (backgroundTimerRef.current) {
+        clearTimeout(backgroundTimerRef.current);
+      }
     };
   }, [isAuthenticated, user]);
 
