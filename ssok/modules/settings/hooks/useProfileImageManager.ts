@@ -35,7 +35,7 @@ export const useProfileImageManager = (
 ) => {
   const [isUploading, setIsUploading] = useState(false);
   const userId = useAuthStore((state) => state.user?.id);
-  const { setProfileImage } = useProfileStore();
+  const { setProfileImage, fetchProfile } = useProfileStore();
 
   const {
     imagePickerOptions = {
@@ -136,9 +136,19 @@ export const useProfileImageManager = (
       // API 호출
       const response = await uploadProfileImage(formData, userId);
 
-      if (response.isSuccess && response.result) {
-        setProfileImage(response.result.url);
-        onUploadSuccess?.(response.result.url) ||
+      console.log(
+        '[ProfileImageManager] API 응답:',
+        JSON.stringify(response, null, 2),
+      );
+
+      if (response.isSuccess) {
+        // 업로드 성공 시 프로필 정보를 다시 fetch해서 최신 이미지 URL 가져오기
+        await fetchProfile(userId);
+
+        // result에서 URL을 가져올 수 있으면 사용, 없으면 빈 문자열
+        const imageUrl = response.result?.url || '';
+
+        onUploadSuccess?.(imageUrl) ||
           Alert.alert('성공', '프로필 이미지가 업데이트되었습니다.');
       } else {
         throw new Error(response.message || '업로드에 실패했습니다.');
