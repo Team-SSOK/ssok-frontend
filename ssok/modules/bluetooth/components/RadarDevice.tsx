@@ -78,12 +78,15 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
     }
   }, [animated, pulseAnim, opacityAnim]);
 
-  // 기기 UUID로부터 사용자 이름 가져오기
+  // 기기 UUID로부터 사용자 이름과 프로필 이미지 가져오기
   const user = device.iBeaconData
     ? getUserByUuid(device.iBeaconData.uuid)
     : undefined;
   const userName = user ? user.username : '알 수 없음';
+  const userProfileImage = user?.profileImage;
   const signalColor = getSignalColor(device.rssi);
+
+  console.log('RadarDevice user:', user); // 디버깅용
 
   return (
     <TouchableOpacity
@@ -115,7 +118,11 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
       {/* 기기 표시 */}
       <View style={[styles.device, { borderColor: signalColor }]}>
         <Image
-          source={require('@/assets/images/profile.webp')}
+          source={
+            userProfileImage
+              ? { uri: userProfileImage }
+              : require('@/assets/images/profile.webp')
+          }
           style={styles.profileImage}
           resizeMode="cover"
         />

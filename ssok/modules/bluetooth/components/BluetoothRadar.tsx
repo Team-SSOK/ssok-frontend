@@ -17,6 +17,7 @@ interface BluetoothRadarProps {
   devices: DiscoveredDevice[];
   isScanning: boolean;
   myUUID: string;
+  profileImage: string | null;
   onDevicePress: (device: DiscoveredDevice) => void;
 }
 
@@ -38,13 +39,13 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
   isScanning,
   myUUID,
   onDevicePress,
+  profileImage,
 }) => {
   // 추가 기기 리스트 표시 상태
   const [showList, setShowList] = useState(false);
 
   // Bluetooth store에서 UUID에 해당하는 사용자 정보 가져오기
   const getUserByUuid = useBluetoothStore((state) => state.getUserByUuid);
-
   // 기기 ID와 위치 인덱스를 매핑하는 상태
   const [devicePositions, setDevicePositions] = useState<Map<string, number>>(
     new Map(),
@@ -92,15 +93,6 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
     return { x, y };
   };
 
-  // 신호 강도(RSSI)에 따른 색상 그라데이션
-  // const getRadarGradientStyle = () => {
-  //   return {
-  //     backgroundColor: 'transparent',
-  //     borderColor: 'rgba(82, 145, 255, 0.6)',
-  //     borderWidth: 1,
-  //   };
-  // };
-
   return (
     <View style={styles.container}>
       <View style={styles.radarContainer}>
@@ -116,7 +108,11 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
         <View style={styles.myProfileContainer}>
           <View style={styles.myProfile}>
             <Image
-              source={require('@/assets/images/profile.webp')}
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : require('@/assets/images/profile.webp')
+              }
               style={styles.profileImage}
               resizeMode="cover"
             />

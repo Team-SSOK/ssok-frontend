@@ -141,9 +141,16 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       if (isSuccess && response.data.result) {
         const { users, primaryAccount } = response.data.result;
 
+        console.log('🔍 매칭된 사용자들:', users); // 디버깅용
+
         // UUID와 사용자의 매핑 생성
         const newUuidToUserMap = new Map(get().uuidToUserMap);
         updateUuidUserMap(uuids, users, newUuidToUserMap);
+
+        console.log(
+          '🗺️ UUID 매핑 결과:',
+          Array.from(newUuidToUserMap.entries()),
+        ); // 디버깅용
 
         set({
           discoveredUsers: users,

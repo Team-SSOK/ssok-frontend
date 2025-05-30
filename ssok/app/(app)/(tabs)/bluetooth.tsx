@@ -10,8 +10,9 @@ import { router } from 'expo-router';
 import Loading from '@/components/LoadingIndicator';
 import Header from '@/components/Header';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
-import { useAuthStore } from '@/modules/auth/store/authStore';
 import { getBankNameByCode } from '@/modules/transfer/utils/bankUtils';
+import { useProfileStore } from '@/modules/settings/store/profileStore';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 
 const BluetoothScreen: React.FC = () => {
   // 블루투스 상태
@@ -26,6 +27,17 @@ const BluetoothScreen: React.FC = () => {
   // 스토어
   const { registerUuid, updateDiscoveredDevices, primaryAccount, error } =
     useBluetoothStore();
+
+  // 현재 로그인한 사용자의 프로필 이미지 가져오기
+  const userId = useAuthStore((state) => state.user?.id);
+  const { profileImage, fetchProfile } = useProfileStore();
+
+  // 사용자 프로필 정보 로드
+  useEffect(() => {
+    if (userId) {
+      fetchProfile(userId);
+    }
+  }, [userId, fetchProfile]);
 
   // 기기 활성 상태 정리 함수
   const cleanupInactiveDevices = useCallback(() => {
@@ -220,6 +232,7 @@ const BluetoothScreen: React.FC = () => {
           devices={discoveredDevices}
           isScanning={isScanning}
           myUUID={myUUID}
+          profileImage={profileImage}
           onDevicePress={handleDevicePress}
         />
       </View>
