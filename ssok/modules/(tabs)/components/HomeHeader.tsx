@@ -12,7 +12,7 @@ export default function HomeHeader({ onSettingsPress }: HomeHeaderProps) {
     <View style={styles.header}>
       <View>
         <Image
-          source={require('@/assets/images/logo.png')}
+          source={require('@/assets/images/app-logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
