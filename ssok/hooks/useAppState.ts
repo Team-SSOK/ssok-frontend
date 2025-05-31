@@ -3,22 +3,46 @@ import { AppState, AppStateStatus } from 'react-native';
 import { authApi } from '@/modules/auth/api/authApi';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { backgroundService } from '@/services/backgroundService';
+import { router } from 'expo-router';
+import useDialog from '@/modules/auth/hooks/useDialog';
 
 const LOG_TAG = '[LOG][useAppState]';
 const BACKGROUND_THRESHOLD = 30000;
 
 /**
  * 앱 상태 변화를 감지하고 백그라운드/포그라운드 전환 시 보안 로직을 처리하는 훅
+ *
+ * @usage
+ * ```tsx
+ * // 컴포넌트에서 사용
+ * const { needsReauth, handleReauth, dialogState, hideDialog } = useAppState();
+ *
+ * return (
+ *   <>
+ *     {needsReauth && <ReauthScreen onReauth={handleReauth} />}
+ *     <DialogProvider
+ *       visible={dialogState.visible}
+ *       title={dialogState.title}
+ *       content={dialogState.content}
+ *       confirmText={dialogState.confirmText}
+ *       onConfirm={dialogState.onConfirm}
+ *       onDismiss={hideDialog}
+ *     />
+ *   </>
+ * );
+ * ```
  */
 export const useAppState = () => {
   const [appState, setAppState] = useState<AppStateStatus>(
     AppState.currentState,
   );
   const [needsReauth, setNeedsReauth] = useState(false);
+
   const appStateRef = useRef(AppState.currentState);
   const backgroundTimerRef = useRef<number | null>(null);
   const backgroundStartTimeRef = useRef<number | null>(null);
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, handleUserNotFound } = useAuthStore();
+  const { showDialog, dialogState, hideDialog } = useDialog();
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
@@ -143,17 +167,72 @@ export const useAppState = () => {
         setNeedsReauth(false);
         return { success: true };
       } else {
-        return {
-          success: false,
-          message: response.data.message || '재인증에 실패했습니다.',
-        };
+        const errorMsg = response.data.message || '재인증에 실패했습니다.';
+        showDialog({
+          title: '재인증 실패!!',
+          content: '사용자 정보를 찾을 수 없습니다.\n앱을 다시 시작해주세요.',
+          confirmText: '확인',
+          onConfirm: () => {
+            router.push('/(auth)/register');
+            hideDialog();
+          },
+        });
+        return { success: false, message: errorMsg };
       }
     } catch (error: any) {
-      console.error(`${LOG_TAG} Foreground reauth failed:`, error);
+      // 사용자 없음 에러 감지
+      if (
+        error.response?.status === 404 ||
+        error.response?.data?.code === 4040 ||
+        error.response?.data?.message?.includes('사용자를 찾을 수 없습니다') ||
+        error.response?.data?.message?.includes('User not found')
+      ) {
+        console.log(
+          `${LOG_TAG} 재인증 중 사용자 없음 에러 감지 - 전체 초기화 진행`,
+        );
 
-      // 에러 응답에서 메시지 추출
+        // needsReauth 상태를 먼저 false로 설정하여 AppStateManager 간섭 방지
+        setNeedsReauth(false);
+
+        // 사용자에게 친화적인 메시지로 상황 설명
+        showDialog({
+          title: '계정 정보 없음',
+          content:
+            '서버에서 계정 정보를 찾을 수 없습니다.\n처음부터 다시 가입해주세요.',
+          confirmText: '확인',
+          onConfirm: async () => {
+            console.log(
+              `${LOG_TAG} 다이얼로그 확인 버튼 클릭 - handleUserNotFound 호출 시작`,
+            );
+            hideDialog();
+            try {
+              await handleUserNotFound();
+              console.log(`${LOG_TAG} handleUserNotFound 호출 완료`);
+            } catch (error) {
+              console.error(
+                `${LOG_TAG} handleUserNotFound 호출 중 오류:`,
+                error,
+              );
+            }
+          },
+        });
+
+        return {
+          success: false,
+          message: '사용자 정보가 삭제되어 다시 로그인이 필요합니다!.',
+        };
+      }
+
+      // 일반 에러 처리
       const errorMessage =
         error.response?.data?.message || '재인증 중 오류가 발생했습니다.';
+
+      showDialog({
+        title: '재인증 오류',
+        content: `${errorMessage}\n잠시 후 다시 시도해주세요.`,
+        confirmText: '확인',
+      });
+
       return { success: false, message: errorMessage };
     }
   };
@@ -173,6 +252,10 @@ export const useAppState = () => {
     needsReauth,
     handleReauth,
     clearReauthRequest,
+    // 다이얼로그 상태 추가
+    dialogState,
+    showDialog,
+    hideDialog,
     // 백그라운드 서비스 상태도 노출
     isInBackground: backgroundService.isAppInBackground(),
     backgroundStartTime: backgroundService.getBackgroundStartTime(),

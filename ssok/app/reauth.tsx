@@ -38,58 +38,25 @@ export default function ReauthScreen() {
     setReauthAttempts((prev) => prev + 1);
     setIsLoading(true);
 
-    try {
-      const result = await handleReauth(inputPin);
+    const result = await handleReauth(inputPin);
 
-      if (result.success) {
-        console.log('[LOG][ReauthScreen] 재인증 성공, 메인 화면으로 복귀');
+    if (result.success) {
+      console.log('[LOG][ReauthScreen] 재인증 성공, 메인 화면으로 복귀');
 
-        // 재인증 상태 확실히 초기화
-        clearReauthRequest();
+      // 재인증 상태 확실히 초기화
+      clearReauthRequest();
 
-        // 재인증 성공 시 이전 화면으로 돌아가기
-        if (router.canGoBack()) {
-          router.back();
-        } else {
-          router.replace('/(app)');
-        }
-        return true;
+      if (router.canGoBack()) {
+        router.back();
       } else {
-        console.error('[ERROR][ReauthScreen] 재인증 실패:', result.message);
-
-        // 3회 이상 실패 시 특별한 처리
-        if (reauthAttempts >= 2 && result.message?.includes('PIN')) {
-          showDialog({
-            title: '재인증 실패',
-            content:
-              '재인증에 여러 번 실패했습니다. 잠시 후 다시 시도해주세요.',
-            confirmText: '확인',
-            onConfirm: () => {
-              hideDialog();
-              setReauthAttempts(0);
-            },
-          });
-        } else {
-          showDialog({
-            title: '재인증 실패',
-            content:
-              result.message ||
-              '재인증에 실패했습니다. PIN 코드를 다시 확인해주세요.',
-            confirmText: '확인',
-          });
-        }
-        return false;
+        router.replace('/(app)');
       }
-    } catch (error) {
-      console.error('[ERROR][ReauthScreen] 재인증 중 오류:', error);
-      showDialog({
-        title: '오류',
-        content: '재인증 중 오류가 발생했습니다. 다시 시도해주세요.',
-        confirmText: '확인',
-      });
-      return false;
-    } finally {
       setIsLoading(false);
+      return true;
+    } else {
+      console.log('[LOG][ReauthScreen] 3회 이상 실패 시 처리', result.message);
+      setIsLoading(false);
+      return false;
     }
   };
 

@@ -15,6 +15,7 @@ export function useSession() {
     logout,
     clearError,
     initialize,
+    handleUserNotFound,
   } = useAuthStore();
 
   return {
@@ -57,6 +58,19 @@ export function useSession() {
           throw new Error(`로그아웃 실패: ${err.message}`);
         }
         throw new Error('로그아웃 중 알 수 없는 오류가 발생했습니다.');
+      }
+    },
+    handleUserNotFound: async () => {
+      try {
+        await handleUserNotFound();
+      } catch (err) {
+        console.error('[useSession] handleUserNotFound error:', err);
+        if (err instanceof Error) {
+          throw new Error(`사용자 데이터 초기화 실패: ${err.message}`);
+        }
+        throw new Error(
+          '사용자 데이터 초기화 중 알 수 없는 오류가 발생했습니다.',
+        );
       }
     },
     clearAuthError: clearError,

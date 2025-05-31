@@ -29,6 +29,10 @@ interface AuthStateInternal extends TokenState {
   isLoading: boolean;
   error: string | null;
   pin: string;
+  verificationSent: boolean;
+  verificationConfirmed: boolean;
+  isSendingCode: boolean;
+  isVerifyingCode: boolean;
 }
 
 // 액션 타입 정의
@@ -42,6 +46,17 @@ interface UserActions {
     pin: string,
   ) => void;
   isUserRegistered: () => boolean;
+}
+
+interface VerificationActions {
+  sendVerificationCode: (
+    phoneNumber: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  verifyCode: (
+    phoneNumber: string,
+    verificationCode: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  resetVerification: () => void;
 }
 
 interface AuthActions {
@@ -61,6 +76,7 @@ interface AuthActions {
   initialize: () => Promise<void>;
   clearError: () => void;
   resetAuth: () => Promise<void>;
+  handleUserNotFound: () => Promise<void>;
 }
 
 interface NavigationActions {
@@ -72,6 +88,7 @@ interface NavigationActions {
 export interface AuthStoreState
   extends AuthStateInternal,
     UserActions,
+    VerificationActions,
     AuthActions,
     NavigationActions {}
 
@@ -89,6 +106,10 @@ export const useAuthStore = create<AuthStoreState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      verificationSent: false,
+      verificationConfirmed: false,
+      isSendingCode: false,
+      isVerifyingCode: false,
 
       // 사용자 정보 관련 액션
       setPin: (pin) => set({ pin }),
@@ -110,6 +131,69 @@ export const useAuthStore = create<AuthStoreState>()(
       isUserRegistered: () => {
         const { pin } = get();
         return !!pin;
+      },
+
+      // Verification 관련 액션
+      sendVerificationCode: async (phoneNumber) => {
+        set({ isSendingCode: true, error: null });
+
+        try {
+          const response = await authApi.sendVerificationCode({ phoneNumber });
+
+          if (response.data.isSuccess) {
+            set({ verificationSent: true, isSendingCode: false });
+            return { success: true };
+          } else {
+            const msg =
+              response.data.message || '인증번호 발송에 실패했습니다.';
+            set({ error: msg, isSendingCode: false });
+            return { success: false, message: msg };
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '인증번호 발송 중 오류가 발생했습니다.';
+          set({ error: errorMessage, isSendingCode: false });
+          return { success: false, message: errorMessage };
+        }
+      },
+
+      verifyCode: async (phoneNumber, verificationCode) => {
+        set({ isVerifyingCode: true, error: null });
+
+        try {
+          const response = await authApi.verifyCode({
+            phoneNumber,
+            verificationCode,
+          });
+
+          if (response.data.isSuccess) {
+            set({ verificationConfirmed: true, isVerifyingCode: false });
+            return { success: true };
+          } else {
+            const msg =
+              response.data.message || '인증번호가 올바르지 않습니다.';
+            set({ error: msg, isVerifyingCode: false });
+            return { success: false, message: msg };
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '인증 확인 중 오류가 발생했습니다.';
+          set({ error: errorMessage, isVerifyingCode: false });
+          return { success: false, message: errorMessage };
+        }
+      },
+
+      resetVerification: () => {
+        set({
+          verificationSent: false,
+          verificationConfirmed: false,
+          isSendingCode: false,
+          isVerifyingCode: false,
+        });
       },
 
       // 인증 관련 액션
@@ -460,6 +544,48 @@ export const useAuthStore = create<AuthStoreState>()(
           '[LOG][authStore] resetAuth 종료. 최종 isAuthenticated:',
           get().isAuthenticated,
         );
+      },
+
+      handleUserNotFound: async () => {
+        console.log(
+          '[LOG][authStore] handleUserNotFound 시작 - 사용자가 서버에서 삭제됨',
+        );
+        set({ isLoading: true, error: null });
+
+        try {
+          // SecureStorage 토큰 삭제
+          await clearTokensFromSecureStore();
+
+          // AsyncStorage 모든 데이터 완전 삭제
+          await AsyncStorage.clear();
+
+          // Zustand 상태 완전 초기화 (PIN 포함)
+          set({
+            user: null,
+            pin: '',
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          });
+
+          router.replace('/(auth)/register');
+          console.log('[LOG][authStore] 회원가입 페이지로 라우팅 완료');
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '사용자 데이터 초기화 중 오류 발생';
+          console.error(
+            '[ERROR][authStore] handleUserNotFound 실패:',
+            errorMessage,
+          );
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+        }
       },
 
       // UI 및 네비게이션 관련 액션
