@@ -9,8 +9,9 @@ import { banks } from '@/mocks/bankData';
  * 모든 송금 스텝을 하나의 플로우로 관리합니다
  */
 export default function TransferScreen() {
-  const { accountId, userId, userName, bankName, isBluetooth } =
+  const { accountId, uuid, userName, bankName, isBluetooth } =
     useLocalSearchParams();
+  console.log('Transfer Screen - UUID:', uuid);
 
   // 블루투스 송금인 경우 초기 데이터와 스텝 설정
   const initialStep: TransferStep =
@@ -23,7 +24,7 @@ export default function TransferScreen() {
       banks.find((bank) => bank.name === bankName) || banks[0];
 
     initialData = {
-      userId: userId as string,
+      uuid: uuid as string,
       userName: userName as string,
       selectedBank: selectedBank,
       isBluetoothTransfer: true,

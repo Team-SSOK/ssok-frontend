@@ -13,6 +13,7 @@ export interface TransferFlowData {
   accountNumber?: string;
   selectedBank?: Bank;
   userName?: string;
+  uuid?: string;
 
   // 금액 스텝
   amount?: number;

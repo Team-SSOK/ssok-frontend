@@ -34,6 +34,8 @@ export default function AmountStep({
 
   const { accounts } = useAccountStore();
 
+  console.log('🔄 금액 스텝 데이터', data);
+
   // 애니메이션 값들
   const inputElementsOpacity = useSharedValue(1);
   const confirmElementsOpacity = useSharedValue(0);

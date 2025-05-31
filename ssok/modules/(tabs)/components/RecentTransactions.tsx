@@ -66,7 +66,7 @@ const RecentTransactions = forwardRef<
         !isLoading &&
         !error && (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>최근 거래내역이 없습니다.</Text>
+            <Text style={styles.emptyText}>최근 거래내역이 없습니다</Text>
           </View>
         )
       )}

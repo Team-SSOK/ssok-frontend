@@ -14,7 +14,7 @@ interface TransferProcessData {
   userName: string;
   accountNumber?: string;
   bankName?: string;
-  userId?: string;
+  uuid?: string;
   isBluetoothTransfer: boolean;
   senderName: string;
   sendAccountId: number;
@@ -102,13 +102,14 @@ export const useTransferStore = create<TransferState>((set, get) => ({
     try {
       let response: TransferResponse | null = null;
 
-      if (data.isBluetoothTransfer && data.userId) {
+      if (data.isBluetoothTransfer && data.uuid) {
         // 블루투스 송금 처리
+        console.log('🔄 블루투스 송금 처리', data);
         const bluetoothTransferData: BluetoothTransferRequest = {
           sendAccountId: data.sendAccountId,
           sendBankCode: data.sendBankCode,
           sendName: data.senderName,
-          recvUserId: Number(data.userId),
+          recvUuid: data.uuid,
           amount: data.amount,
         };
 

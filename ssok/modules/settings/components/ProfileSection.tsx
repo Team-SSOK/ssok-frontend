@@ -13,7 +13,7 @@ type ProfileImageProps = {
 export const ProfileImage: React.FC<ProfileImageProps> = ({ imageUrl }) => {
   const { isUploading, showImageOptions } = useProfileImageManager({
     imagePickerOptions: {
-      quality: 0.8,
+      quality: 0.6,
       aspect: [1, 1],
       allowsEditing: true,
     },

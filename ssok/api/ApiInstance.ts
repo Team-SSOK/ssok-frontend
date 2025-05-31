@@ -4,8 +4,8 @@ import {
   saveTokens as saveTokensToSecureStore,
 } from '@/services/tokenService';
 
-const BASE_URL = 'https://api.ssok.kr/';
-// const BASE_URL = 'http://kudong.kr:55030/';
+// const BASE_URL = 'https://api.ssok.kr/';
+const BASE_URL = 'http://kudong.kr:55030/';
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },

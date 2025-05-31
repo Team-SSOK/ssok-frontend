@@ -15,7 +15,7 @@ export interface BluetoothTransferRequest {
   sendAccountId: number;
   sendBankCode: number;
   sendName: string;
-  recvUserId: number;
+  recvUuid: string;
   amount: number;
 }
 
@@ -73,7 +73,7 @@ export const transferApi = {
   sendMoneyBluetooth: async (data: BluetoothTransferRequest) => {
     console.log('sendMoneyBluetooth', data);
     return api.post<ApiResponse<TransferResponse>>(
-      '/api/transfers/openbank/bluetooth',
+      '/api/bluetooth/transfers',
       data,
     );
   },

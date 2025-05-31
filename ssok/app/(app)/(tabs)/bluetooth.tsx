@@ -215,7 +215,7 @@ const BluetoothScreen: React.FC = () => {
       router.push({
         pathname: '/transfer',
         params: {
-          userId: matchedUser.userId.toString(),
+          uuid: matchedUser.uuid,
           userName: matchedUser.username,
           bankName: bankName,
           isBluetooth: 'true', // 블루투스 송금 플래그

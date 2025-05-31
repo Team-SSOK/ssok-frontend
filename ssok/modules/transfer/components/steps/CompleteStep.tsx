@@ -53,8 +53,8 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
 
       // 블루투스 송금과 일반 송금 구분하여 검증
       if (data.isBluetoothTransfer) {
-        if (!data.userId) {
-          throw new Error('블루투스 송금에 필요한 사용자 ID가 없습니다.');
+        if (!data.uuid) {
+          throw new Error('블루투스 송금에 필요한 UUID가 없습니다.');
         }
       } else {
         if (!data.accountNumber || !data.selectedBank) {
@@ -71,7 +71,7 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
         userName: data.userName,
         accountNumber: data.accountNumber || '',
         bankName: data.selectedBank?.name || '',
-        userId: data.userId || '',
+        uuid: data.uuid || '',
         isBluetoothTransfer: data.isBluetoothTransfer || false,
         senderName,
         sendAccountId: sendAccount.accountId,
@@ -155,7 +155,6 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
         <CompleteMessage
           amount={data.amount || 0}
           isBluetoothTransfer={data.isBluetoothTransfer || false}
-          userId={data.isBluetoothTransfer ? data.userId : undefined}
           recipientName={
             data.isBluetoothTransfer ? data.userName : lastTransfer?.recvName
           }

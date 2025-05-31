@@ -9,7 +9,6 @@ interface CompleteMessageProps {
   amount: number;
   message?: string;
   isBluetoothTransfer?: boolean;
-  userId?: string;
   recipientName?: string;
   accountNumber?: string;
   isLoading?: boolean;
@@ -23,7 +22,6 @@ export default function CompleteMessage({
   amount,
   message,
   isBluetoothTransfer = false,
-  userId,
   recipientName,
   accountNumber,
   isLoading = false,

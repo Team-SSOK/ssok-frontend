@@ -41,6 +41,8 @@ export default function TransferFlow({
 
   const [headerTitle, setHeaderTitle] = useState('');
 
+  console.log('🔄 송금 플로우 데이터', initialData);
+
   // 초기 데이터 설정
   useEffect(() => {
     if (Object.keys(initialData).length > 0) {

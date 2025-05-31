@@ -10,7 +10,8 @@ export interface BluetoothMatchRequest {
 }
 
 export interface User {
-  userId: number;
+  uuid: string;
+  phoneSuffix: string;
   username: string;
   profileImage: string | null;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
 import { getBankName, getAccountType } from '@/mocks/accountData';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
@@ -25,7 +25,7 @@ export default function AccountCard({
       : account.accountTypeCode;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardHeader}>
         <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
         <Text style={[typography.caption, styles.accountType]}>
@@ -43,7 +43,7 @@ export default function AccountCard({
       <Text style={[typography.caption, styles.accountNumber]}>
         {maskAccountNumber(account.accountNumber)}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
