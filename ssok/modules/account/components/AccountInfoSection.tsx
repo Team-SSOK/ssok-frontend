@@ -13,6 +13,7 @@ import { formatNumber } from '@/utils/formatters';
 import { router } from 'expo-router';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
+import Toast from 'react-native-toast-message';
 
 interface AccountInfoSectionProps {
   /**
@@ -55,30 +56,22 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
   };
 
   // 계좌번호 복사 (useCallback 유지: Clipboard 같은 비동기 함수이므로 의미있음)
-  const copyToClipboard = async () => {
+  const copyAccountNumber = async () => {
     try {
       await Clipboard.setStringAsync(accountNumber);
-      setCopied(true);
-
-      // 복사 확인 메시지
-      if (Platform.OS === 'android') {
-        ToastAndroid.show('계좌번호가 복사되었습니다', ToastAndroid.SHORT);
-      } else {
-        // iOS의 경우 Alert 사용
-        Alert.alert('알림', '계좌번호가 복사되었습니다', [
-          { text: '확인', style: 'default' },
-        ]);
-      }
-
-      // 2초 후 복사 상태 초기화
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
+      Toast.show({
+        type: 'success',
+        text1: '복사 완료',
+        text2: '계좌번호가 클립보드에 복사되었습니다.',
+        position: 'bottom',
+      });
     } catch (error) {
-      console.error('계좌번호 복사 실패:', error);
-      Alert.alert('오류', '계좌번호 복사에 실패했습니다', [
-        { text: '확인', style: 'default' },
-      ]);
+      Toast.show({
+        type: 'error',
+        text1: '복사 실패',
+        text2: '계좌번호 복사 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
     }
   };
 
@@ -87,7 +80,7 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
       <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
 
       <TouchableOpacity
-        onPress={copyToClipboard}
+        onPress={copyAccountNumber}
         activeOpacity={0.6}
         accessibilityLabel="계좌번호 복사"
         accessibilityHint="터치하여 계좌번호를 클립보드에 복사합니다"

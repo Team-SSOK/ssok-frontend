@@ -5,10 +5,10 @@ import {
   View,
   SafeAreaView,
   StatusBar,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import {
   Account,
@@ -22,6 +22,7 @@ import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
+import useDialog from '@/hooks/useDialog';
 
 /**
  * 계좌 등록 화면
@@ -36,6 +37,7 @@ export default function RegisterAccountScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { showDialog } = useDialog();
 
   // 계좌 목록 로딩 (API 호출이 포함되어 있으므로 useCallback 유지)
   const loadCandidates = useCallback(async () => {
@@ -52,15 +54,16 @@ export default function RegisterAccountScreen() {
           );
         }
       } catch (error) {
-        console.error('계좌 목록을 불러오는데 실패했습니다.', error);
-        setError('계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.');
+        const errorMessage =
+          '계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.';
+        setError(errorMessage);
 
-        // 오류 시 사용자에게 알림
-        Alert.alert(
-          '오류',
-          '계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.',
-          [{ text: '확인', onPress: () => {} }],
-        );
+        Toast.show({
+          type: 'error',
+          text1: '계좌 목록 로딩 실패',
+          text2: errorMessage,
+          position: 'bottom',
+        });
       }
     });
   }, [withLoading]);
@@ -94,23 +97,34 @@ export default function RegisterAccountScreen() {
         const result = await registerAccount(accountRequest);
 
         if (result.success && result.data) {
-          console.log('계좌 등록 성공:', result.data);
+          Toast.show({
+            type: 'success',
+            text1: '계좌 등록 완료',
+            text2: '계좌가 성공적으로 등록되었습니다.',
+            position: 'bottom',
+          });
           router.back();
         } else {
-          console.error('계좌 등록 실패:', result.message);
-          alert(result.message || '계좌 등록에 실패했습니다.');
+          Toast.show({
+            type: 'error',
+            text1: '계좌 등록 실패',
+            text2: result.message || '계좌 등록에 실패했습니다.',
+            position: 'bottom',
+          });
         }
       } catch (error) {
-        console.error('계좌 등록에 실패했습니다.', error);
         setModalVisible(false);
 
-        // 오류 시 사용자에게 알림
-        Alert.alert('오류', '계좌 등록에 실패했습니다. 다시 시도해주세요.', [
-          { text: '확인', onPress: () => {} },
-        ]);
+        showDialog({
+          title: '계좌 등록 실패',
+          content: '계좌 등록 중 오류가 발생했습니다. 다시 시도해주세요.',
+          confirmText: '재시도',
+          cancelText: '취소',
+          onConfirm: () => handleModalFinish(),
+        });
       }
     });
-  }, [selectedAccount, withLoading, registerAccount, router]);
+  }, [selectedAccount, withLoading, registerAccount, router, showDialog]);
 
   // 재시도 핸들러 (간단한 함수 호출이므로 useCallback 불필요)
   const handleRetry = () => {

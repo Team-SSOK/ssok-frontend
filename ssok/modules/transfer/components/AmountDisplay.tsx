@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -73,12 +73,12 @@ export default function AmountDisplay({
       </View>
 
       {/* 잔액 전체 입력 버튼 */}
-      <View style={styles.presetContainer}>
-        <TouchableOpacity style={styles.presetButton} onPress={onBalanceInput}>
+      <View>
+        <Pressable style={styles.presetButton} onPress={onBalanceInput}>
           <Text style={styles.presetButtonText}>
             잔액 • {accountBalance.toLocaleString('ko-KR')}원 입력
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </Animated.View>
   );
@@ -87,7 +87,7 @@ export default function AmountDisplay({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 10,
     marginTop: 20,
     paddingHorizontal: 20,
   },
@@ -107,9 +107,6 @@ const styles = StyleSheet.create({
     color: colors.grey,
     fontWeight: '500',
   },
-  presetContainer: {
-    marginTop: 8,
-  },
   presetButton: {
     backgroundColor: colors.silver,
     paddingHorizontal: 16,
@@ -117,7 +114,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   presetButtonText: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.lGrey,
   },
 });

@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
@@ -60,11 +61,16 @@ export default function HomeScreen() {
     try {
       await reloadAllData();
     } catch (error) {
-      console.error('Failed to refresh data:', error);
+      Toast.show({
+        type: 'error',
+        text1: '데이터 새로고침 실패',
+        text2: '데이터를 새로고침하는 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
     } finally {
       setRefreshing(false);
     }
-  }, [fetchAccounts]);
+  }, []);
 
   const handleRegisterAccount = () => {
     router.push('/account/register');

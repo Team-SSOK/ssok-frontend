@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, View, Alert } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { StepComponentProps } from '../../types/transferFlow';
 import { useTransferStore } from '../../stores/transferStore';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { useAuthStore } from '@/modules/auth/store/authStore';
+import useDialog from '@/hooks/useDialog';
 
 // 기존 컴포넌트 재사용
 import CompleteMessage from '../CompleteMessage';
@@ -25,6 +26,7 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
   } = useTransferStore();
   const { accounts } = useAccountStore();
   const { user } = useAuthStore();
+  const { showDialog } = useDialog();
 
   // 송금 실행 함수
   const executeTransfer = useCallback(async () => {
@@ -36,9 +38,12 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
         accounts.find((acc) => acc.isPrimaryAccount) || accounts[0];
 
       if (!sendAccount) {
-        Alert.alert('출금 계좌 없음', '송금할 출금 계좌가 존재하지 않습니다.', [
-          { text: '확인', onPress: () => onBack?.() },
-        ]);
+        showDialog({
+          title: '출금 계좌 없음',
+          content: '송금할 출금 계좌가 존재하지 않습니다.',
+          confirmText: '확인',
+          onConfirm: () => onBack?.(),
+        });
         return;
       }
 
@@ -78,20 +83,15 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
         sendBankCode: sendAccount.bankCode,
       };
 
-      console.log('Executing transfer with data:', transferData);
-
       // 송금 API 호출
       const result = await processTransfer(transferData);
 
-      if (result) {
+      if (result.success && result.data) {
         setTransferSuccess(true);
-        console.log('Transfer completed successfully:', result);
       } else {
-        throw new Error('송금 처리 결과를 받지 못했습니다.');
+        throw new Error(result.message || '송금 처리 결과를 받지 못했습니다.');
       }
     } catch (error) {
-      console.error('송금 처리 중 오류:', error);
-
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -99,40 +99,41 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
 
       // 재시도 로직 (최대 2회)
       if (retryCount < 2) {
-        Alert.alert('송금 실패', `${errorMessage}\n\n다시 시도하시겠습니까?`, [
-          {
-            text: '취소',
-            onPress: () => onBack?.(),
-            style: 'cancel',
+        showDialog({
+          title: '송금 실패',
+          content: `${errorMessage}\n\n다시 시도하시겠습니까?`,
+          confirmText: '재시도',
+          cancelText: '취소',
+          onConfirm: () => {
+            setRetryCount((prev) => prev + 1);
+            // 1초 후 재시도
+            setTimeout(() => {
+              executeTransfer();
+            }, 1000);
           },
-          {
-            text: '재시도',
-            onPress: () => {
-              setRetryCount((prev) => prev + 1);
-              // 1초 후 재시도
-              setTimeout(() => {
-                executeTransfer();
-              }, 1000);
-            },
-          },
-        ]);
+          onCancel: () => onBack?.(),
+        });
       } else {
         // 재시도 횟수 초과
-        Alert.alert(
-          '송금 실패',
-          `${errorMessage}\n\n계속해서 문제가 발생하고 있습니다. 잠시 후 다시 시도해주세요.`,
-          [
-            {
-              text: '확인',
-              onPress: () => onBack?.(),
-            },
-          ],
-        );
+        showDialog({
+          title: '송금 실패',
+          content: `${errorMessage}\n\n계속해서 문제가 발생하고 있습니다. 잠시 후 다시 시도해주세요.`,
+          confirmText: '확인',
+          onConfirm: () => onBack?.(),
+        });
       }
     } finally {
       setIsLoading(false);
     }
-  }, [data, accounts, user?.username, processTransfer, onBack, retryCount]);
+  }, [
+    data,
+    accounts,
+    user?.username,
+    processTransfer,
+    onBack,
+    retryCount,
+    showDialog,
+  ]);
 
   // 컴포넌트 마운트 시 송금 실행
   useEffect(() => {

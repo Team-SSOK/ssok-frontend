@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,6 +15,7 @@ import { colors } from '@/constants/colors';
 import { BleManager } from 'react-native-ble-plx';
 import { router } from 'expo-router';
 import { Header, Section, SettingItem } from '@/modules/settings';
+import Toast from 'react-native-toast-message';
 
 // 라우트 타입 정의
 type SettingsRoute =
@@ -46,7 +47,12 @@ export default function SettingsScreen() {
 
         return () => subscription.remove();
       } catch (error) {
-        console.error('블루투스 상태 확인 오류:', error);
+        Toast.show({
+          type: 'warning',
+          text1: '블루투스 상태 확인 실패',
+          text2: '블루투스 상태를 확인할 수 없습니다.',
+          position: 'bottom',
+        });
       }
     };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useSession } from '@/contexts/useSession';
@@ -7,6 +7,7 @@ import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 import { Alert, BackHandler } from 'react-native';
 import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';
+import Toast from 'react-native-toast-message';
 
 /**
  * PIN 로그인 화면
@@ -72,7 +73,7 @@ export default function PinLogin() {
       console.log('[LOG][PinLogin] PIN 로그인 성공, 화면 전환');
       return true;
     } else {
-      console.error('[ERROR][PinLogin] PIN 로그인 실패:', result.message);
+      // Toast로 에러 표시하되, 중요한 경우는 Dialog 유지
       if (loginAttempts >= 2 && result.message?.includes('PIN')) {
         showDialog({
           title: '로그인 실패',
@@ -84,10 +85,11 @@ export default function PinLogin() {
           },
         });
       } else {
-        showDialog({
-          title: '로그인 실패',
-          content: result.message || ERROR_MESSAGES.LOGIN_FAILED,
-          confirmText: '확인',
+        Toast.show({
+          type: 'error',
+          text1: 'PIN 로그인 실패',
+          text2: result.message || 'PIN이 올바르지 않습니다.',
+          position: 'bottom',
         });
       }
       return false;

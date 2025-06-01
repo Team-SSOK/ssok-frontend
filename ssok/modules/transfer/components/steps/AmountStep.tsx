@@ -16,6 +16,8 @@ import AmountDisplay from '../AmountDisplay';
 import TransferKeypad from '../TransferKeypad';
 import ConfirmQuestion from '../ConfirmQuestion';
 import ConfirmButton from '../ConfirmButton';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
 
 /**
  * 금액 입력 및 확인 스텝 컴포넌트
@@ -78,6 +80,9 @@ export default function AmountStep({
         const currentNumber = prev.replace(/,/g, '');
         if (currentNumber === '' || currentNumber === '0') return prev;
         const newNumber = currentNumber + '00';
+        const numericAmount = parseInt(newNumber);
+        // 30만원 한도 제한
+        if (numericAmount > 300000) return prev;
         if (newNumber.length > 10) return prev; // 최대 100억원 제한
         return formatNumber(newNumber);
       });
@@ -89,6 +94,9 @@ export default function AmountStep({
       const currentNumber = prev.replace(/,/g, '');
       if (currentNumber === '0') return formatNumber(key);
       const newNumber = currentNumber + key;
+      const numericAmount = parseInt(newNumber);
+      // 30만원 한도 제한
+      if (numericAmount > 300000) return prev;
       if (newNumber.length > 10) return prev; // 최대 100억원 제한
       return formatNumber(newNumber);
     });
@@ -96,7 +104,9 @@ export default function AmountStep({
 
   // 잔액 전체 입력
   const handleBalanceInput = () => {
-    setAmount(accountBalance.toLocaleString('ko-KR'));
+    // 30만원 한도 제한
+    const limitedAmount = Math.min(accountBalance, 300000);
+    setAmount(limitedAmount.toLocaleString('ko-KR'));
   };
 
   // 확인 모드로 전환
@@ -224,6 +234,13 @@ export default function AmountStep({
             onBalanceInput={handleBalanceInput}
           />
 
+          {/* 송금 한도 안내 */}
+          <View style={styles.limitNotice}>
+            <Text style={[typography.caption, styles.limitText]}>
+              최대 30만원까지 송금 가능합니다
+            </Text>
+          </View>
+
           {/* 하단 여백 */}
           <View style={styles.bottomSpace} />
 
@@ -310,5 +327,13 @@ const styles = StyleSheet.create({
   },
   bottomSpace: {
     height: 100,
+  },
+  limitNotice: {
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  limitText: {
+    color: colors.lGrey,
+    textAlign: 'center',
   },
 });

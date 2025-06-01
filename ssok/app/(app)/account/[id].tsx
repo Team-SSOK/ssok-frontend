@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import Toast from 'react-native-toast-message';
 import { colors } from '@/constants/colors';
 import { filterTransactionsByPeriod } from '@/utils/dateUtils';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
@@ -60,10 +61,20 @@ export default function AccountDetailScreen() {
       if (result.success && result.data) {
         setTransactions(result.data);
       } else {
-        console.error('거래내역 조회 실패:', result.message);
+        Toast.show({
+          type: 'error',
+          text1: '거래내역 조회 실패',
+          text2: result.message || '거래내역을 불러올 수 없습니다.',
+          position: 'bottom',
+        });
       }
     } catch (error) {
-      console.error('거래내역 조회 실패:', error);
+      Toast.show({
+        type: 'error',
+        text1: '거래내역 조회 오류',
+        text2: '거래내역 조회 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
     } finally {
       setIsLoading(false);
       stopLoading();

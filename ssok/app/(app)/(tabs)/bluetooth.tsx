@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { colors } from '@/constants/colors';
 import bleService from '@/modules/bluetooth/services/bleService';
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
@@ -68,7 +69,12 @@ const BluetoothScreen: React.FC = () => {
   // API 오류 감지 및 알림
   useEffect(() => {
     if (error) {
-      Alert.alert('오류', error);
+      Toast.show({
+        type: 'error',
+        text1: '블루투스 오류',
+        text2: error,
+        position: 'bottom',
+      });
     }
   }, [error]);
 
@@ -140,8 +146,12 @@ const BluetoothScreen: React.FC = () => {
         setIsScanning(false);
       },
       onError: (error) => {
-        console.error('BLE 오류:', error);
-        Alert.alert('오류', error);
+        Toast.show({
+          type: 'error',
+          text1: 'BLE 오류',
+          text2: error,
+          position: 'bottom',
+        });
       },
     });
 
@@ -165,16 +175,31 @@ const BluetoothScreen: React.FC = () => {
       // 광고 시작
       const advSuccess = await bleService.startAdvertising();
       if (!advSuccess) {
-        console.warn('BLE 광고를 시작할 수 없습니다.');
+        Toast.show({
+          type: 'warning',
+          text1: 'BLE 광고 시작 실패',
+          text2: 'BLE 광고를 시작할 수 없습니다.',
+          position: 'bottom',
+        });
       }
 
       // 스캔 시작
       const scanSuccess = await bleService.startScanning();
       if (!scanSuccess) {
-        console.warn('BLE 스캔을 시작할 수 없습니다.');
+        Toast.show({
+          type: 'warning',
+          text1: 'BLE 스캔 시작 실패',
+          text2: 'BLE 스캔을 시작할 수 없습니다.',
+          position: 'bottom',
+        });
       }
     } catch (error) {
-      console.error('BLE 오류:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'BLE 오류',
+        text2: 'BLE 서비스 시작 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
     }
   };
 

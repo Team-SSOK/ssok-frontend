@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 import { colors } from '@/constants/colors';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { useLoadingStore } from '@/stores/loadingStore';
@@ -75,10 +76,22 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
             });
           } else {
             setErrorMessage(result.message || '계좌 조회에 실패했습니다.');
+            Toast.show({
+              type: 'error',
+              text1: '계좌 조회 실패',
+              text2: result.message || '계좌 조회에 실패했습니다.',
+              position: 'bottom',
+            });
           }
         } catch (error) {
-          console.error('Account verification error:', error);
-          setErrorMessage('계좌 조회 중 오류가 발생했습니다.');
+          const message = '계좌 조회 중 오류가 발생했습니다.';
+          setErrorMessage(message);
+          Toast.show({
+            type: 'error',
+            text1: '계좌 조회 오류',
+            text2: message,
+            position: 'bottom',
+          });
         }
       });
     }

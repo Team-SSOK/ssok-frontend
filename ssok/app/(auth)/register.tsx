@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,10 +109,11 @@ export default function Register() {
       router.push('/(auth)/pin-setup');
     } catch (err) {
       console.error('Error in registration process:', err);
-      showDialog({
-        title: '오류',
-        content: ERROR_MESSAGES.REGISTRATION_ERROR,
-        confirmText: '확인',
+      Toast.show({
+        type: 'error',
+        text1: '회원가입 오류',
+        text2: '회원가입 처리 중 예상치 못한 오류가 발생했습니다.',
+        position: 'bottom',
       });
     } finally {
       setIsLoading(false);

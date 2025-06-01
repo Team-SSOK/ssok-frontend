@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
+import Toast, { BaseToast } from 'react-native-toast-message';
 import { FontProvider } from '../components/TextProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
 import LoadingIndicator from '@/components/LoadingIndicator';
@@ -14,6 +15,29 @@ SplashScreen.setOptions({
   duration: 1000,
   fade: true,
 });
+
+// Toast 커스텀 설정 - warning 타입 추가
+const toastConfig = {
+  /*
+    warning 타입 추가 - BaseToast를 기반으로 노란색 스타일 적용
+  */
+  warning: (props: any) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: '#f39c12', backgroundColor: '#fff3cd' }}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#856404',
+      }}
+      text2Style={{
+        fontSize: 13,
+        color: '#856404',
+      }}
+    />
+  ),
+};
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -48,6 +72,7 @@ export default function RootLayout() {
           <RootNavigator />
           <LoadingIndicator visible={globalLoading && appIsReady} />
           <AppStateManager />
+          <Toast config={toastConfig} />
         </FontProvider>
       </PaperProvider>
     </SessionProvider>
