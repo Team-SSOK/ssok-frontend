@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
-import Header from '@/components/Header';
+import Header from '@/components/CommonHeader';
 import { Text } from '@/components/TextProvider';
 import { useTransferFlow } from '../hooks/useTransferFlow';
 import { TransferStep, TransferFlowData } from '../types/transferFlow';

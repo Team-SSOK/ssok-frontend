@@ -15,7 +15,7 @@ import PeriodFilter, {
 } from '@/modules/account/components/PeriodFilter';
 import TransactionList from '@/modules/account/components/TransactionList';
 import { Transaction } from '@/utils/types';
-import Header from '@/components/Header';
+import Header from '@/components/CommonHeader';
 
 /**
  * 계좌 상세 화면

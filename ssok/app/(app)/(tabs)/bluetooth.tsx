@@ -9,7 +9,7 @@ import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import Loading from '@/components/LoadingIndicator';
-import Header from '@/components/Header';
+import Header from '@/components/CommonHeader';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/bluetoothStore';
 import { getBankNameByCode } from '@/modules/transfer/utils/bankUtils';
 import { useProfileStore } from '@/modules/settings/store/profileStore';

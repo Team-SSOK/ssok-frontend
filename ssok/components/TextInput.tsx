@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { TextInput, HelperText, useTheme, Text } from 'react-native-paper';
+import {
+  TextInput as PaperTextInput,
+  HelperText,
+  useTheme,
+  Text,
+} from 'react-native-paper';
 import type { IconSource } from 'react-native-paper/lib/typescript/components/Icon';
 import { colors } from '@/constants/colors';
 
@@ -109,7 +114,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         </Text>
       )}
 
-      <TextInput
+      <PaperTextInput
         label={!required ? label : ''}
         value={value}
         onChangeText={handleChangeText}
@@ -118,10 +123,10 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         mode={mode}
         multiline={multiline}
         numberOfLines={multiline ? 3 : 1}
-        left={startIcon ? <TextInput.Icon icon={startIcon} /> : undefined}
+        left={startIcon ? <PaperTextInput.Icon icon={startIcon} /> : undefined}
         right={
           endIcon || secureTextEntry ? (
-            <TextInput.Icon
+            <PaperTextInput.Icon
               icon={getEndIcon()}
               onPress={handleEndIconPress}
               forceTextInputFocus={false}

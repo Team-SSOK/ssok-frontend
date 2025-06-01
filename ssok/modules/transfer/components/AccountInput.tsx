@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import CustomTextInput from '@/components/CustomTextInput';
+import CustomTextInput from '@/components/TextInput';
 
 interface AccountInputProps {
   value: string;

@@ -13,9 +13,9 @@ import Toast from 'react-native-toast-message';
 
 import { colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import Button from '@/components/Button';
-import Header from '@/components/Header';
-import CustomTextInput from '@/components/CustomTextInput';
+import Button from '@/components/CommonButton';
+import Header from '@/components/CommonHeader';
+import CustomTextInput from '@/components/TextInput';
 import { Text } from '@/components/TextProvider';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useRegisterForm } from '@/modules/auth/hooks/useRegisterForm';

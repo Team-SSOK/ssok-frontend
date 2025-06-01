@@ -20,7 +20,7 @@ interface ButtonProps extends TouchableOpacityProps {
   loading?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const CommonButton: React.FC<ButtonProps> = ({
   title,
   variant = 'primary',
   size = 'medium',
@@ -218,4 +218,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Button;
+export default CommonButton;

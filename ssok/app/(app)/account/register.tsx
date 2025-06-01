@@ -17,7 +17,7 @@ import {
 } from '@/modules/account/api/accountApi';
 import AccountListItem from '@/modules/account/components/AccountListItem';
 import LoadingModal from '@/modules/account/components/LoadingModal';
-import Header from '@/components/Header';
+import Header from '@/components/CommonHeader';
 import { colors } from '@/constants/colors';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { Text } from '@/components/TextProvider';

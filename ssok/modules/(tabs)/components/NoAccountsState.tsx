@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
+import Button from '@/components/CommonButton';
 
 import { useLoadingStore } from '@/stores/loadingStore';
-
-import Button from '@/components/Button';
 
 interface NoAccountsStateProps {
   onRegisterPress: () => void;

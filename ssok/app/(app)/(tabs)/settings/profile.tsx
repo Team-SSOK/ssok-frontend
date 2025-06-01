@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Section, ProfileImage, InfoItem } from '@/modules/settings';
-import Header from '@/components/Header';
+import Header from '@/components/CommonHeader';
 import { useProfileStore } from '@/modules/settings/store/profileStore';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { Ionicons } from '@expo/vector-icons';

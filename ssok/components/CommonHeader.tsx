@@ -11,7 +11,7 @@ interface HeaderProps {
   onBackPress?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, onBackPress }) => {
+const CommonHeader: React.FC<HeaderProps> = ({ title, onBackPress }) => {
   const handleBackPress = () => {
     console.log('Header back button pressed, onBackPress:', !!onBackPress);
     if (onBackPress) {
@@ -52,4 +52,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header;
+export default CommonHeader;
