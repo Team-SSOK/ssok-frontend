@@ -35,7 +35,7 @@ export default function AccountCard({
 
       <View style={styles.balanceContainer}>
         <Text style={[typography.caption, styles.balanceLabel]}>잔액</Text>
-        <Text style={[typography.h2, styles.balance]}>
+        <Text style={[typography.h3, styles.balance]}>
           {formatNumber(balance)}원
         </Text>
       </View>

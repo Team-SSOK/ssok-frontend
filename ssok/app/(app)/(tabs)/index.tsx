@@ -15,9 +15,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
 import AccountCard from '@/modules/(tabs)/components/AccountCard';
-import RecentTransactions, {
-  RecentTransactionsRefType,
-} from '@/modules/(tabs)/components/RecentTransactions';
+import RecentTransactionList, {
+  RecentTransactionListRefType,
+} from '@/modules/(tabs)/components/RecentTransactionList';
 import NoAccountsState from '@/modules/(tabs)/components/NoAccountsState';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { useProfileStore } from '@/modules/settings/store/profileStore';
@@ -29,7 +29,7 @@ import {
 export default function HomeScreen() {
   const { accounts, fetchAccounts, getAccountDetail } = useAccountStore();
   const [refreshing, setRefreshing] = useState(false);
-  const recentTransactionsRef = useRef<RecentTransactionsRefType>(null);
+  const recentTransactionsRef = useRef<RecentTransactionListRefType>(null);
   const router = useRouter();
 
   const { withLoading } = useLoadingStore();
@@ -120,7 +120,7 @@ export default function HomeScreen() {
             balance={accounts[0].balance || 0}
             onPress={() => handleAccountPress(accounts[0].accountId)}
           />
-          <RecentTransactions ref={recentTransactionsRef} />
+          <RecentTransactionList ref={recentTransactionsRef} />
         </ScrollView>
       )}
     </SafeAreaView>
