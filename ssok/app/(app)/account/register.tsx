@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
 import {
   Account,
   accountApi,
@@ -91,18 +91,14 @@ export default function RegisterAccountScreen() {
 
     await withLoading(async () => {
       try {
-        const registeredAccount = await registerAccount(accountRequest);
+        const result = await registerAccount(accountRequest);
 
-        if (registeredAccount) {
-          // 주 계좌로 설정
-          await useAccountStore
-            .getState()
-            .setPrimaryAccount(registeredAccount.accountId);
-
-          // 성공 메시지와 함께 홈으로 이동
-          router.replace('/(app)/(tabs)');
+        if (result.success && result.data) {
+          console.log('계좌 등록 성공:', result.data);
+          router.back();
         } else {
-          throw new Error('계좌 등록에 실패했습니다.');
+          console.error('계좌 등록 실패:', result.message);
+          alert(result.message || '계좌 등록에 실패했습니다.');
         }
       } catch (error) {
         console.error('계좌 등록에 실패했습니다.', error);

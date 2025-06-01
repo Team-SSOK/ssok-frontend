@@ -5,7 +5,7 @@ import { useAuthStore, type AuthUser } from '@/modules/auth/store/authStore'; //
 // import { authApi } from '@/modules/auth/api/authApi'; // 스토어에서 처리하므로 제거
 // import { STORAGE_KEYS } from '@/modules/auth/utils/constants'; // 제거
 import PinScreen from '@/modules/auth/components/PinScreen';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider'; // DialogProvider import
 import { ERROR_MESSAGES } from '@/modules/auth/utils/constants'; // ERROR_MESSAGES 직접 사용
 import { useSession } from '@/contexts/useSession'; // useSession 훅 임포트

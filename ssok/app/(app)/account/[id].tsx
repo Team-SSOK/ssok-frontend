@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { filterTransactionsByPeriod } from '@/utils/dateUtils';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
-import { transferApi } from '@/modules/transfer/api/transferApi';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
+import { useTransferStore } from '@/modules/transfer/stores/transferStore';
 import { useLoadingStore } from '@/stores/loadingStore';
 
 // 컴포넌트 임포트
@@ -25,6 +25,7 @@ export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams();
   const accountId = id ? Number(id) : 0;
   const { currentAccount, getAccountDetail } = useAccountStore();
+  const { getTransferHistory } = useTransferStore();
   const { startLoading, stopLoading } = useLoadingStore();
 
   const [selectedPeriod, setSelectedPeriod] =
@@ -54,25 +55,12 @@ export default function AccountDetailScreen() {
     startLoading();
 
     try {
-      const response = await transferApi.getTransferHistory(accountId);
-      if (response.data.isSuccess && response.data.result) {
-        // API 응답 데이터를 Transaction 형식으로 변환
-        const historyData = response.data.result.map((item) => ({
-          transferID: item.transferId,
-          accountId: accountId,
-          counterpartAccount: item.counterpartAccount,
-          counterpartName: item.counterpartName,
-          transferType:
-            item.transferType === 'WITHDRAWAL'
-              ? 'WITHDRAW'
-              : ('DEPOSIT' as 'WITHDRAW' | 'DEPOSIT'),
-          transferMoney: item.transferMoney,
-          currencyCode: item.currencyCode === 'KRW' ? 1 : 2,
-          transferMethod: item.transferMethod === 'GENERAL' ? 0 : 1,
-          createdAt: item.createdAt,
-          balanceAfterTransaction: 0, // API에서 제공되지 않음
-        }));
-        setTransactions(historyData);
+      const result = await getTransferHistory(accountId);
+
+      if (result.success && result.data) {
+        setTransactions(result.data);
+      } else {
+        console.error('거래내역 조회 실패:', result.message);
       }
     } catch (error) {
       console.error('거래내역 조회 실패:', error);
@@ -80,7 +68,13 @@ export default function AccountDetailScreen() {
       setIsLoading(false);
       stopLoading();
     }
-  }, [currentAccount, accountId, startLoading, stopLoading]);
+  }, [
+    currentAccount,
+    accountId,
+    startLoading,
+    stopLoading,
+    getTransferHistory,
+  ]);
 
   // 현재 계좌가 로드되면 거래내역 조회
   useEffect(() => {

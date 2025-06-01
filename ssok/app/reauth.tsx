@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useAppState } from '@/hooks/useAppState';
 import PinScreen from '@/modules/auth/components/PinScreen';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 import { BackHandler } from 'react-native';
 

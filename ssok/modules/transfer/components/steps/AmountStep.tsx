@@ -9,7 +9,7 @@ import Animated, {
   FadeInUp,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { StepComponentProps } from '../../types/transferFlow';
 import AmountHeader from '../AmountHeader';
 import AmountDisplay from '../AmountDisplay';

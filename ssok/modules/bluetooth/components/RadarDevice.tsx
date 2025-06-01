@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import { colors } from '@/constants/colors';
-import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
+import { useBluetoothStore } from '@/modules/bluetooth/stores/bluetoothStore';
 
 interface RadarDeviceProps {
   device: DiscoveredDevice;

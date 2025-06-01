@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/constants/colors';
 import HomeHeader from '@/modules/(tabs)/components/HomeHeader';
@@ -109,13 +109,11 @@ export default function HomeScreen() {
             />
           }
         >
-          {hasAccounts && (
-            <AccountCard
-              account={accounts[0]}
-              balance={accounts[0].balance || 0}
-              onPress={() => handleAccountPress(accounts[0].accountId)}
-            />
-          )}
+          <AccountCard
+            account={accounts[0]}
+            balance={accounts[0].balance || 0}
+            onPress={() => handleAccountPress(accounts[0].accountId)}
+          />
           <RecentTransactions ref={recentTransactionsRef} />
         </ScrollView>
       )}

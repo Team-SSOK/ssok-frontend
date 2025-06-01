@@ -4,7 +4,7 @@ import { authApi } from '@/modules/auth/api/authApi';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { backgroundService } from '@/services/backgroundService';
 import { router } from 'expo-router';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 
 const LOG_TAG = '[LOG][useAppState]';
 const BACKGROUND_THRESHOLD = 30000;

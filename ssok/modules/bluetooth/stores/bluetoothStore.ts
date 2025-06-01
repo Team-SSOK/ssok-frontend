@@ -8,6 +8,13 @@ import {
 } from '../api/bluetoothApi';
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 
+/**
+ * API 응답 표준 타입
+ */
+type StoreResponse<T = any> =
+  | { success: true; data: T; message?: string }
+  | { success: false; data?: never; message: string };
+
 interface BluetoothState {
   // 상태
   myUuid: string | null;
@@ -18,31 +25,46 @@ interface BluetoothState {
   isLoading: boolean;
   error: string | null;
 
-  // 액션
-  registerUuid: (uuid: string) => Promise<boolean>;
+  // 액션 - 통일된 반환 타입 사용
+  registerUuid: (uuid: string) => Promise<StoreResponse<boolean>>;
   matchUsers: (
     uuids: string[],
     showLoading?: boolean,
-  ) => Promise<User[] | null>;
+  ) => Promise<StoreResponse<User[]>>;
   updateDiscoveredDevices: (devices: DiscoveredDevice[]) => void;
   getUserByUuid: (uuid: string) => User | undefined;
   resetState: () => void;
+  clearError: () => void;
 }
 
+/**
+ * API 응답 처리 헬퍼
+ */
+const createSuccessResponse = <T>(
+  data: T,
+  message?: string,
+): StoreResponse<T> => ({
+  success: true,
+  data,
+  message,
+});
+
+const createErrorResponse = <T>(message: string): StoreResponse<T> => ({
+  success: false,
+  message,
+});
+
 // UUID와 사용자를 매핑하는 헬퍼 함수
-// 현재는 간단한 1:1 매핑을 생성하지만 실제 구현에서는 더 복잡한 로직이 필요할 수 있음
 const updateUuidUserMap = (
   uuids: string[],
   users: User[],
   map: Map<string, User>,
 ) => {
-  // 가장 단순한 구현: 발견된 UUID 순서대로 사용자 매핑 (사용자가 충분한 경우)
   uuids.forEach((uuid, index) => {
     if (index < users.length) {
       map.set(uuid, users[index]);
     }
   });
-
   return map;
 };
 
@@ -58,7 +80,6 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
 
   // UUID 등록 함수
   registerUuid: async (uuid: string) => {
-    // 이미 등록된 상태인지 확인하고, 등록된 상태라면 로딩 표시 없이 처리
     const currentState = get();
     const isAlreadyRegistered =
       currentState.registeredUuid && currentState.myUuid === uuid;
@@ -71,7 +92,6 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       const request: BluetoothUuidRequest = { bluetoothUUID: uuid };
       const response = await bluetoothApi.registerUuid(request);
 
-      // 성공 메시지가 포함되어 있거나, 코드가 2000인 경우 성공으로 처리
       const isSuccess =
         (response.data.message &&
           response.data.message.includes('정상적으로 등록')) ||
@@ -84,9 +104,11 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
           registeredUuid: true,
           isLoading: false,
         });
-        return true;
+        return createSuccessResponse(true, 'UUID가 성공적으로 등록되었습니다.');
       } else {
-        throw new Error(response.data.message || 'UUID 등록에 실패했습니다.');
+        const message = response.data.message || 'UUID 등록에 실패했습니다.';
+        set({ error: message, isLoading: false });
+        return createErrorResponse(message);
       }
     } catch (error) {
       const errorMessage =
@@ -102,23 +124,21 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
           isLoading: false,
           error: null,
         });
-        return true;
+        return createSuccessResponse(true, 'UUID가 성공적으로 등록되었습니다.');
       }
 
-      set({
-        error: errorMessage,
-        isLoading: false,
-      });
+      set({ error: errorMessage, isLoading: false });
       console.error('Bluetooth UUID 등록 실패:', errorMessage);
-      return false;
+      return createErrorResponse(errorMessage);
     }
   },
 
   // 발견된 UUID 매칭 및 사용자 조회
   matchUsers: async (uuids: string[], showLoading = false) => {
-    if (uuids.length === 0) return [];
+    if (uuids.length === 0) {
+      return createSuccessResponse([] as User[], '매칭할 UUID가 없습니다.');
+    }
 
-    // 로딩 상태는 명시적으로 요청한 경우에만 표시
     if (showLoading) {
       set({ isLoading: true, error: null });
     } else {
@@ -129,7 +149,6 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       const request: BluetoothMatchRequest = { bluetoothUUIDs: uuids };
       const response = await bluetoothApi.matchUsers(request);
 
-      // 성공 메시지가 포함되어 있거나, 코드가 200인 경우 성공으로 처리
       const isSuccess =
         (response.data.message &&
           (response.data.message.includes('매칭된 유저 조회 성공') ||
@@ -141,16 +160,15 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       if (isSuccess && response.data.result) {
         const { users, primaryAccount } = response.data.result;
 
-        console.log('🔍 매칭된 사용자들:', users); // 디버깅용
+        console.log('🔍 매칭된 사용자들:', users);
 
-        // UUID와 사용자의 매핑 생성
         const newUuidToUserMap = new Map(get().uuidToUserMap);
         updateUuidUserMap(uuids, users, newUuidToUserMap);
 
         console.log(
           '🗺️ UUID 매핑 결과:',
           Array.from(newUuidToUserMap.entries()),
-        ); // 디버깅용
+        );
 
         set({
           discoveredUsers: users,
@@ -159,9 +177,11 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
           isLoading: false,
         });
 
-        return users;
+        return createSuccessResponse(users, '사용자 조회가 완료되었습니다.');
       } else {
-        throw new Error(response.data.message || '사용자 조회에 실패했습니다.');
+        const message = response.data.message || '사용자 조회에 실패했습니다.';
+        set({ error: message, isLoading: false });
+        return createErrorResponse(message);
       }
     } catch (error) {
       const errorMessage =
@@ -180,7 +200,6 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       ) {
         const { users, primaryAccount } = (error as any).response.data.result;
 
-        // UUID와 사용자의 매핑 생성
         const newUuidToUserMap = new Map(get().uuidToUserMap);
         updateUuidUserMap(uuids, users, newUuidToUserMap);
 
@@ -192,16 +211,12 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
           error: null,
         });
 
-        return users;
+        return createSuccessResponse(users, '사용자 조회가 완료되었습니다.');
       }
 
-      // 오류 상태 설정 (로딩은 종료)
-      set({
-        error: errorMessage,
-        isLoading: false,
-      });
+      set({ error: errorMessage, isLoading: false });
       console.error('사용자 조회 실패:', errorMessage);
-      return null;
+      return createErrorResponse(errorMessage);
     }
   },
 
@@ -209,26 +224,18 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
   updateDiscoveredDevices: (devices: DiscoveredDevice[]) => {
     if (devices.length === 0) return;
 
-    // iBeacon 데이터가 있는 기기만 필터링
     const validDevices = devices.filter(
       (device) => device.iBeaconData !== null,
     );
-
     if (validDevices.length === 0) return;
 
-    // UUID 목록 추출
     const uuids = validDevices.map((device) => device.iBeaconData!.uuid);
-
-    // 중복 제거
     const uniqueUuids = [...new Set(uuids)];
 
-    // 자신의 UUID 제외
     const myUuid = get().myUuid;
     const otherUuids = uniqueUuids.filter((uuid) => uuid !== myUuid);
 
-    // UUID가 있으면 사용자 조회 (로딩 표시 없이)
     if (otherUuids.length > 0) {
-      // 백그라운드에서 매칭 - 로딩 표시 없이 (false)
       get().matchUsers(otherUuids, false);
     }
   },
@@ -241,6 +248,11 @@ export const useBluetoothStore = create<BluetoothState>((set, get) => ({
       error: null,
       isLoading: false,
     });
+  },
+
+  // 에러 초기화
+  clearError: () => {
+    set({ error: null });
   },
 
   // 사용자 선택 핸들러 - UUID로 사용자 찾기

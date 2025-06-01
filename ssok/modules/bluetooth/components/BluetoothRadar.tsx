@@ -11,7 +11,7 @@ import {
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import RadarDevice from './RadarDevice';
 import { colors } from '@/constants/colors';
-import { useBluetoothStore } from '@/modules/bluetooth/stores/useBluetoothStore';
+import { useBluetoothStore } from '@/modules/bluetooth/stores/bluetoothStore';
 
 interface BluetoothRadarProps {
   devices: DiscoveredDevice[];

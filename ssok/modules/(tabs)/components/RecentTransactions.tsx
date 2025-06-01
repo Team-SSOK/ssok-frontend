@@ -7,7 +7,7 @@ import React, {
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { colors } from '@/constants/colors';
 import TransactionItem from './TransactionItem';
-import { useTransferStore } from '@/modules/transfer/stores/useTransferStore';
+import { useTransferStore } from '@/modules/transfer/stores/transferStore';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 

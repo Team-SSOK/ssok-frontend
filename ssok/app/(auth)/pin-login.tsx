@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useSession } from '@/contexts/useSession';
 import PinScreen from '@/modules/auth/components/PinScreen';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 import { Alert, BackHandler } from 'react-native';
 import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';

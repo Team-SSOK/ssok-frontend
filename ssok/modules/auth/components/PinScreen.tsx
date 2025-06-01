@@ -7,7 +7,7 @@ import usePinInput from '@/modules/auth/hooks/usePin';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import { useLoadingStore } from '@/stores/loadingStore';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 
 interface PinScreenProps {

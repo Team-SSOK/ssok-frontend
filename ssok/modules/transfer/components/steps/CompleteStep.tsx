@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { StepComponentProps } from '../../types/transferFlow';
-import { useTransferStore } from '../../stores/useTransferStore';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { useTransferStore } from '../../stores/transferStore';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 
 // 기존 컴포넌트 재사용

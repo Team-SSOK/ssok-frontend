@@ -23,7 +23,7 @@ import {
   CodeVerificationInput,
 } from '@/modules/auth/components';
 import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 
 export default function Register() {

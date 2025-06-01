@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
-import { useAccountStore } from '@/modules/account/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { useLoadingStore } from '@/stores/loadingStore';
 import { NameVerificationRequest } from '@/modules/account/api/accountApi';
 import { Text } from '@/components/TextProvider';
@@ -64,20 +64,21 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
 
       await withLoading(async () => {
         try {
-          const response = await verifyAccountName(verificationRequest);
+          const result = await verifyAccountName(verificationRequest);
 
-          if (response) {
-            // 성공한 경우 다음 스텝으로 이동
+          if (result.success && result.data) {
+            const { accountNumber, username } = result.data;
             onNext({
-              accountNumber: response.accountNumber,
+              accountNumber,
+              userName: username,
               selectedBank,
-              userName: response.username,
             });
           } else {
-            setErrorMessage('계좌 실명 조회에 실패했습니다.');
+            setErrorMessage(result.message || '계좌 조회에 실패했습니다.');
           }
         } catch (error) {
-          setErrorMessage('계좌 실명 조회에 실패했습니다.');
+          console.error('Account verification error:', error);
+          setErrorMessage('계좌 조회 중 오류가 발생했습니다.');
         }
       });
     }
