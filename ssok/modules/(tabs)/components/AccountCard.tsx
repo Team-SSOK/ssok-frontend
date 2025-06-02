@@ -50,7 +50,7 @@ export default function AccountCard({
 const styles = StyleSheet.create({
   card: {
     padding: 20,
-    marginBottom: 16,
+    margin: 20,
     backgroundColor: colors.white,
     borderRadius: 12,
     shadowColor: colors.black,

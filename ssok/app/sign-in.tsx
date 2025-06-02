@@ -17,10 +17,6 @@ export default function SignInScreen() {
     state.isUserRegistered(),
   );
 
-  const handleSignInPress = () => {
-    router.push('/(auth)/pin-login');
-  };
-
   const handleRegisterPress = () => {
     router.push('/(auth)/register');
   };

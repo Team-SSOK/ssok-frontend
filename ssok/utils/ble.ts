@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 /**
  * iBeacon 제조사 데이터 파싱 함수
  *

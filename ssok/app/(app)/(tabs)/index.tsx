@@ -7,6 +7,8 @@ import {
   StatusBar,
   RefreshControl,
   Platform,
+  Dimensions,
+  Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -25,6 +27,12 @@ import {
   useAuthStore,
   type AuthStoreState,
 } from '@/modules/auth/store/authStore';
+import Carousel from 'react-native-reanimated-carousel';
+import { Text } from '@/components/TextProvider';
+import { typography } from '@/theme/typography';
+import { RegisteredAccount } from '@/modules/account/api/accountApi';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { accounts, fetchAccounts, getAccountDetail } = useAccountStore();
@@ -87,6 +95,42 @@ export default function HomeScreen() {
     });
   };
 
+  // carousel 데이터 준비 - 계좌들 + 추가 연동 버튼
+  const carouselData = hasAccounts 
+    ? [...accounts, { isAddButton: true }] 
+    : [];
+
+  const renderCarouselItem = ({ item, index }: { item: RegisteredAccount | { isAddButton: boolean }, index: number }) => {
+    // 계좌 추가 연동 버튼인 경우
+    if ('isAddButton' in item && item.isAddButton) {
+      return (
+        <Pressable style={styles.addAccountCard} onPress={handleRegisterAccount}>
+          <View style={styles.addAccountContent}>
+            <View style={styles.addIconContainer}>
+              <Text style={styles.addIcon}>+</Text>
+            </View>
+            <Text style={[typography.body1, styles.addAccountText]}>
+              계좌 추가 연동
+            </Text>
+            <Text style={[typography.caption, styles.addAccountSubtext]}>
+              새로운 계좌를 연결해보세요
+            </Text>
+          </View>
+        </Pressable>
+      );
+    }
+
+    // 일반 계좌 카드인 경우
+    const account = item as RegisteredAccount;
+    return (
+      <AccountCard
+        account={account}
+        balance={account.balance || 0}
+        onPress={() => handleAccountPress(account.accountId)}
+      />
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -115,11 +159,20 @@ export default function HomeScreen() {
             />
           }
         >
-          <AccountCard
-            account={accounts[0]}
-            balance={accounts[0].balance || 0}
-            onPress={() => handleAccountPress(accounts[0].accountId)}
-          />
+          {hasAccounts && (
+            <View style={styles.carouselContainer}>
+              <Carousel
+                loop={false}
+                width={screenWidth - 40}
+                height={200}
+                data={carouselData}
+                style={styles.carousel}
+                snapEnabled={true}
+                pagingEnabled={true}
+                renderItem={renderCarouselItem}
+              />
+            </View>
+          )}
           <RecentTransactionList ref={recentTransactionsRef} />
         </ScrollView>
       )}
@@ -149,5 +202,54 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  carouselContainer: {
+    marginBottom: 20,
+  },
+  carousel: {
+    width: screenWidth,
+  },
+  addAccountCard: {
+    margin: 20,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 180,
+  },
+  addAccountContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  addIcon: {
+    fontSize: 24,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
+  addAccountText: {
+    color: colors.primary,
+    marginBottom: 4,
+    fontWeight: 'bold',
+  },
+  addAccountSubtext: {
+    color: colors.mGrey,
+    textAlign: 'center',
   },
 });
