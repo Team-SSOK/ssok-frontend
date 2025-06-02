@@ -31,13 +31,32 @@ import useDialog from '@/hooks/useDialog';
  */
 export default function RegisterAccountScreen() {
   const router = useRouter();
-  const { registerAccount } = useAccountStore();
+  const { registerAccount, accounts } = useAccountStore();
   const [candidates, setCandidates] = useState<Account[]>([]);
   const { isLoading, withLoading } = useLoadingStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { showDialog } = useDialog();
+
+  // 이미 연동된 계좌인지 확인하는 함수
+  const isAccountAlreadyLinked = useCallback((account: Account): boolean => {
+    return accounts.some(
+      (linkedAccount) =>
+        linkedAccount.bankCode === account.bankCode &&
+        linkedAccount.accountNumber === account.accountNumber
+    );
+  }, [accounts]);
+
+  // 이미 연동된 계좌 터치 시 토스트 표시
+  const handleAlreadyLinkedPress = useCallback(() => {
+    Toast.show({
+      type: 'info',
+      text1: '이미 연동된 계좌입니다',
+      text2: '다른 계좌를 선택해 주세요.',
+      position: 'bottom',
+    });
+  }, []);
 
   // 계좌 목록 로딩 (API 호출이 포함되어 있으므로 useCallback 유지)
   const loadCandidates = useCallback(async () => {
@@ -70,7 +89,15 @@ export default function RegisterAccountScreen() {
 
   // 컴포넌트 마운트 시 계좌 목록 로딩
   useEffect(() => {
-    loadCandidates();
+    const initializeData = async () => {
+      // 등록된 계좌 목록과 후보 계좌 목록을 동시에 로딩
+      await Promise.all([
+        useAccountStore.getState().fetchAccounts(),
+        loadCandidates(),
+      ]);
+    };
+
+    initializeData();
   }, [loadCandidates]);
 
   // 계좌 선택 핸들러 (단순 상태 업데이트라 useCallback 불필요)
@@ -173,6 +200,8 @@ export default function RegisterAccountScreen() {
               account={item}
               onSelect={handleSelectAccount}
               index={index}
+              isAlreadyLinked={isAccountAlreadyLinked(item)}
+              onAlreadyLinkedPress={handleAlreadyLinkedPress}
             />
           )}
           contentContainerStyle={styles.listContainer}
