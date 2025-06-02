@@ -80,34 +80,17 @@ export default function HomeScreen() {
         const startTutorialTimeout = setTimeout(() => {
           console.log('[LOG][HomeScreen] 튜토리얼 시작 실행');
           startHomeTutorial();
-          
-          // 시작 후 상태 확인
-          setTimeout(() => {
-            console.log('[DEBUG][HomeScreen] 튜토리얼 시작 후 상태:', {
-              isActive: useTutorialStore.getState().isActive,
-              currentStep: useTutorialStore.getState().currentStep,
-            });
-          }, 100);
-        }, 500);
+        }, 1000); // 1초로 늘려서 레이아웃 완전히 완료 후 시작
         
         return () => clearTimeout(startTutorialTimeout);
-      } else {
-        console.log('[DEBUG][HomeScreen] 튜토리얼 시작 조건 불만족');
       }
-    } else {
-      console.log('[DEBUG][HomeScreen] 계좌 없음 또는 로딩 중:', { accounts });
     }
-  }, [accounts, shouldShowHomeTutorial, startHomeTutorial]);
+  }, [accounts?.length, shouldShowHomeTutorial, startHomeTutorial]); // accounts 전체가 아닌 length만 의존성으로
 
   useFocusEffect(
     useCallback(() => {
       console.log('[LOG][HomeScreen] Screen focused - fetching latest accounts');
-      fetchAccounts().then(() => {
-        console.log('[LOG][HomeScreen] fetchAccounts 완료 후 계좌 상태:', {
-          accountCount: useAccountStore.getState().accounts?.length,
-          accounts: useAccountStore.getState().accounts,
-        });
-      });
+      fetchAccounts();
     }, [fetchAccounts])
   );
 

@@ -162,7 +162,6 @@ export default function HomeTutorial({
 
   // 비활성 상태면 렌더링하지 않음
   if (!isActive || !currentStep) {
-    console.log('[DEBUG][HomeTutorial] 튜토리얼 비활성:', { isActive, currentStep });
     return null;
   }
 
@@ -171,19 +170,8 @@ export default function HomeTutorial({
 
   // 타겟 위치가 측정되지 않았으면 렌더링하지 않음
   if (!target) {
-    console.log('[DEBUG][HomeTutorial] 타겟 위치 없음:', {
-      currentStep,
-      elementPositions,
-      target,
-    });
     return null;
   }
-
-  console.log('[DEBUG][HomeTutorial] 튜토리얼 렌더링:', {
-    currentStep,
-    target,
-    config,
-  });
 
   return (
     <TutorialTooltip

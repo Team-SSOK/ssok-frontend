@@ -58,6 +58,17 @@ export const useTutorialStore = create<TutorialState>()(
           }
         });
         
+        // 이미 진행 중이거나 이미 본 경우 중복 시작 방지
+        if (currentState.isActive) {
+          console.log('[LOG][tutorialStore] 튜토리얼 이미 진행 중 - 시작 취소');
+          return;
+        }
+        
+        if (currentState.hasSeenHomeTutorial) {
+          console.log('[LOG][tutorialStore] 튜토리얼 이미 완료됨 - 시작 취소');
+          return;
+        }
+        
         console.log('[LOG][tutorialStore] 홈 튜토리얼 시작');
         set({
           isActive: true,
@@ -113,6 +124,16 @@ export const useTutorialStore = create<TutorialState>()(
           currentStep: null,
           hasSeenHomeTutorial: true,
         });
+        
+        // 완료 후 상태 확인
+        setTimeout(() => {
+          const state = get();
+          console.log('[DEBUG][tutorialStore] 완료 후 상태:', {
+            hasSeenHomeTutorial: state.hasSeenHomeTutorial,
+            isActive: state.isActive,
+            currentStep: state.currentStep,
+          });
+        }, 100);
       },
 
       /**

@@ -16,8 +16,6 @@ import { BleManager } from 'react-native-ble-plx';
 import { router } from 'expo-router';
 import { Header, Section, SettingItem } from '@/modules/settings';
 import Toast from 'react-native-toast-message';
-import { useTutorialStore } from '@/stores/tutorialStore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 라우트 타입 정의
 type SettingsRoute =
@@ -30,7 +28,6 @@ type SettingsRoute =
 export default function SettingsScreen() {
   const [isBluetoothEnabled, setIsBluetoothEnabled] = useState<boolean>(false);
   const [bleManager] = useState(() => new BleManager());
-  const { resetTutorial, hasSeenHomeTutorial, startHomeTutorial, isActive, currentStep } = useTutorialStore();
 
   // 블루투스 상태 체크
   useEffect(() => {
@@ -110,97 +107,6 @@ export default function SettingsScreen() {
     router.push(route);
   };
 
-  // 튜토리얼 리셋 핸들러
-  const handleTutorialReset = () => {
-    Alert.alert(
-      '튜토리얼 리셋',
-      '튜토리얼을 리셋하시겠습니까?\n홈 화면으로 이동하면 튜토리얼이 다시 시작됩니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '리셋',
-          style: 'destructive',
-          onPress: () => {
-            console.log('[DEBUG][Settings] 튜토리얼 리셋 전 상태:', {
-              hasSeenHomeTutorial,
-              isActive,
-              currentStep,
-            });
-            
-            resetTutorial();
-            
-            console.log('[DEBUG][Settings] 튜토리얼 리셋 후 상태:', {
-              hasSeenHomeTutorial: useTutorialStore.getState().hasSeenHomeTutorial,
-              isActive: useTutorialStore.getState().isActive,
-              currentStep: useTutorialStore.getState().currentStep,
-            });
-            
-            Toast.show({
-              type: 'success',
-              text1: '튜토리얼 리셋 완료',
-              text2: '홈 화면으로 이동하면 튜토리얼이 시작됩니다.',
-              position: 'bottom',
-            });
-          },
-        },
-      ],
-    );
-  };
-
-  // 튜토리얼 강제 시작 핸들러 (완전 리셋 포함)
-  const handleTutorialForceStart = () => {
-    console.log('[DEBUG][Settings] 완전 리셋 후 튜토리얼 강제 시작');
-    
-    Alert.alert(
-      '튜토리얼 완전 리셋',
-      '튜토리얼을 완전히 리셋하고 즉시 시작하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '시작',
-          onPress: () => {
-            // 1. 완전 리셋
-            resetTutorial();
-            
-            // 2. 잠시 후 강제 시작
-            setTimeout(() => {
-              console.log('[DEBUG][Settings] 강제 시작 실행');
-              const { startHomeTutorial } = useTutorialStore.getState();
-              startHomeTutorial();
-              
-              // 3. 홈으로 이동
-              router.push('/');
-              
-              Toast.show({
-                type: 'success',
-                text1: '튜토리얼 시작',
-                text2: '홈 화면에서 튜토리얼이 시작됩니다.',
-                position: 'bottom',
-              });
-            }, 500);
-          },
-        },
-      ],
-    );
-  };
-
-  // AsyncStorage 상태 확인 (디버그용)
-  const handleCheckStorage = async () => {
-    try {
-      const storageData = await AsyncStorage.getItem('tutorial-storage');
-      console.log('[DEBUG][Settings] AsyncStorage 내용:', storageData);
-      
-      Alert.alert(
-        'AsyncStorage 상태',
-        `저장된 데이터: ${storageData || '없음'}\n\n현재 상태:\n- hasSeenHomeTutorial: ${hasSeenHomeTutorial}\n- isActive: ${isActive}\n- currentStep: ${currentStep}`,
-        [{ text: '확인' }]
-      );
-    } catch (error) {
-      console.error('[ERROR][Settings] AsyncStorage 확인 실패:', error);
-      Alert.alert('오류', 'AsyncStorage 확인 중 오류가 발생했습니다.');
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -258,25 +164,6 @@ export default function SettingsScreen() {
             icon="call-outline"
             label="고객센터"
             onPress={() => navigateTo('/(app)/(tabs)/settings/support')}
-          />
-        </Section>
-
-        {/* 개발자 섹션 */}
-        <Section title="개발자">
-          <SettingItem
-            icon="bug-outline"
-            label="AsyncStorage 상태 확인"
-            onPress={handleCheckStorage}
-          />
-          <SettingItem
-            icon="refresh-outline"
-            label={`튜토리얼 리셋 ${hasSeenHomeTutorial ? '(완료됨)' : '(미완료)'}`}
-            onPress={handleTutorialReset}
-          />
-          <SettingItem
-            icon="play-outline"
-            label={`튜토리얼 강제 시작 ${isActive ? '(진행중)' : '(대기중)'}`}
-            onPress={handleTutorialForceStart}
           />
         </Section>
       </ScrollView>
