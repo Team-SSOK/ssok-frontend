@@ -1,8 +1,17 @@
-import axios from 'axios';
+import axios, {
+  type AxiosInstance,
+  type AxiosResponse,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import {
   getTokens as getTokensFromSecureStore,
   saveTokens as saveTokensToSecureStore,
+  clearTokens,
+  hasValidTokens,
 } from '@/services/tokenService';
+import { useAuthStore } from '@/modules/auth/store/authStore';
+import Toast from 'react-native-toast-message';
 
 // const BASE_URL = 'https://api.ssok.kr/';
 const BASE_URL = 'http://kudong.kr:55030/';
@@ -145,9 +154,16 @@ api.interceptors.response.use(
       }
 
       console.error('토큰 갱신 실패, 로그아웃 처리:', refreshError);
-      // useAuthStore.getState().resetAuth(); // 스토어의 resetAuth 직접 호출 (주석 처리 유지 또는 활성화 결정)
-
-      isRefreshing = false; // 플래그 리셋
+      Toast.show({
+        type: 'error',
+        text1: '토큰 갱신 실패',
+        text2: '다시 로그인해주세요.',
+        position: 'bottom',
+      });
+      
+      // 토큰 갱신 실패시 로그아웃 처리
+      await clearTokens();
+      useAuthStore.getState().resetAuth();
       return Promise.reject(refreshError);
     } finally {
       // try-catch 후에는 isRefreshing = false;를 여기로 옮기는 것이 더 안전할 수 있으나,

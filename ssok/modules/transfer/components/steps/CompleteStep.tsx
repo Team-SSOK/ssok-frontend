@@ -33,9 +33,10 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
     try {
       setIsLoading(true);
 
-      // 사용자의 출금 계좌 (기본 계좌 또는 첫 번째 계좌)
-      const sendAccount =
-        accounts.find((acc) => acc.isPrimaryAccount) || accounts[0];
+      // 사용자의 출금 계좌 (선택된 계좌 또는 기본 계좌 또는 첫 번째 계좌)
+      const sendAccount = data.sourceAccountId 
+        ? accounts.find((acc) => acc.accountId === Number(data.sourceAccountId))
+        : accounts.find((acc) => acc.primaryAccount) || accounts[0];
 
       if (!sendAccount) {
         showDialog({

@@ -45,10 +45,17 @@ export default function TransferFlow({
 
   // 초기 데이터 설정
   useEffect(() => {
-    if (Object.keys(initialData).length > 0) {
-      updateData(initialData);
+    const dataToUpdate = { ...initialData };
+    
+    // sourceAccountId가 있으면 데이터에 포함
+    if (sourceAccountId) {
+      dataToUpdate.sourceAccountId = sourceAccountId;
     }
-  }, [initialData, updateData]);
+    
+    if (Object.keys(dataToUpdate).length > 0) {
+      updateData(dataToUpdate);
+    }
+  }, [initialData, sourceAccountId, updateData]);
 
   // 스텝별 헤더 타이틀
   const getHeaderTitle = (step: TransferStep): string => {

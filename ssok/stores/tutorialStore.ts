@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 /**
  * 튜토리얼 단계 타입
@@ -153,7 +154,12 @@ export const useTutorialStore = create<TutorialState>()(
         AsyncStorage.removeItem('tutorial-storage').then(() => {
           console.log('[LOG][tutorialStore] AsyncStorage 삭제 완료');
         }).catch((error) => {
-          console.error('[ERROR][tutorialStore] AsyncStorage 삭제 실패:', error);
+          Toast.show({
+            type: 'error',
+            text1: 'AsyncStorage 삭제 실패',
+            text2: '저장된 튜토리얼 데이터 삭제에 실패했습니다.',
+            position: 'bottom',
+          });
         });
         
         // 설정 후 상태 확인
@@ -190,15 +196,33 @@ export const useTutorialStore = create<TutorialState>()(
     }),
     {
       name: 'tutorial-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => AsyncStorage, {
+        reviver: (key, value) => {
+          if (value === undefined) {
+            return key === 'hasSeenHomeTutorial' ? false : null;
+          }
+          return value;
+        },
+        replacer: (key, value) => {
+          if (value === undefined) {
+            return key === 'hasSeenHomeTutorial' ? false : null;
+          }
+          return value;
+        },
+      }),
       partialize: (state) => ({
-        hasSeenHomeTutorial: state.hasSeenHomeTutorial,
+        hasSeenHomeTutorial: state.hasSeenHomeTutorial || false,
       }),
       onRehydrateStorage: () => {
         console.log('[LOG][tutorialStore] AsyncStorage로부터 튜토리얼 상태 복원');
         return (restoredState, error) => {
           if (error) {
-            console.error('[ERROR][tutorialStore] AsyncStorage 복원 중 오류:', error);
+            Toast.show({
+              type: 'error',
+              text1: 'AsyncStorage 복원 오류',
+              text2: '저장된 튜토리얼 데이터 복원에 실패했습니다.',
+              position: 'bottom',
+            });
           } else {
             console.log('[LOG][tutorialStore] 튜토리얼 상태 복원 완료:', restoredState);
           }

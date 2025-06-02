@@ -43,12 +43,14 @@ export default function AmountStep({
   const confirmElementsOpacity = useSharedValue(0);
   const confirmElementsTranslateY = useSharedValue(50);
 
-  // 기본 계좌 정보 가져오기
-  const primaryAccount =
-    accounts.find((acc) => acc.isPrimaryAccount) || accounts[0];
-  const accountBalance = primaryAccount?.balance || 0;
-  const accountDisplayName = primaryAccount
-    ? `내 ${primaryAccount.bankName} 계좌`
+  // 출금 계좌 정보 가져오기
+  const sourceAccount = data.sourceAccountId 
+    ? accounts.find((acc) => acc.accountId === Number(data.sourceAccountId))
+    : accounts.find((acc) => acc.primaryAccount) || accounts[0];
+    
+  const accountBalance = sourceAccount?.balance || 0;
+  const accountDisplayName = sourceAccount
+    ? `내 ${sourceAccount.bankName} 계좌`
     : '내 계좌';
 
   // 금액 입력 상태에 따른 버튼 활성화

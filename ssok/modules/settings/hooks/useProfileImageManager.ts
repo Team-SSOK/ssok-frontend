@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Alert, ActionSheetIOS, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadProfileImage, deleteProfileImage } from '../api/profileApi';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useProfileStore } from '../store/profileStore';
+import Toast from 'react-native-toast-message';
 
 /**
  * 이미지 선택 옵션 타입
@@ -74,7 +75,12 @@ export const useProfileImageManager = (
         await uploadImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('이미지 선택 오류:', error);
+      Toast.show({
+        type: 'error',
+        text1: '이미지 선택 오류',
+        text2: '이미지 선택 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
       const errorMessage = '이미지 선택 중 오류가 발생했습니다.';
       onUploadError?.(errorMessage) || Alert.alert('오류', errorMessage);
     }
@@ -103,7 +109,12 @@ export const useProfileImageManager = (
         await uploadImage(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('카메라 촬영 오류:', error);
+      Toast.show({
+        type: 'error',
+        text1: '카메라 촬영 오류',
+        text2: '사진 촬영 중 오류가 발생했습니다.',
+        position: 'bottom',
+      });
       const errorMessage = '사진 촬영 중 오류가 발생했습니다.';
       onUploadError?.(errorMessage) || Alert.alert('오류', errorMessage);
     }
@@ -154,7 +165,12 @@ export const useProfileImageManager = (
         throw new Error(response.message || '업로드에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('이미지 업로드 오류:', error);
+      Toast.show({
+        type: 'error',
+        text1: '이미지 업로드 오류',
+        text2: error.message || '이미지 업로드에 실패했습니다.',
+        position: 'bottom',
+      });
       const errorMessage = error.message || '이미지 업로드에 실패했습니다.';
       onUploadError?.(errorMessage) || Alert.alert('오류', errorMessage);
     } finally {
@@ -188,7 +204,12 @@ export const useProfileImageManager = (
               throw new Error(response.message || '삭제에 실패했습니다.');
             }
           } catch (error: any) {
-            console.error('이미지 삭제 오류:', error);
+            Toast.show({
+              type: 'error',
+              text1: '이미지 삭제 오류',
+              text2: error.message || '이미지 삭제에 실패했습니다.',
+              position: 'bottom',
+            });
             const errorMessage = error.message || '이미지 삭제에 실패했습니다.';
             onDeleteError?.(errorMessage) || Alert.alert('오류', errorMessage);
           }

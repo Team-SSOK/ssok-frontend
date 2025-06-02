@@ -9,6 +9,9 @@ export type TransferStep = 'account' | 'amount' | 'complete';
  * 송금 플로우 데이터 타입
  */
 export interface TransferFlowData {
+  // 출금 계좌 정보
+  sourceAccountId?: string;
+
   // 계좌 정보 스텝
   accountNumber?: string;
   selectedBank?: Bank;

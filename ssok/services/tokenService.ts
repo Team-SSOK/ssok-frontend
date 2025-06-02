@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import Toast from 'react-native-toast-message';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -12,7 +13,12 @@ export async function getItem(key: string): Promise<string | null> {
   try {
     return await SecureStore.getItemAsync(key);
   } catch (error) {
-    console.error(`${LOG_TAG} 읽기 오류(${key}):`, error);
+    Toast.show({
+      type: 'error',
+      text1: 'SecureStore 읽기 오류',
+      text2: '저장된 데이터를 읽는 중 오류가 발생했습니다.',
+      position: 'bottom',
+    });
     return null;
   }
 }
@@ -22,7 +28,12 @@ export async function setItem(key: string, value: string): Promise<boolean> {
     await SecureStore.setItemAsync(key, value);
     return true;
   } catch (error) {
-    console.error(`${LOG_TAG} 저장 오류(${key}):`, error);
+    Toast.show({
+      type: 'error',
+      text1: 'SecureStore 저장 오류',
+      text2: '데이터 저장 중 오류가 발생했습니다.',
+      position: 'bottom',
+    });
     return false;
   }
 }
@@ -32,7 +43,12 @@ export async function removeItem(key: string): Promise<boolean> {
     await SecureStore.deleteItemAsync(key);
     return true;
   } catch (error) {
-    console.error(`${LOG_TAG} 삭제 오류(${key}):`, error);
+    Toast.show({
+      type: 'error',
+      text1: 'SecureStore 삭제 오류',
+      text2: '데이터 삭제 중 오류가 발생했습니다.',
+      position: 'bottom',
+    });
     return false;
   }
 }

@@ -1,5 +1,6 @@
 import React, { type PropsWithChildren } from 'react';
 import { useAuthStore, type AuthUser } from '@/modules/auth/store/authStore';
+import Toast from 'react-native-toast-message';
 
 /**
  * 인증 관련 정보와 액션을 제공하는 훅
@@ -37,7 +38,12 @@ export function useSession() {
     signInWithPin: async (pin: string) => {
       const currentUser = useAuthStore.getState().user;
       if (!currentUser || !currentUser.id) {
-        console.error('[useSession] signInWithPin: 사용자 ID 없음');
+        Toast.show({
+          type: 'error',
+          text1: '사용자 정보 오류',
+          text2: '사용자 정보를 찾을 수 없습니다.',
+          position: 'bottom',
+        });
         return { success: false, message: '사용자 정보를 찾을 수 없습니다.' };
       }
       try {
@@ -53,7 +59,12 @@ export function useSession() {
       try {
         await logout();
       } catch (err) {
-        console.error('[useSession] signOut error:', err);
+        Toast.show({
+          type: 'error',
+          text1: '로그아웃 실패',
+          text2: '로그아웃 중 오류가 발생했습니다.',
+          position: 'bottom',
+        });
         if (err instanceof Error) {
           throw new Error(`로그아웃 실패: ${err.message}`);
         }
@@ -64,7 +75,12 @@ export function useSession() {
       try {
         await handleUserNotFound();
       } catch (err) {
-        console.error('[useSession] handleUserNotFound error:', err);
+        Toast.show({
+          type: 'error',
+          text1: '데이터 초기화 실패',
+          text2: '사용자 데이터 초기화 중 오류가 발생했습니다.',
+          position: 'bottom',
+        });
         if (err instanceof Error) {
           throw new Error(`사용자 데이터 초기화 실패: ${err.message}`);
         }

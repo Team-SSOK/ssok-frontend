@@ -72,7 +72,7 @@ export default function AccountCard({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <View style={styles.cardHeader}>
+      <View style={styles.cardHeader}>
           {bankInfo?.logoSource && (
             <Image 
               source={bankInfo.logoSource} 
@@ -81,7 +81,7 @@ export default function AccountCard({
             />
           )}
           <View style={styles.bankInfo}>
-            <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
+        <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
             <View style={styles.rightInfo}>
               {account.primaryAccount && (
                 <View style={styles.primaryBadge}>
@@ -90,24 +90,24 @@ export default function AccountCard({
                   </Text>
                 </View>
               )}
-              <Text style={[typography.caption, styles.accountType]}>
-                {accountType}
-              </Text>
+        <Text style={[typography.caption, styles.accountType]}>
+          {accountType}
+        </Text>
             </View>
           </View>
-        </View>
+      </View>
 
-        <View style={styles.balanceContainer}>
-          <Text style={[typography.caption, styles.balanceLabel]}>잔액</Text>
-          <Text style={[typography.h3, styles.balance]}>
-            {formatNumber(balance)}원
-          </Text>
-        </View>
-
-        <Text style={[typography.caption, styles.accountNumber]}>
-          {maskAccountNumber(account.accountNumber)}
+      <View style={styles.balanceContainer}>
+        <Text style={[typography.caption, styles.balanceLabel]}>잔액</Text>
+        <Text style={[typography.h3, styles.balance]}>
+          {formatNumber(balance)}원
         </Text>
-      </Pressable>
+      </View>
+
+      <Text style={[typography.caption, styles.accountNumber]}>
+        {maskAccountNumber(account.accountNumber)}
+      </Text>
+    </Pressable>
     </Animated.View>
   );
 }

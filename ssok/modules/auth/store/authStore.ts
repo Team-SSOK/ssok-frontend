@@ -1,14 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { authApi } from '@/modules/auth/api/authApi';
+import * as SecureStore from 'expo-secure-store';
 import {
   saveTokens as saveTokensToSecureStore,
   clearTokens as clearTokensFromSecureStore,
   getTokens as getTokensFromSecureStore,
   hasValidTokens,
 } from '@/services/tokenService';
+import { authApi } from '@/modules/auth/api/authApi';
+import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 // 상태 타입 정의
 interface TokenState {
@@ -208,7 +210,12 @@ export const useAuthStore = create<AuthStoreState>()(
           !tempUser.birthDate
         ) {
           const msg = '회원가입에 필요한 사용자 정보가 스토어에 없습니다.';
-          console.error('[ERROR][authStore] signupAndLoginViaApi:', msg);
+          Toast.show({
+            type: 'error',
+            text1: '회원가입 정보 오류',
+            text2: '필요한 사용자 정보가 없습니다.',
+            position: 'bottom',
+          });
           set({ error: msg, isLoading: false });
           return { success: false, message: msg };
         }
@@ -271,9 +278,11 @@ export const useAuthStore = create<AuthStoreState>()(
               } else {
                 const msg =
                   '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
-                console.error('[ERROR][authStore] signupAndLoginViaApi:', msg, {
-                  accessToken,
-                  refreshToken,
+                Toast.show({
+                  type: 'error',
+                  text1: '로그인 토큰 오류',
+                  text2: '유효한 인증 토큰을 받지 못했습니다.',
+                  position: 'bottom',
                 });
                 set({ error: msg, isLoading: false });
                 return { success: false, message: msg };
@@ -281,10 +290,12 @@ export const useAuthStore = create<AuthStoreState>()(
             } else {
               const msg =
                 loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
-              console.error(
-                '[ERROR][authStore] signupAndLoginViaApi: 로그인 API 실패:',
-                loginResponse.data,
-              );
+              Toast.show({
+                type: 'error',
+                text1: '로그인 실패',
+                text2: msg,
+                position: 'bottom',
+              });
               set({ error: msg, isLoading: false });
               return { success: false, message: msg };
             }
@@ -292,10 +303,12 @@ export const useAuthStore = create<AuthStoreState>()(
             const msg =
               signupResponse.data.message ||
               '회원가입 API 호출에 실패했거나 userId가 없습니다.';
-            console.error(
-              '[ERROR][authStore] signupAndLoginViaApi: 회원가입 API 실패:',
-              signupResponse.data,
-            );
+            Toast.show({
+              type: 'error',
+              text1: '회원가입 실패',
+              text2: msg,
+              position: 'bottom',
+            });
             set({ error: msg, isLoading: false });
             return { success: false, message: msg };
           }
@@ -304,7 +317,12 @@ export const useAuthStore = create<AuthStoreState>()(
             error instanceof Error
               ? error.message
               : '회원가입 또는 로그인 처리 중 예외 발생';
-          console.error('[ERROR][authStore] signupAndLoginViaApi 예외:', error);
+          Toast.show({
+            type: 'error',
+            text1: '회원가입/로그인 오류',
+            text2: errorMessage,
+            position: 'bottom',
+          });
           set({ error: errorMessage, isLoading: false });
           return { success: false, message: errorMessage };
         }
@@ -316,7 +334,12 @@ export const useAuthStore = create<AuthStoreState>()(
 
         if (!userId) {
           const msg = '로그인에 필요한 userId가 없습니다.';
-          console.error('[ERROR][authStore] loginWithPinViaApi:', msg);
+          Toast.show({
+            type: 'error',
+            text1: '로그인 정보 오류',
+            text2: '사용자 ID가 없습니다.',
+            position: 'bottom',
+          });
           set({ error: msg, isLoading: false });
           return { success: false, message: msg };
         }
@@ -367,9 +390,11 @@ export const useAuthStore = create<AuthStoreState>()(
               return { success: true };
             } else {
               const msg = '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
-              console.error('[ERROR][authStore] loginWithPinViaApi:', msg, {
-                accessToken,
-                refreshToken,
+              Toast.show({
+                type: 'error',
+                text1: '로그인 토큰 오류',
+                text2: '유효한 인증 토큰을 받지 못했습니다.',
+                position: 'bottom',
               });
               set({ error: msg, isLoading: false });
               return { success: false, message: msg };
@@ -377,10 +402,12 @@ export const useAuthStore = create<AuthStoreState>()(
           } else {
             const msg =
               loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
-            console.error(
-              '[ERROR][authStore] loginWithPinViaApi: 로그인 API 실패:',
-              loginResponse.data,
-            );
+            Toast.show({
+              type: 'error',
+              text1: '로그인 실패',
+              text2: msg,
+              position: 'bottom',
+            });
             set({ error: msg, isLoading: false });
             return { success: false, message: msg };
           }
@@ -389,7 +416,12 @@ export const useAuthStore = create<AuthStoreState>()(
             error instanceof Error
               ? error.message
               : 'PIN 로그인 처리 중 예외 발생';
-          console.error('[ERROR][authStore] loginWithPinViaApi 예외:', error);
+          Toast.show({
+            type: 'error',
+            text1: 'PIN 로그인 오류',
+            text2: errorMessage,
+            position: 'bottom',
+          });
           set({ error: errorMessage, isLoading: false });
           return { success: false, message: errorMessage };
         }
@@ -485,10 +517,10 @@ export const useAuthStore = create<AuthStoreState>()(
 
           if (
             isValidTokenPresent &&
-            tokens.accessToken &&
-            tokens.refreshToken
+            tokens?.accessToken &&
+            tokens?.refreshToken
           ) {
-            if (persistedUser && persistedUser.id && persistedPin) {
+            if (persistedUser?.id && persistedPin) {
               set({
                 user: persistedUser,
                 accessToken: tokens.accessToken,
@@ -499,11 +531,11 @@ export const useAuthStore = create<AuthStoreState>()(
                 error: null,
               });
               console.log(
-                '[LOG][authStore] 초기화: 유효한 토큰, AsyncStorage 사용자 정보 및 PIN으로 인증됨.',
+                '[LOG][authStore] 초기화: 유효한 토큰, SecureStore 사용자 정보 및 PIN으로 인증됨.',
               );
             } else {
               console.warn(
-                '[LOG][authStore] 초기화: 토큰은 유효하나 AsyncStorage 사용자 정보/PIN 불완전. resetAuth 호출.',
+                '[LOG][authStore] 초기화: 토큰은 유효하나 SecureStore 사용자 정보/PIN 불완전. resetAuth 호출.',
               );
               await get().resetAuth();
             }
@@ -533,9 +565,12 @@ export const useAuthStore = create<AuthStoreState>()(
           get().isAuthenticated,
         );
         await clearTokensFromSecureStore();
-        const currentPin = get().pin;
+        const currentPin = get().pin || '';
         set({
+          user: null,
           accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
           error: null,
           isLoading: false,
           pin: currentPin,
@@ -626,10 +661,25 @@ export const useAuthStore = create<AuthStoreState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => AsyncStorage, {
+        reviver: (key, value) => {
+          // undefined 값을 null로 변환
+          if (value === undefined) {
+            return null;
+          }
+          return value;
+        },
+        replacer: (key, value) => {
+          // undefined 값을 null로 변환하여 저장
+          if (value === undefined) {
+            return null;
+          }
+          return value;
+        },
+      }),
       partialize: (state) => ({
-        user: state.user,
-        pin: state.pin,
+        user: state.user || null,
+        pin: state.pin || '',
       }),
       onRehydrateStorage: () => {
         console.log('[LOG][authStore] AsyncStorage로부터 스토어 재수화 감지');

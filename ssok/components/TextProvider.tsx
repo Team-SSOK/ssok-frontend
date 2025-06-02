@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Text as RNText, TextProps, TextStyle } from 'react-native';
 import { fontFamily, loadFonts } from '@/utils/loadFonts';
 import { typography } from '@/theme/typography';
+import Toast from 'react-native-toast-message';
 
 // =============================================
 // Text 컴포넌트
@@ -70,10 +71,16 @@ export const FontProvider: React.FC<{ children: React.ReactNode }> = ({
     const loadAppFonts = async () => {
       try {
         await loadFonts();
-        setFontsLoaded(true);
+        console.log('✅ 폰트 로딩 성공');
       } catch (error) {
-        console.error('Failed to load fonts', error);
-        // 폰트 로드 실패해도 앱은 계속 진행
+        Toast.show({
+          type: 'error',
+          text1: '폰트 로딩 실패',
+          text2: '기본 시스템 폰트를 사용합니다.',
+          position: 'bottom',
+        });
+        console.log('❌ 폰트 로딩 실패, 시스템 폰트 사용:', error);
+      } finally {
         setFontsLoaded(true);
       }
     };

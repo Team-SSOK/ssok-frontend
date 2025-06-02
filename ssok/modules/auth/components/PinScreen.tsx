@@ -9,6 +9,7 @@ import { typography } from '@/theme/typography';
 import { useLoadingStore } from '@/stores/loadingStore';
 import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
+import Toast from 'react-native-toast-message';
 
 interface PinScreenProps {
   title: string;
@@ -54,11 +55,11 @@ const PinScreen: React.FC<PinScreenProps> = ({
         }
         return true;
       } catch (error) {
-        console.error('[ERROR] PIN 처리 중 오류:', error);
-        showDialog({
-          title: '오류',
-          content: '처리 중 오류가 발생했습니다.',
-          confirmText: '확인',
+        Toast.show({
+          type: 'error',
+          text1: 'PIN 처리 오류',
+          text2: 'PIN 처리 중 오류가 발생했습니다.',
+          position: 'bottom',
         });
         return false;
       } finally {
