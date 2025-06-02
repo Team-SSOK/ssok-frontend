@@ -117,7 +117,7 @@ export default function AccountDetailScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       {/* 헤더 */}
-      <Header title="나의 입출금 통장" />
+      <Header title={`나의 ${currentAccount.bankName} 통장`}/>
 
       <ScrollView style={styles.scrollView}>
         {/* 계좌 정보 섹션 */}
