@@ -559,6 +559,15 @@ export const useAuthStore = create<AuthStoreState>()(
           // AsyncStorage 모든 데이터 완전 삭제
           await AsyncStorage.clear();
 
+          // 모든 store들의 상태 초기화
+          const { useAccountStore } = await import('@/modules/account/stores/accountStore');
+          const { useProfileStore } = await import('@/modules/settings/store/profileStore');
+          const { useTransferStore } = await import('@/modules/transfer/stores/transferStore');
+
+          useAccountStore.getState().resetAccountStore();
+          useProfileStore.getState().reset();
+          useTransferStore.getState().resetTransferStore();
+
           // Zustand 상태 완전 초기화 (PIN 포함)
           set({
             user: null,
@@ -568,6 +577,10 @@ export const useAuthStore = create<AuthStoreState>()(
             isAuthenticated: false,
             isLoading: false,
             error: null,
+            verificationSent: false,
+            verificationConfirmed: false,
+            isSendingCode: false,
+            isVerifyingCode: false,
           });
 
           router.replace('/(auth)/register');

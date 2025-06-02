@@ -167,28 +167,31 @@ export const useAppState = () => {
         setNeedsReauth(false);
         return { success: true };
       } else {
+        // 응답이 실패인 경우, 이미 연동된 계좌에 대한 처리를 하지 않고 직접 에러 메시지 반환
         const errorMsg = response.data.message || '재인증에 실패했습니다.';
-        showDialog({
-          title: '재인증 실패!!',
-          content: '사용자 정보를 찾을 수 없습니다.\n앱을 다시 시작해주세요.',
-          confirmText: '확인',
-          onConfirm: () => {
-            router.push('/(auth)/register');
-            hideDialog();
-          },
-        });
         return { success: false, message: errorMsg };
       }
     } catch (error: any) {
-      // 사용자 없음 에러 감지
-      if (
+      // 에러 구조 상세 로깅
+      console.log(`${LOG_TAG} 재인증 에러 상세 정보:`, {
+        status: error.response?.status,
+        code: error.response?.data?.code,
+        message: error.response?.data?.message,
+        isSuccess: error.response?.data?.isSuccess,
+        fullError: error.response?.data,
+      });
+
+      // 사용자 없음 에러 감지 (다양한 케이스 포함)
+      const isUserNotFoundError = 
         error.response?.status === 404 ||
         error.response?.data?.code === 4040 ||
+        error.response?.data?.code === 5011 || // 서버에서 사용자 정보 삭제됨
         error.response?.data?.message?.includes('사용자를 찾을 수 없습니다') ||
-        error.response?.data?.message?.includes('User not found')
-      ) {
+        error.response?.data?.message?.includes('User not found');
+
+      if (isUserNotFoundError) {
         console.log(
-          `${LOG_TAG} 재인증 중 사용자 없음 에러 감지 - 전체 초기화 진행`,
+          `${LOG_TAG} 재인증 중 사용자 없음 에러 감지 (status: ${error.response?.status}, code: ${error.response?.data?.code}) - 전체 초기화 진행`,
         );
 
         // needsReauth 상태를 먼저 false로 설정하여 AppStateManager 간섭 방지
@@ -198,7 +201,10 @@ export const useAppState = () => {
         showDialog({
           title: '계정 정보 없음',
           content:
-            '서버에서 계정 정보를 찾을 수 없습니다.\n처음부터 다시 가입해주세요.',
+            '서버에서 회원님의 계정 정보를 찾을 수 없습니다.\n' +
+            '보안상의 이유로 처음부터 다시 가입해 주세요.\n\n' +
+            '문제가 지속되면 고객센터로 문의해 주세요.\n' +
+            '📞 고객센터: 1669-1000',
           confirmText: '확인',
           onConfirm: async () => {
             console.log(
@@ -219,7 +225,7 @@ export const useAppState = () => {
 
         return {
           success: false,
-          message: '사용자 정보가 삭제되어 다시 로그인이 필요합니다!.',
+          message: '사용자 정보가 삭제되어 다시 가입이 필요합니다.',
         };
       }
 

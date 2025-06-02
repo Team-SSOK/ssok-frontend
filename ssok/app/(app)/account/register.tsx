@@ -124,6 +124,11 @@ export default function RegisterAccountScreen() {
         const result = await registerAccount(accountRequest);
 
         if (result.success && result.data) {
+          // 계좌 등록 성공 시 즉시 최신 계좌 목록을 가져오기 (잔액 포함)
+          console.log('[LOG][RegisterAccount] 계좌 등록 성공 - 최신 계좌 목록 가져오는 중...');
+          await useAccountStore.getState().fetchAccounts();
+          console.log('[LOG][RegisterAccount] 최신 계좌 목록 로딩 완료');
+
           Toast.show({
             type: 'success',
             text1: '계좌 등록 완료',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useAppState } from '@/hooks/useAppState';
+import { useAuthStore } from '@/modules/auth/store/authStore';
 import PinScreen from '@/modules/auth/components/PinScreen';
 import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
@@ -15,6 +16,7 @@ import { BackHandler } from 'react-native';
 export default function ReauthScreen() {
   const [reauthAttempts, setReauthAttempts] = useState(0);
   const { handleReauth, clearReauthRequest } = useAppState();
+  const { handleUserNotFound } = useAuthStore();
   const { showDialog, dialogState, hideDialog } = useDialog();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +56,49 @@ export default function ReauthScreen() {
       setIsLoading(false);
       return true;
     } else {
-      console.log('[LOG][ReauthScreen] 3회 이상 실패 시 처리', result.message);
+      // 사용자 없음 에러 감지 (useAppState에서 이미 감지했지만 추가 보장)
+      const isUserNotFoundError = 
+        result.message?.includes('사용자 정보가 삭제되어') ||
+        result.message?.includes('사용자를 찾을 수 없습니다') ||
+        result.message?.includes('User not found');
+
+      if (isUserNotFoundError) {
+        console.log('[LOG][ReauthScreen] 사용자 없음 에러 감지 - 사용자에게 안내 다이얼로그 표시');
+        
+        // 재인증 상태 즉시 초기화
+        clearReauthRequest();
+        
+        // 로딩 상태 해제
+        setIsLoading(false);
+        
+        // 사용자에게 상황 설명 다이얼로그 표시
+        showDialog({
+          title: '계정 정보 없음',
+          content: 
+            '서버에서 회원님의 계정 정보를 찾을 수 없습니다.\n' +
+            '보안상의 이유로 처음부터 다시 가입해 주세요.\n\n' +
+            '문제가 지속되면 고객센터로 문의해 주세요.\n' +
+            '📞 고객센터: 1669-1000',
+          confirmText: '확인',
+          onConfirm: async () => {
+            console.log('[LOG][ReauthScreen] 다이얼로그 확인 - handleUserNotFound 호출 시작');
+            hideDialog();
+            
+            try {
+              await handleUserNotFound();
+              console.log('[LOG][ReauthScreen] handleUserNotFound 호출 완료');
+            } catch (error) {
+              console.error('[LOG][ReauthScreen] handleUserNotFound 호출 중 오류:', error);
+              // 실패해도 회원가입 페이지로 강제 이동
+              router.replace('/(auth)/register');
+            }
+          },
+        });
+        
+        return true; // PIN 화면에서 에러 표시하지 않음
+      }
+
+      console.log('[LOG][ReauthScreen] 재인증 실패:', result.message);
       setIsLoading(false);
       return false;
     }

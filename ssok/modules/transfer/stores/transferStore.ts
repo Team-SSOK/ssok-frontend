@@ -53,6 +53,11 @@ interface TransferState {
     accountId: number,
   ) => Promise<StoreResponse<Transaction[]>>;
   clearError: () => void;
+
+  /**
+   * 모든 송금 상태 초기화 (사용자 삭제 시 사용)
+   */
+  resetTransferStore: () => void;
 }
 
 /**
@@ -258,5 +263,18 @@ export const useTransferStore = create<TransferState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  /**
+   * 모든 송금 상태 초기화 (사용자 삭제 시 사용)
+   */
+  resetTransferStore: () => {
+    console.log('[LOG][transferStore] resetTransferStore - 모든 송금 상태 초기화');
+    set({
+      isLoading: false,
+      error: null,
+      lastTransfer: null,
+      transactions: [],
+    });
   },
 }));

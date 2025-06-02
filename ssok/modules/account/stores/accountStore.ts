@@ -49,6 +49,9 @@ interface AccountState {
   setCurrentAccount: (account: RegisteredAccount | null) => void;
   clearError: () => void;
   getPrimaryAccount: () => RegisteredAccount | null;
+
+  // 새로운 액션
+  resetAccountStore: () => void;
 }
 
 /**
@@ -283,5 +286,19 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   getPrimaryAccount: () => {
     const { accounts } = get();
     return accounts.find((account) => account.isPrimaryAccount) || null;
+  },
+
+  /**
+   * 모든 계좌 상태 초기화 (사용자 삭제 시 사용)
+   */
+  resetAccountStore: () => {
+    console.log('[LOG][accountStore] resetAccountStore - 모든 계좌 상태 초기화');
+    set({
+      accounts: [],
+      currentAccount: null,
+      verifiedName: null,
+      isLoading: false,
+      error: null,
+    });
   },
 }));

@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -45,9 +45,12 @@ export default function HomeScreen() {
     }
   }, [fetchProfile, userId]);
 
-  useEffect(() => {
-    fetchAccounts();
-  }, [fetchAccounts]);
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[LOG][HomeScreen] Screen focused - fetching latest accounts');
+      fetchAccounts();
+    }, [fetchAccounts])
+  );
 
   const reloadAllData = async () => {
     await fetchAccounts();

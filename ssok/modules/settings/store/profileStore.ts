@@ -50,15 +50,17 @@ export const useProfileStore = create<ProfileState>((set) => ({
         });
       }
     } catch (error: any) {
-      console.error('[ProfileStore] fetchProfile error:', error);
+      console.log('[ProfileStore] fetchProfile error:', error);
 
-      // HTTP 404 에러 또는 기타 사용자 없음 관련 에러 처리
-      if (
+      // 사용자 없음 에러 감지 (다양한 케이스 포함)
+      const isUserNotFoundError = 
         error.response?.status === 404 ||
         error.response?.data?.code === 4040 ||
+        error.response?.data?.code === 5011 || // 서버에서 사용자 정보 삭제됨
         error.response?.data?.message?.includes('사용자를 찾을 수 없습니다') ||
-        error.response?.data?.message?.includes('User not found')
-      ) {
+        error.response?.data?.message?.includes('User not found');
+
+      if (isUserNotFoundError) {
         console.log('[ProfileStore] 사용자 없음 에러 감지 - 전체 초기화 진행');
 
         // 사용자 데이터 완전 초기화 및 sign-in으로 리다이렉트
