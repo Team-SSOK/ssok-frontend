@@ -38,7 +38,7 @@ export interface RegisteredAccount {
   bankCode: number;
   bankName: string;
   accountAlias: string | null;
-  isPrimaryAccount: boolean;
+  primaryAccount: boolean;
   accountTypeCode: string;
   balance?: number;
 }

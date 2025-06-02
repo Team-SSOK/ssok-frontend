@@ -207,7 +207,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         set((state) => ({
           accounts: state.accounts.map((account) => ({
             ...account,
-            isPrimaryAccount: account.accountId === accountId,
+            primaryAccount: account.accountId === accountId,
           })),
           currentAccount: updatedAccount,
           isLoading: false,
@@ -285,7 +285,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
    */
   getPrimaryAccount: () => {
     const { accounts } = get();
-    return accounts.find((account) => account.isPrimaryAccount) || null;
+    return accounts.find((account) => account.primaryAccount) || null;
   },
 
   /**

@@ -12,19 +12,28 @@ const { width: screenWidth } = Dimensions.get('window');
 interface AccountCarouselProps {
   accounts: RegisteredAccount[];
   onAccountPress: (accountId: number) => void;
+  onAccountLongPress?: (account: RegisteredAccount) => void;
   onAddAccountPress: () => void;
 }
 
 export default function AccountCarousel({
   accounts,
   onAccountPress,
+  onAccountLongPress,
   onAddAccountPress,
 }: AccountCarouselProps) {
   const ref = useRef<ICarouselInstance>(null);
   const progress = useSharedValue<number>(0);
   
-  // carousel 데이터 준비 - 계좌들 + 추가 연동 버튼
-  const carouselData = [...accounts, { isAddButton: true }];
+  // 주계좌를 첫번째로 정렬 (primaryAccount가 true인 계좌가 맨 앞에 오도록)
+  const sortedAccounts = [...accounts].sort((a, b) => {
+    if (a.primaryAccount && !b.primaryAccount) return -1;
+    if (!a.primaryAccount && b.primaryAccount) return 1;
+    return 0;
+  });
+  
+  // carousel 데이터 준비 - 정렬된 계좌들 + 추가 연동 버튼
+  const carouselData = [...sortedAccounts, { isAddButton: true }];
 
   const renderCarouselItem = ({ 
     item, 
@@ -45,6 +54,7 @@ export default function AccountCarousel({
         account={account}
         balance={account.balance || 0}
         onPress={() => onAccountPress(account.accountId)}
+        onLongPress={onAccountLongPress ? () => onAccountLongPress(account) : undefined}
       />
     );
   };
@@ -100,7 +110,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.disabled,
+    backgroundColor: colors.silver,
   },
   activeDot: {
     width: 8,
