@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 180,
+    height: 170,
   },
   addAccountContent: {
     alignItems: 'center',

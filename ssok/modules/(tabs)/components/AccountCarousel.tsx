@@ -1,7 +1,9 @@
-import React from 'react';
-import { StyleSheet, Dimensions } from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
+import React, { useRef } from 'react';
+import { StyleSheet, Dimensions, View } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
 import { RegisteredAccount } from '@/modules/account/api/accountApi';
+import { colors } from '@/constants/colors';
 import AccountCard from './AccountCard';
 import AddAccountCard from './AddAccountCard';
 
@@ -18,6 +20,9 @@ export default function AccountCarousel({
   onAccountPress,
   onAddAccountPress,
 }: AccountCarouselProps) {
+  const ref = useRef<ICarouselInstance>(null);
+  const progress = useSharedValue<number>(0);
+  
   // carousel 데이터 준비 - 계좌들 + 추가 연동 버튼
   const carouselData = [...accounts, { isAddButton: true }];
 
@@ -44,22 +49,63 @@ export default function AccountCarousel({
     );
   };
 
+  const onPressPagination = (index: number) => {
+    ref.current?.scrollTo({
+      count: index - progress.value,
+      animated: true,
+    });
+  };
+
   return (
-    <Carousel
-      loop={false}
-      width={screenWidth - 40}
-      height={200}
-      data={carouselData}
-      style={styles.carousel}
-      snapEnabled={true}
-      pagingEnabled={true}
-      renderItem={renderCarouselItem}
-    />
+    <View style={styles.container}>
+      <Carousel
+        ref={ref}
+        loop={false}
+        width={screenWidth}
+        height={200}
+        data={carouselData}
+        style={styles.carousel}
+        snapEnabled={true}
+        pagingEnabled={true}
+        onProgressChange={progress}
+        renderItem={renderCarouselItem}
+      />
+      
+      {carouselData.length > 1 && (
+        <Pagination.Basic
+          progress={progress}
+          data={carouselData}
+          dotStyle={styles.inactiveDot}
+          activeDotStyle={styles.activeDot}
+          containerStyle={styles.paginationContainer}
+          onPress={onPressPagination}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+  },
   carousel: {
     width: screenWidth,
+  },
+  paginationContainer: {
+    gap: 8,
+    marginTop: 12,
+  },
+  inactiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.disabled,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
 }); 

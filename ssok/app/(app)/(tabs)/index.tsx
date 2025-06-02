@@ -87,6 +87,8 @@ export default function HomeScreen() {
     });
   };
 
+  console.log(accounts)
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
