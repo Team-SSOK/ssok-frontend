@@ -28,12 +28,20 @@ import {
 } from '@/modules/auth/store/authStore';
 import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
+import { useTutorialStore } from '@/stores/tutorialStore';
+import HomeTutorial from '@/components/tutorial/HomeTutorial';
 
 export default function HomeScreen() {
   const { accounts, fetchAccounts, getAccountDetail, setPrimaryAccount } = useAccountStore();
   const [refreshing, setRefreshing] = useState(false);
   const recentTransactionsRef = useRef<RecentTransactionListRefType>(null);
   const router = useRouter();
+
+  // 튜토리얼 관련
+  const { shouldShowHomeTutorial, startHomeTutorial } = useTutorialStore();
+  const accountCarouselRef = useRef<View>(null);
+  const transferTabRef = useRef<View>(null);
+  const settingsTabRef = useRef<View>(null);
 
   const { withLoading } = useLoadingStore();
   const { fetchProfile } = useProfileStore();
@@ -49,10 +57,57 @@ export default function HomeScreen() {
     }
   }, [fetchProfile, userId]);
 
+  // 계좌 데이터가 로드된 후 튜토리얼 시작 체크
+  useEffect(() => {
+    console.log('[DEBUG][HomeScreen] useEffect 실행됨:', { 
+      accounts: accounts?.length, 
+      accountsArray: accounts,
+    });
+    
+    if (accounts && accounts.length > 0) {
+      const shouldShow = shouldShowHomeTutorial(accounts.length);
+      
+      console.log('[DEBUG][HomeScreen] 튜토리얼 체크:', {
+        accountCount: accounts.length,
+        shouldShow,
+        hasSeenHomeTutorial: useTutorialStore.getState().hasSeenHomeTutorial,
+        isActive: useTutorialStore.getState().isActive,
+      });
+      
+      if (shouldShow) {
+        console.log('[LOG][HomeScreen] 첫 계좌 등록 후 튜토리얼 시작');
+        // 화면 렌더링 완료 후 튜토리얼 시작
+        const startTutorialTimeout = setTimeout(() => {
+          console.log('[LOG][HomeScreen] 튜토리얼 시작 실행');
+          startHomeTutorial();
+          
+          // 시작 후 상태 확인
+          setTimeout(() => {
+            console.log('[DEBUG][HomeScreen] 튜토리얼 시작 후 상태:', {
+              isActive: useTutorialStore.getState().isActive,
+              currentStep: useTutorialStore.getState().currentStep,
+            });
+          }, 100);
+        }, 500);
+        
+        return () => clearTimeout(startTutorialTimeout);
+      } else {
+        console.log('[DEBUG][HomeScreen] 튜토리얼 시작 조건 불만족');
+      }
+    } else {
+      console.log('[DEBUG][HomeScreen] 계좌 없음 또는 로딩 중:', { accounts });
+    }
+  }, [accounts, shouldShowHomeTutorial, startHomeTutorial]);
+
   useFocusEffect(
     useCallback(() => {
       console.log('[LOG][HomeScreen] Screen focused - fetching latest accounts');
-      fetchAccounts();
+      fetchAccounts().then(() => {
+        console.log('[LOG][HomeScreen] fetchAccounts 완료 후 계좌 상태:', {
+          accountCount: useAccountStore.getState().accounts?.length,
+          accounts: useAccountStore.getState().accounts,
+        });
+      });
     }, [fetchAccounts])
   );
 
@@ -157,6 +212,15 @@ export default function HomeScreen() {
     });
   };
 
+  // 튜토리얼에서 탭 버튼 누를 때 처리
+  const handleTutorialTabPress = (tabName: 'transfer' | 'settings') => {
+    if (tabName === 'transfer') {
+      router.push('/bluetooth');
+    } else if (tabName === 'settings') {
+      router.push('/settings');
+    }
+  };
+
   console.log(accounts)
 
   return (
@@ -187,7 +251,7 @@ export default function HomeScreen() {
             />
           }
         >
-          <View style={styles.carouselContainer}>
+          <View style={styles.carouselContainer} ref={accountCarouselRef}>
             <AccountCarousel
               accounts={accounts}
               onAccountPress={handleAccountPress}
@@ -198,6 +262,23 @@ export default function HomeScreen() {
           <RecentTransactionList ref={recentTransactionsRef} />
         </ScrollView>
       )}
+
+      {/* 홈 튜토리얼 */}
+      <HomeTutorial
+        accountCardRef={accountCarouselRef}
+        transferTabRef={transferTabRef}
+        settingsTabRef={settingsTabRef}
+        onTabPress={handleTutorialTabPress}
+      />
+
+      {/* 튜토리얼용 더미 뷰들 - 바텀 탭 위치에 맞춤 */}
+      <View style={styles.dummyTabContainer} pointerEvents="none">
+        <View style={styles.dummyTabBar}>
+          <View style={styles.dummyTab} />
+          <View ref={transferTabRef} style={styles.dummyTab} />
+          <View ref={settingsTabRef} style={styles.dummyTab} />
+        </View>
+      </View>
 
       <DialogProvider
         visible={dialogState.visible}
@@ -238,5 +319,25 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     marginBottom: 20,
+  },
+  dummyTabContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 15,
+    alignItems: 'center',
+    height: 65,
+  },
+  dummyTabBar: {
+    flexDirection: 'row',
+    width: '70%',
+    height: 65,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+  },
+  dummyTab: {
+    flex: 1,
+    height: '100%',
   },
 });

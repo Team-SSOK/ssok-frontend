@@ -135,7 +135,10 @@ export default function RegisterAccountScreen() {
             text2: '계좌가 성공적으로 등록되었습니다.',
             position: 'bottom',
           });
-          router.back();
+          
+          // 홈으로 직접 이동하여 튜토리얼 트리거
+          console.log('[LOG][RegisterAccount] 홈 화면으로 이동');
+          router.replace('/');
         } else {
           Toast.show({
             type: 'error',
