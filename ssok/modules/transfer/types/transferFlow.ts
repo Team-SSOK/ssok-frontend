@@ -1,4 +1,4 @@
-import { Bank } from '@/mocks/bankData';
+import { Bank } from '@/modules/account/constants/banks';
 
 /**
  * 송금 플로우 스텝 타입

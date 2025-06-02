@@ -100,18 +100,14 @@ export default function AccountDetailScreen() {
     setFilteredTransactions(filtered);
   }, [selectedPeriod, transactions]);
 
-  // 기간 변경 핸들러 (단순 상태 업데이트이므로 useCallback 불필요)
   const handlePeriodChange = (period: PeriodFilterType) => {
     setSelectedPeriod(period);
   };
 
-  // 거래내역 전체보기 핸들러 (단순 로그이므로 useCallback 불필요)
   const handleViewAllPress = () => {
     console.log('거래내역 전체보기');
-    // 전체보기 화면으로 이동하는 로직 추가
   };
 
-  // 계좌 정보가 없으면 로딩 중 또는 오류 상태
   if (!currentAccount) {
     return null; // 로딩 UI 또는 오류 UI로 대체 가능
   }

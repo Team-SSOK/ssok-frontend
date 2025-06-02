@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import TransferFlow from '@/modules/transfer/components/TransferFlow';
 import { TransferStep } from '@/modules/transfer/types/transferFlow';
-import { banks } from '@/mocks/bankData';
+import { banks } from '@/modules/account/constants/banks';
 
 /**
  * 송금 메인 페이지

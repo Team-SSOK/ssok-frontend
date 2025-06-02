@@ -1,11 +1,12 @@
 import React from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
-import { getBankName, getAccountType } from '@/mocks/accountData';
+import { getBankName, getAccountType, getBankByCode } from '@/modules/account/constants/banks';
 import { formatNumber, maskAccountNumber } from '@/utils/formatters';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import { RegisteredAccount } from '@/modules/account/api/accountApi';
+import { Image } from 'expo-image';
 
 interface AccountCardProps {
   account: RegisteredAccount;
@@ -24,13 +25,25 @@ export default function AccountCard({
       ? getAccountType(account.accountTypeCode)
       : account.accountTypeCode;
 
+  // 은행 정보를 은행 코드로 조회 (더 효율적)
+  const bankInfo = getBankByCode(String(account.bankCode).padStart(3, '0'));
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardHeader}>
-        <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
-        <Text style={[typography.caption, styles.accountType]}>
-          {accountType}
-        </Text>
+        {bankInfo?.logoSource && (
+          <Image 
+            source={bankInfo.logoSource} 
+            style={styles.bankLogo}
+            contentFit="contain"
+          />
+        )}
+        <View style={styles.bankInfo}>
+          <Text style={[typography.body1, styles.bankName]}>{bankName}</Text>
+          <Text style={[typography.caption, styles.accountType]}>
+            {accountType}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.balanceContainer}>
@@ -61,8 +74,20 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
+  },
+  bankLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  bankInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   bankName: {
     color: colors.primary,

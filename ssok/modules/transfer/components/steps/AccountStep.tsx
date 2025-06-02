@@ -8,7 +8,7 @@ import { useLoadingStore } from '@/stores/loadingStore';
 import { NameVerificationRequest } from '@/modules/account/api/accountApi';
 import { Text } from '@/components/TextProvider';
 import { StepComponentProps } from '../../types/transferFlow';
-import { Bank } from '@/mocks/bankData';
+import { Bank } from '@/modules/account/constants/banks';
 
 // 기존 컴포넌트 재사용
 import AccountInput from '../AccountInput';
