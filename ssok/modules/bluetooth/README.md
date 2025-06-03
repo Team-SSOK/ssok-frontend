@@ -1,164 +1,154 @@
 # Bluetooth Module 📶
 
-SSOK 앱의 블루투스 디바이스 연결 및 관리를 담당하는 모듈입니다. 카드 리더기와의 블루투스 통신을 통해 카드 정보 읽기/쓰기 기능을 제공합니다.
+SSOK 앱의 블루투스 BLE(Bluetooth Low Energy) 연동을 담당하는 모듈입니다. BLE 광고와 스캔을 통해 주변 사용자를 발견하고 계좌 정보 없이 송금할 수 있는 혁신적인 기능을 제공합니다.
 
 ## 주요 기능
 
-- 🔍 **디바이스 스캔**: 주변 블루투스 디바이스 검색
-- 🔗 **자동 연결**: 등록된 디바이스 자동 연결
-- 💳 **카드 읽기**: NFC/RFID 카드 정보 읽기
-- ✏️ **카드 쓰기**: 카드에 데이터 쓰기 작업
-- 📱 **연결 상태 관리**: 실시간 연결 상태 모니터링
-- 🔄 **자동 재연결**: 연결 끊김 시 자동 재연결 시도
-- 🛡️ **보안 통신**: 암호화된 데이터 전송
-- 📋 **디바이스 관리**: 페어링된 디바이스 목록 관리
+- 📡 **BLE 광고**: 내 UUID를 주변에 광고하여 다른 사용자가 발견할 수 있게 함
+- 🔍 **주변 기기 스캔**: 주변에서 광고하는 다른 사용자의 UUID 감지
+- 🎯 **레이더 UI**: 시각적 레이더 인터페이스로 주변 사용자 표시
+- 👥 **사용자 매칭**: 발견된 UUID로 서버에서 사용자 정보 조회
+- 💸 **블루투스 송금**: 계좌 정보 없이 UUID를 통한 직접 송금
+- 🔄 **자동 재연결**: 연결 끊김 시 자동 복구 및 지속적 스캔
+- ⚙️ **권한 관리**: Android 버전별 블루투스 권한 처리
 
 ## 구조
 
 ```
 bluetooth/
 ├── components/              # 블루투스 관련 컴포넌트
-│   ├── DeviceScanner.tsx           # 디바이스 스캔 화면
-│   ├── DeviceList.tsx              # 디바이스 목록
-│   ├── ConnectionStatus.tsx        # 연결 상태 표시
-│   ├── CardReader.tsx              # 카드 읽기 인터페이스
-│   └── index.ts                    # 컴포넌트 exports
+│   ├── BluetoothRadar.tsx           # 메인 레이더 UI
+│   ├── RadarDevice.tsx              # 레이더 상의 기기 표시
+│   ├── PeerDeviceItem.tsx           # 발견된 기기 아이템
+│   ├── PeerDeviceList.tsx           # 기기 목록
+│   └── BleStatusCard.tsx            # BLE 상태 표시 카드
 ├── hooks/                   # 커스텀 훅
-│   ├── useBluetoothManager.ts      # 블루투스 전반 관리
-│   ├── useDeviceScanner.ts         # 디바이스 스캔 로직
-│   ├── useCardReader.ts            # 카드 읽기/쓰기 로직
-│   └── index.ts                    # 훅 exports
+│   └── useBleScanner.ts             # BLE 스캔 로직
+├── services/                # BLE 서비스
+│   └── bleService.ts                # BLE 광고/스캔 통합 서비스
 ├── stores/                  # 상태 관리
-│   └── bluetoothStore.ts           # 블루투스 상태 스토어
-├── services/                # 비즈니스 로직
-│   ├── BluetoothService.ts         # 블루투스 서비스 클래스
-│   ├── CardReaderService.ts        # 카드 리더 서비스
-│   └── DeviceManager.ts            # 디바이스 관리
+│   └── bluetoothStore.ts            # 블루투스 상태 스토어
 ├── api/                     # API 호출
-│   ├── bluetoothApi.ts             # 블루투스 관련 API
-│   └── types.ts                    # API 타입 정의
+│   └── bluetoothApi.ts              # 블루투스 관련 API
 ├── bluetooth-api-spec.md    # API 명세서
-└── index.ts                # 모듈 exports
+└── README.md                # 모듈 문서
 ```
 
 ## 사용법
 
-### 1. 블루투스 초기화 및 디바이스 스캔
+### 1. 블루투스 레이더 화면
 
 ```tsx
-import { useBluetoothManager, DeviceScanner } from '@/modules/bluetooth';
+import { BluetoothRadar, useBleScanner } from '@/modules/bluetooth';
+import { useBluetoothStore } from '@/modules/bluetooth/stores';
 
-export default function BluetoothSetupScreen() {
-  const {
-    isEnabled,
-    isScanning,
-    devices,
-    connectedDevice,
-    enableBluetooth,
-    startScan,
-    stopScan,
-    connectDevice
-  } = useBluetoothManager();
-
-  useEffect(() => {
-    if (!isEnabled) {
-      enableBluetooth();
-    }
-  }, [isEnabled]);
-
-  const handleDeviceSelect = async (device) => {
-    await connectDevice(device.id);
-  };
-
-  return (
-    <View>
-      <DeviceScanner
-        isScanning={isScanning}
-        devices={devices}
-        onStartScan={startScan}
-        onStopScan={stopScan}
-        onDeviceSelect={handleDeviceSelect}
-      />
-      {connectedDevice && (
-        <ConnectionStatus device={connectedDevice} />
-      )}
-    </View>
-  );
-}
-```
-
-### 2. 카드 읽기/쓰기
-
-```tsx
-import { useCardReader, CardReader } from '@/modules/bluetooth';
-
-export default function CardReaderScreen() {
-  const {
-    isReading,
-    cardData,
-    error,
-    readCard,
-    writeCard,
-    clearCard
-  } = useCardReader();
-
-  const handleReadCard = async () => {
-    const result = await readCard();
-    if (result.success) {
-      console.log('카드 정보:', result.data);
-    }
-  };
-
-  const handleWriteCard = async (data) => {
-    const result = await writeCard(data);
-    if (result.success) {
-      console.log('카드 쓰기 완료');
-    }
-  };
-
-  return (
-    <View>
-      <CardReader
-        isReading={isReading}
-        cardData={cardData}
-        error={error}
-        onReadCard={handleReadCard}
-        onWriteCard={handleWriteCard}
-        onClearCard={clearCard}
-      />
-    </View>
-  );
-}
-```
-
-### 3. 연결 상태 모니터링
-
-```tsx
-import { useBluetoothStore } from '@/modules/bluetooth';
-
-export default function HomeScreen() {
+export default function BluetoothScreen() {
   const { 
-    connectionStatus, 
-    connectedDevice, 
-    isAutoReconnecting 
+    discoveredDevices, 
+    isScanning, 
+    startScanning, 
+    stopScanning 
+  } = useBleScanner();
+  
+  const { myUUID, users } = useBluetoothStore();
+
+  const handleDevicePress = (device) => {
+    // 발견된 사용자와 송금 플로우 시작
+    const user = users.find(u => u.uuid === device.uuid);
+    if (user) {
+      router.push({
+        pathname: '/transfer',
+        params: {
+          uuid: user.uuid,
+          userName: user.username,
+          isBluetooth: 'true'
+        }
+      });
+    }
+  };
+
+  return (
+    <View>
+      <BluetoothRadar
+        devices={discoveredDevices}
+        isScanning={isScanning}
+        myUUID={myUUID}
+        onDevicePress={handleDevicePress}
+      />
+    </View>
+  );
+}
+```
+
+### 2. BLE 서비스 초기화 및 시작
+
+```tsx
+import { BleService } from '@/modules/bluetooth/services';
+
+// 서비스 초기화
+const bleService = BleService.getInstance();
+
+useEffect(() => {
+  const initializeBLE = async () => {
+    // BLE 서비스 초기화
+    const success = await bleService.initialize({
+      advertisingUUID: myUUID, // 내 UUID
+      autoStart: true,         // 자동 시작
+      major: 1,               // iBeacon major
+      minor: 1,               // iBeacon minor
+    });
+
+    if (success) {
+      console.log('BLE 서비스 초기화 성공');
+      
+      // 이벤트 리스너 등록
+      bleService.addListener({
+        onPeerDiscovered: (device) => {
+          console.log('새로운 기기 발견:', device);
+        },
+        onPeerLost: (deviceId) => {
+          console.log('기기 연결 해제:', deviceId);
+        },
+        onError: (error) => {
+          console.error('BLE 오류:', error);
+        },
+      });
+    }
+  };
+
+  initializeBLE();
+}, []);
+```
+
+### 3. 사용자 정보 조회 및 매칭
+
+```tsx
+import { useBluetoothStore } from '@/modules/bluetooth/stores';
+
+export default function BluetoothManager() {
+  const { 
+    updateUsersByUuids, 
+    users, 
+    primaryAccount 
   } = useBluetoothStore();
 
+  // 발견된 UUID들로 사용자 정보 조회
+  const handleDiscoveredDevices = useCallback(async (devices) => {
+    const uuids = devices.map(device => device.uuid);
+    if (uuids.length > 0) {
+      await updateUsersByUuids(uuids);
+    }
+  }, [updateUsersByUuids]);
+
   return (
     <View>
-      <View style={styles.statusBar}>
-        <Icon 
-          name="bluetooth" 
-          color={connectionStatus === 'connected' ? 'green' : 'gray'} 
+      {users.map(user => (
+        <PeerDeviceItem
+          key={user.uuid}
+          user={user}
+          onPress={() => handleUserPress(user)}
         />
-        <Text>
-          {connectionStatus === 'connected' 
-            ? `연결됨: ${connectedDevice?.name}`
-            : isAutoReconnecting 
-              ? '재연결 시도 중...'
-              : '연결 안됨'
-          }
-        </Text>
-      </View>
+      ))}
     </View>
   );
 }
@@ -170,10 +160,8 @@ export default function HomeScreen() {
 
 ### 주요 API 엔드포인트
 
-- `POST /bluetooth/devices/register`: 디바이스 등록
-- `GET /bluetooth/devices`: 등록된 디바이스 목록
-- `POST /bluetooth/cards/read`: 카드 읽기 결과 전송
-- `POST /bluetooth/cards/write`: 카드 쓰기 요청
+- `POST /api/bluetooth/users`: 발견된 UUID로 사용자 정보 조회
+- `POST /api/bluetooth/transfers`: 블루투스 송금 요청
 
 ## 상태 관리
 
@@ -181,27 +169,23 @@ export default function HomeScreen() {
 
 ```typescript
 interface BluetoothState {
-  // 블루투스 상태
-  isEnabled: boolean;
-  isScanning: boolean;
-  connectionStatus: 'disconnected' | 'connecting' | 'connected';
+  // 사용자 정보
+  users: BluetoothUser[];
+  primaryAccount: PrimaryAccount | null;
   
-  // 디바이스 관리
-  devices: BluetoothDevice[];
-  connectedDevice: BluetoothDevice | null;
-  pairedDevices: BluetoothDevice[];
-  
-  // 카드 리더 상태
-  isReading: boolean;
-  isWriting: boolean;
-  cardData: CardData | null;
-  
-  // 자동 재연결
-  isAutoReconnecting: boolean;
-  reconnectAttempts: number;
-  
-  // 에러 처리
+  // 로딩 상태
+  isLoading: boolean;
   error: string | null;
+  
+  // UUID 관리
+  myUUID: string;
+}
+
+interface BluetoothUser {
+  uuid: string;
+  username: string;
+  phoneSuffix: string;
+  profileImage?: string;
 }
 ```
 
@@ -209,174 +193,220 @@ interface BluetoothState {
 
 ```typescript
 interface BluetoothActions {
-  // 블루투스 제어
-  enableBluetooth: () => Promise<boolean>;
-  disableBluetooth: () => Promise<boolean>;
+  // 사용자 정보 관리
+  updateUsersByUuids: (uuids: string[]) => Promise<void>;
+  getUserByUuid: (uuid: string) => BluetoothUser | undefined;
   
-  // 디바이스 스캔
-  startScan: () => Promise<void>;
-  stopScan: () => void;
-  
-  // 연결 관리
-  connectDevice: (deviceId: string) => Promise<boolean>;
-  disconnectDevice: () => Promise<void>;
-  
-  // 카드 작업
-  readCard: () => Promise<CardReadResult>;
-  writeCard: (data: CardData) => Promise<CardWriteResult>;
+  // UUID 관리
+  setMyUUID: (uuid: string) => void;
   
   // 상태 관리
-  setConnectionStatus: (status: ConnectionStatus) => void;
-  clearError: () => void;
-  addDevice: (device: BluetoothDevice) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  clearUsers: () => void;
 }
 ```
 
-## 서비스 상세
-
-### BluetoothService
-
-블루투스 하드웨어와의 직접적인 통신을 담당하는 서비스
-
-**주요 메서드:**
-- `initialize()`: 블루투스 초기화
-- `scanDevices()`: 디바이스 스캔
-- `connect(deviceId)`: 디바이스 연결
-- `disconnect()`: 연결 해제
-- `sendData(data)`: 데이터 전송
-- `onDataReceived(callback)`: 데이터 수신 콜백
-
-### CardReaderService
-
-카드 리더기와의 통신을 담당하는 서비스
-
-**주요 메서드:**
-- `readCard()`: 카드 정보 읽기
-- `writeCard(data)`: 카드에 데이터 쓰기
-- `formatCard()`: 카드 포맷
-- `validateCard(data)`: 카드 데이터 검증
-
-### DeviceManager
-
-디바이스 관리 및 페어링을 담당하는 서비스
-
-**주요 메서드:**
-- `getPairedDevices()`: 페어링된 디바이스 목록
-- `pairDevice(device)`: 디바이스 페어링
-- `unpairDevice(deviceId)`: 페어링 해제
-- `getDeviceInfo(deviceId)`: 디바이스 정보 조회
-
 ## 컴포넌트 상세
 
-### DeviceScanner
+### BluetoothRadar
 
-블루투스 디바이스 스캔 및 선택 컴포넌트
-
-**Props:**
-- `isScanning: boolean` - 스캔 진행 상태
-- `devices: BluetoothDevice[]` - 발견된 디바이스 목록
-- `onStartScan: () => void` - 스캔 시작 핸들러
-- `onStopScan: () => void` - 스캔 중지 핸들러
-- `onDeviceSelect: (device: BluetoothDevice) => void` - 디바이스 선택 핸들러
-
-### ConnectionStatus
-
-블루투스 연결 상태를 표시하는 컴포넌트
+메인 레이더 UI 컴포넌트로 주변 기기들을 시각적으로 표시
 
 **Props:**
-- `device: BluetoothDevice | null` - 연결된 디바이스
-- `status: ConnectionStatus` - 연결 상태
-- `onReconnect?: () => void` - 재연결 핸들러
+- `devices: DiscoveredDevice[]` - 발견된 기기 목록
+- `isScanning: boolean` - 스캔 중 여부
+- `myUUID: string` - 내 UUID (중앙 표시용)
+- `profileImage?: string` - 내 프로필 이미지
+- `onDevicePress: (device: DiscoveredDevice) => void` - 기기 선택 핸들러
 
-### CardReader
+**Features:**
+- 360도 회전하는 레이더 애니메이션
+- 거리에 따른 기기 위치 표시
+- 신호 강도 기반 거리 계산
+- 터치 인터랙션 지원
 
-카드 읽기/쓰기 인터페이스 컴포넌트
+### RadarDevice
+
+레이더 상에서 개별 기기를 나타내는 컴포넌트
 
 **Props:**
-- `isReading: boolean` - 카드 읽기 진행 상태
-- `cardData: CardData | null` - 읽은 카드 데이터
-- `onReadCard: () => void` - 카드 읽기 핸들러
-- `onWriteCard: (data: CardData) => void` - 카드 쓰기 핸들러
-- `onClearCard: () => void` - 카드 데이터 지우기 핸들러
+- `device: DiscoveredDevice` - 기기 정보
+- `centerX: number` - 레이더 중심 X 좌표
+- `centerY: number` - 레이더 중심 Y 좌표
+- `radarRadius: number` - 레이더 반지름
+- `onPress: () => void` - 기기 선택 핸들러
+
+### PeerDeviceItem
+
+발견된 사용자를 목록에서 표시하는 아이템 컴포넌트
+
+**Props:**
+- `user: BluetoothUser` - 사용자 정보
+- `onPress: () => void` - 선택 핸들러
+- `showDistance?: boolean` - 거리 표시 여부
+
+### BleStatusCard
+
+BLE 연결 상태를 표시하는 카드 컴포넌트
+
+**Props:**
+- `isAdvertising: boolean` - 광고 중 여부
+- `isScanning: boolean` - 스캔 중 여부
+- `deviceCount: number` - 발견된 기기 수
+- `error?: string` - 오류 메시지
+
+## 서비스 상세
+
+### BleService
+
+BLE 광고와 스캔을 통합 관리하는 싱글톤 서비스
+
+**주요 메서드:**
+```typescript
+class BleService {
+  // 초기화
+  initialize(options?: BleServiceOptions): Promise<boolean>;
+  
+  // 광고 관리
+  startAdvertising(): Promise<boolean>;
+  stopAdvertising(): Promise<boolean>;
+  
+  // 스캔 관리
+  startScanning(): Promise<boolean>;
+  stopScanning(): Promise<boolean>;
+  
+  // 이벤트 리스너
+  addListener(listener: BleServiceListener): void;
+  removeListener(listener: BleServiceListener): void;
+  
+  // 상태 확인
+  isAdvertising(): boolean;
+  isScanning(): boolean;
+  getDiscoveredPeers(): Map<string, DiscoveredDevice>;
+}
+```
+
+**이벤트 타입:**
+```typescript
+interface BleServiceListener {
+  onPeerDiscovered?: (device: DiscoveredDevice) => void;
+  onPeerLost?: (deviceId: string) => void;
+  onAdvertisingStarted?: (uuid: string) => void;
+  onAdvertisingStopped?: () => void;
+  onScanningStarted?: () => void;
+  onScanningStopped?: () => void;
+  onError?: (error: string) => void;
+}
+```
+
+## 훅 상세
+
+### useBleScanner
+
+BLE 스캔 기능을 관리하는 훅
+
+**반환값:**
+- `discoveredDevices: DiscoveredDevice[]` - 발견된 기기 목록
+- `isScanning: boolean` - 스캔 중 여부
+- `isAdvertising: boolean` - 광고 중 여부
+- `startScanning: () => Promise<void>` - 스캔 시작
+- `stopScanning: () => Promise<void>` - 스캔 중지
+- `startAdvertising: () => Promise<void>` - 광고 시작
+- `stopAdvertising: () => Promise<void>` - 광고 중지
 
 ## 보안 고려사항
 
-### 1. 데이터 암호화
-- 카드 데이터는 AES-256으로 암호화
-- 블루투스 통신 시 페어링 키 사용
-- 민감한 정보는 로컬 저장 금지
+### 1. UUID 관리
+- 사용자별 고유 UUID 생성 및 관리
+- UUID 변경을 통한 추적 방지
+- 서버 측에서 UUID와 사용자 매핑 검증
 
-### 2. 접근 권한
-- 블루투스 권한 확인
-- 위치 권한 확인 (Android)
-- 백그라운드 스캔 제한
+### 2. 권한 관리
+- Android 버전별 블루투스 권한 처리
+- 사용자 동의 없는 권한 요청 방지
+- 권한 거부 시 적절한 가이드 제공
 
-### 3. 디바이스 검증
-- 허가된 디바이스만 연결 허용
-- 디바이스 인증서 검증
-- 비정상 연결 시도 차단
+### 3. 데이터 보안
+- 블루투스 통신에서 개인정보 노출 방지
+- UUID 외 민감정보 전송 금지
+- 서버 API를 통한 안전한 사용자 정보 교환
 
 ## 에러 처리
 
-### 에러 타입
+### 주요 에러 타입
 - `BLUETOOTH_DISABLED`: 블루투스 비활성화
 - `PERMISSION_DENIED`: 권한 거부
-- `DEVICE_NOT_FOUND`: 디바이스 찾을 수 없음
-- `CONNECTION_FAILED`: 연결 실패
-- `CARD_READ_ERROR`: 카드 읽기 오류
-- `CARD_WRITE_ERROR`: 카드 쓰기 오류
+- `ADVERTISING_FAILED`: 광고 시작 실패
+- `SCANNING_FAILED`: 스캔 시작 실패
+- `DEVICE_NOT_SUPPORTED`: 디바이스 미지원
 
-### 자동 재연결
+### 에러 처리 전략
 ```typescript
-const reconnectConfig = {
-  maxAttempts: 5,
-  initialDelay: 1000,
-  maxDelay: 10000,
-  backoffMultiplier: 2,
+const handleBleError = (error: BleError) => {
+  switch (error.type) {
+    case 'BLUETOOTH_DISABLED':
+      // 블루투스 설정 화면으로 이동
+      openBluetoothSettings();
+      break;
+    case 'PERMISSION_DENIED':
+      // 권한 설정 가이드 표시
+      showPermissionGuide();
+      break;
+    case 'ADVERTISING_FAILED':
+      // 광고 재시도 또는 대안 제시
+      retryAdvertising();
+      break;
+    default:
+      // 일반적인 오류 처리
+      showErrorToast(error.message);
+  }
 };
 ```
 
-## 테스트
+## 성능 최적화
 
-### 단위 테스트
-- 블루투스 서비스 로직
-- 카드 리더 기능
-- 에러 처리 로직
+### 1. 스캔 최적화
+- 적응형 스캔 주기 조정
+- 배터리 효율성 고려한 스캔 간격
+- 중복 기기 필터링
 
-### 통합 테스트
-- 디바이스 연결 플로우
-- 카드 읽기/쓰기 플로우
-- 자동 재연결 로직
+### 2. UI 최적화
+- 레이더 애니메이션 최적화
+- 기기 목록 가상화
+- 불필요한 리렌더링 방지
 
-### 하드웨어 테스트
-- 실제 카드 리더기와의 통신
-- 다양한 카드 타입 테스트
-- 연결 안정성 테스트
+### 3. 메모리 관리
+- 오래된 기기 정보 자동 정리
+- 메모리 누수 방지
+- 적절한 cleanup 함수 구현
 
 ## 의존성
 
 ### 외부 라이브러리
-- `react-native-bluetooth-serial`: 블루투스 통신
-- `react-native-permissions`: 권한 관리
-- `crypto-js`: 데이터 암호화
+- `react-native-ble-advertise`: BLE 광고 기능
+- `react-native-ble-plx`: BLE 스캔 기능  
+- `react-native-ble-manager`: BLE 관리 기능
+- `zustand`: 상태 관리
 
 ### 내부 의존성
-- `@/utils`: 암호화 유틸리티
-- `@/constants`: 블루투스 설정 상수
+- `@/utils/ble`: BLE 관련 유틸리티
 - `@/components`: 공통 UI 컴포넌트
+- `@/constants`: 앱 전역 상수
 
-## 성능 최적화
+## 플랫폼 지원
 
-### 스캔 최적화
-- 스캔 시간 제한 (30초)
-- 중복 디바이스 필터링
-- 신호 강도 기반 정렬
+### Android
+- ✅ BLE 광고 지원 (Android 5.0+)
+- ✅ BLE 스캔 지원
+- ✅ 권한 관리 (Android 버전별)
+- ✅ 백그라운드 동작
 
-### 연결 최적화
-- 연결 풀링으로 빠른 재연결
-- 백그라운드에서 연결 상태 유지
-- 불필요한 데이터 전송 최소화
+### iOS
+- ❌ BLE 광고 제한 (iOS 정책상 제한)
+- ✅ BLE 스캔 지원
+- ✅ 백그라운드 동작 제한적 지원
 
 ---
 
-**📶 블루투스 관련 문의나 하드웨어 호환성 문제가 있다면 하드웨어팀에 연락해주세요!** 
+**📶 블루투스 기능 관련 문의나 개선 사항이 있다면 프론트엔드팀에 연락해주세요!** 
