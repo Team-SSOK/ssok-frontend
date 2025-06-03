@@ -17,6 +17,28 @@ modules/
 └── (tabs)/                  # 탭 네비게이션 컴포넌트
 ```
 
+## 🏗️ 전체 프로젝트 구조
+
+SSOK 프로젝트는 모듈형 아키텍처를 채택하여 다음과 같이 구성되어 있습니다:
+
+```
+ssok/
+├── modules/                 # 기능별 모듈
+├── app/                     # Expo Router 기반 화면
+├── components/              # 공용 UI 컴포넌트
+├── stores/                  # 전역 상태 관리 (Zustand)
+├── hooks/                   # 공용 커스텀 훅
+├── utils/                   # 공용 유틸리티 함수
+├── constants/               # 전역 상수
+├── services/                # 외부 서비스 연동
+├── api/                     # API 클라이언트
+├── contexts/                # React Context
+├── theme/                   # 테마 및 스타일
+├── mocks/                   # 테스트용 Mock 데이터
+├── docs/                    # 문서
+└── assets/                  # 이미지, 폰트 등 정적 자원
+```
+
 ## 🔧 모듈별 주요 기능
 
 ### 🔐 Auth Module
@@ -89,15 +111,19 @@ modules/
 module-name/
 ├── components/          # React 컴포넌트
 ├── hooks/              # 커스텀 훅
-├── stores/             # 상태 관리 (Zustand)
+├── store/ (또는 stores/) # 상태 관리 (Zustand)
 ├── api/                # API 호출 함수
 ├── utils/              # 유틸리티 함수
-├── types/              # TypeScript 타입 정의
-├── constants/          # 상수 정의
-├── assets/             # 이미지, 아이콘 등
-├── services/           # 비즈니스 로직
+├── services/           # 비즈니스 로직 (선택적)
+├── README.md           # 모듈 문서
+├── [모듈명]_api_spec.md # API 명세 (해당하는 경우)
 └── index.ts            # 모듈 exports
 ```
+
+**실제 구조 특징:**
+- `auth` 모듈: `store/` (단수형) 사용
+- `bluetooth` 모듈: `stores/` (복수형) 사용, `services/` 폴더 포함
+- 일부 모듈은 API 명세서 파일 포함
 
 ## 📋 코딩 규칙
 
@@ -109,9 +135,10 @@ module-name/
 - **상수**: UPPER_SNAKE_CASE (`API_ENDPOINTS.ts`)
 
 ### 폴더 구조
-- **컴포넌트**: 기능별로 그룹화
-- **공통 컴포넌트**: 각 모듈의 `components/` 폴더
-- **모듈 간 공유**: 루트 `components/` 폴더 활용
+- **모듈별 컴포넌트**: 각 모듈의 `components/` 폴더
+- **공용 컴포넌트**: 루트 `components/` 폴더 활용
+- **공용 훅**: 루트 `hooks/` 폴더 활용
+- **공용 유틸**: 루트 `utils/` 폴더 활용
 
 ### Import 순서
 1. React 및 React Native 라이브러리
@@ -129,18 +156,17 @@ import { useAuthStore } from '@/modules/auth';
 const { user, isAuthenticated } = useAuthStore();
 ```
 
-### 2. 이벤트 기반 통신
+### 2. 공용 서비스 활용
 ```typescript
-// notification 모듈에서 transfer 이벤트 처리
-import { useNotificationHandler } from '@/modules/notification';
-
-useNotificationHandler('transfer-complete', handleTransferNotification);
+// 공용 API 클라이언트 사용
+import { apiClient } from '@/api';
+import { storage } from '@/services';
 ```
 
-### 3. API 공유
+### 3. 전역 상태 관리
 ```typescript
-// 공통 API 유틸리티 사용
-import { apiClient } from '@/modules/auth/api';
+// 루트 stores 디렉토리의 전역 상태
+import { useAppStore } from '@/stores';
 ```
 
 ## 📦 의존성 관리
@@ -154,8 +180,10 @@ import { apiClient } from '@/modules/auth/api';
 ### 내부 의존성
 - 공통 컴포넌트: `@/components`
 - 공통 유틸리티: `@/utils`
-- 공통 타입: `@/types`
-- 테마 및 스타일: `@/constants`
+- 공용 훅: `@/hooks`
+- 전역 상태: `@/stores`
+- 테마 및 스타일: `@/theme`
+- 공용 상수: `@/constants`
 
 ## 🧪 테스트 전략
 
