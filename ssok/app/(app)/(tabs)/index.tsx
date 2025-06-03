@@ -59,20 +59,8 @@ export default function HomeScreen() {
 
   // 계좌 데이터가 로드된 후 튜토리얼 시작 체크
   useEffect(() => {
-    console.log('[DEBUG][HomeScreen] useEffect 실행됨:', { 
-      accounts: accounts?.length, 
-      accountsArray: accounts,
-    });
-    
     if (accounts && accounts.length > 0) {
       const shouldShow = shouldShowHomeTutorial(accounts.length);
-      
-      console.log('[DEBUG][HomeScreen] 튜토리얼 체크:', {
-        accountCount: accounts.length,
-        shouldShow,
-        hasSeenHomeTutorial: useTutorialStore.getState().hasSeenHomeTutorial,
-        isActive: useTutorialStore.getState().isActive,
-      });
       
       if (shouldShow) {
         console.log('[LOG][HomeScreen] 첫 계좌 등록 후 튜토리얼 시작');
@@ -85,13 +73,16 @@ export default function HomeScreen() {
         return () => clearTimeout(startTutorialTimeout);
       }
     }
-  }, [accounts?.length, shouldShowHomeTutorial, startHomeTutorial]); // accounts 전체가 아닌 length만 의존성으로
+  }, [accounts?.length, shouldShowHomeTutorial, startHomeTutorial]);
 
   useFocusEffect(
     useCallback(() => {
-      console.log('[LOG][HomeScreen] Screen focused - fetching latest accounts');
-      fetchAccounts();
-    }, [fetchAccounts])
+      // 계좌가 없을 때만 API 호출 (또는 새로고침이 필요한 경우)
+      if (!accounts || accounts.length === 0) {
+        console.log('[LOG][HomeScreen] Screen focused - fetching accounts');
+        fetchAccounts();
+      }
+    }, [fetchAccounts, accounts])
   );
 
   const reloadAllData = async () => {
@@ -203,8 +194,6 @@ export default function HomeScreen() {
       router.push('/settings');
     }
   };
-
-  console.log(accounts)
 
   return (
     <SafeAreaView style={styles.container}>

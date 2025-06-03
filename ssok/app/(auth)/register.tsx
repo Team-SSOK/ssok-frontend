@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   StatusBar,
   Keyboard,
   TouchableWithoutFeedback,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -161,15 +162,18 @@ export default function Register() {
             error={errors.username}
             disabled={isLoading}
           />
+          
           <CustomTextInput
             label="생년월일"
             value={form.birthDate}
             onChangeText={(text) => handleChange('birthDate', text)}
             placeholder="YYYYMMDD"
             error={errors.birthDate}
-            keyboardType="numeric"
             disabled={isLoading}
+            keyboardType="numeric"
+            maxLength={8}
           />
+
           <PhoneVerificationInput
             phoneNumber={form.phoneNumber}
             onChangePhoneNumber={(text) => handleChange('phoneNumber', text)}

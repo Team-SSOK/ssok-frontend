@@ -153,7 +153,6 @@ api.interceptors.response.use(
         return Promise.reject(refreshError); // No refresh token 에러는 그대로 reject
       }
 
-      console.error('토큰 갱신 실패, 로그아웃 처리:', refreshError);
       Toast.show({
         type: 'error',
         text1: '토큰 갱신 실패',

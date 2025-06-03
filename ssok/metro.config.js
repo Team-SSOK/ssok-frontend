@@ -3,10 +3,8 @@ const { getDefaultConfig } = require('expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Node.js polyfills 설정
 config.resolver.alias = {
   ...config.resolver.alias,
-  // buffer polyfill 설정
   buffer: require.resolve('buffer'),
 };
 

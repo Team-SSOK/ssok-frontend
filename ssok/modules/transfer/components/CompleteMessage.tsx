@@ -12,11 +12,12 @@ interface CompleteMessageProps {
   recipientName?: string;
   accountNumber?: string;
   isLoading?: boolean;
+  isSuccess?: boolean;
 }
 
 /**
  * 송금 완료 메시지 및 애니메이션을 표시하는 컴포넌트
- * 로딩 중에는 loading.gif, 완료 후에는 success.json 애니메이션 표시
+ * 로딩 중에는 loading.gif, 완료 후에는 success/error 애니메이션 표시
  */
 export default function CompleteMessage({
   amount,
@@ -25,14 +26,15 @@ export default function CompleteMessage({
   recipientName,
   accountNumber,
   isLoading = false,
+  isSuccess = true,
 }: CompleteMessageProps) {
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
-  // 로딩이 완료되면 성공 애니메이션 표시
+  // 로딩이 완료되면 결과 애니메이션 표시
   useEffect(() => {
     if (!isLoading) {
-      // 약간의 딜레이 후 성공 애니메이션 표시
-      setShowSuccess(true);
+      // 약간의 딜레이 후 결과 애니메이션 표시
+      setShowResult(true);
       return;
     }
   }, [isLoading]);
@@ -46,12 +48,22 @@ export default function CompleteMessage({
     console.log('Loading GIF failed to load:', error);
   };
 
-  // 송금 방식에 따른 메시지 생성
-  const defaultMessage = isBluetoothTransfer
-    ? '블루투스 송금이 성공적으로 완료되었습니다.'
-    : '송금이 성공적으로 완료되었습니다.';
+  // 송금 방식과 결과에 따른 메시지 생성
+  const getDefaultMessage = () => {
+    if (isSuccess) {
+      return isBluetoothTransfer
+        ? '블루투스 송금이 성공적으로 완료되었습니다.'
+        : '송금이 성공적으로 완료되었습니다.';
+    } else {
+      return isBluetoothTransfer
+        ? '블루투스 송금 처리 중 오류가 발생했습니다.'
+        : '송금 처리 중 오류가 발생했습니다.';
+    }
+  };
 
-  const displayMessage = message || defaultMessage;
+  const displayMessage = message || getDefaultMessage();
+  const titleText = isSuccess ? '송금 완료' : '송금 실패';
+  const amountColor = isSuccess ? colors.primary : colors.error;
 
   return (
     <View style={styles.container}>
@@ -64,22 +76,34 @@ export default function CompleteMessage({
             onLoad={handleImageLoad}
             onError={handleImageError}
           />
-        ) : showSuccess ? (
-          // 완료 후: success.json 애니메이션 표시
-          <LottieView
-            source={require('@/modules/transfer/assets/success.json')}
-            autoPlay
-            loop={false}
-            style={styles.animation}
-          />
+        ) : showResult ? (
+          // 완료 후: success/error 애니메이션 표시
+          isSuccess ? (
+            <LottieView
+              source={require('@/modules/transfer/assets/success.json')}
+              autoPlay
+              loop={false}
+              style={styles.successAnimation}
+            />
+          ) : (
+            // 실패 시 failed.json 애니메이션 표시
+            <LottieView
+              source={require('@/modules/transfer/assets/failed.json')}
+              autoPlay
+              loop={false}
+              style={styles.failedAnimation}
+            />
+          )
         ) : null}
       </View>
 
       {/* 로딩 중이 아닐 때만 텍스트 표시 */}
       {!isLoading && (
         <>
-          <Text style={[typography.h2, styles.title]}>송금 완료</Text>
-          <Text style={[typography.h2, styles.amountText]}>
+          <Text style={[typography.h2, styles.title]}>
+            {titleText}
+          </Text>
+          <Text style={[typography.h2, styles.amountText, { color: amountColor }]}>
             {amount.toLocaleString('ko-KR')}원
           </Text>
 
@@ -120,9 +144,13 @@ const styles = StyleSheet.create({
     height: 200,
     marginBottom: 30,
   },
-  animation: {
+  successAnimation: {
     width: '100%',
     height: '100%',
+  },
+  failedAnimation: {
+    width: '60%',
+    height: '60%',
   },
   loadingImage: {
     width: '60%',

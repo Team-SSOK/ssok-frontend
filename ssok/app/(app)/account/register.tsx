@@ -124,15 +124,27 @@ export default function RegisterAccountScreen() {
         const result = await registerAccount(accountRequest);
 
         if (result.success && result.data) {
+          console.log('[LOG][RegisterAccount] 계좌 등록 성공 - 주계좌로 설정 중...');
+          
+          // 등록된 계좌를 주계좌로 설정
+          const setPrimaryResult = await useAccountStore.getState().setPrimaryAccount(result.data.accountId);
+          
+          if (setPrimaryResult.success) {
+            console.log('[LOG][RegisterAccount] 주계좌 설정 완료');
+          } else {
+            console.log('[LOG][RegisterAccount] 주계좌 설정 실패:', setPrimaryResult.message);
+            // 주계좌 설정 실패해도 계좌 등록은 성공이므로 계속 진행
+          }
+
           // 계좌 등록 성공 시 즉시 최신 계좌 목록을 가져오기 (잔액 포함)
-          console.log('[LOG][RegisterAccount] 계좌 등록 성공 - 최신 계좌 목록 가져오는 중...');
+          console.log('[LOG][RegisterAccount] 최신 계좌 목록 가져오는 중...');
           await useAccountStore.getState().fetchAccounts();
           console.log('[LOG][RegisterAccount] 최신 계좌 목록 로딩 완료');
 
           Toast.show({
             type: 'success',
             text1: '계좌 등록 완료',
-            text2: '계좌가 성공적으로 등록되었습니다.',
+            text2: '계좌가 주계좌로 등록되었습니다.',
             position: 'bottom',
           });
           

@@ -17,12 +17,13 @@ import NextButton from '../NextButton';
 export default function CompleteStep({ data, onBack }: StepComponentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [transferError, setTransferError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
   const {
     processTransfer,
     lastTransfer,
-    error: transferError,
+    error: transferErrorFromStore,
   } = useTransferStore();
   const { accounts } = useAccountStore();
   const { user } = useAuthStore();
@@ -89,24 +90,61 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
 
       if (result.success && result.data) {
         setTransferSuccess(true);
+        setTransferError(null); // 성공 시 에러 초기화
       } else {
+        // API 호출은 성공했지만 비즈니스 로직 실패
+        setTransferSuccess(false);
+        setTransferError(result.message || '송금 처리에 실패했습니다.');
         throw new Error(result.message || '송금 처리 결과를 받지 못했습니다.');
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : '송금 처리 중 오류가 발생했습니다.';
+      // 네트워크 에러나 기타 예외 발생
+      setTransferSuccess(false);
+      
+      // 사용자 친화적인 에러 메시지로 변경
+      let userFriendlyMessage = '송금 처리 중 문제가 발생했습니다.';
+      
+      if (error instanceof Error) {
+        const errorMessage = error.message.toLowerCase();
+        
+        // 네트워크 관련 에러
+        if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+          userFriendlyMessage = '네트워크 연결에 문제가 발생했습니다. 연결 상태를 확인해주세요.';
+        }
+        // 서버 에러 (500, 503 등)
+        else if (errorMessage.includes('status code 5') || errorMessage.includes('server error')) {
+          userFriendlyMessage = '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        }
+        // 클라이언트 에러 (400, 401, 403 등)
+        else if (errorMessage.includes('status code 4')) {
+          userFriendlyMessage = '요청 처리 중 문제가 발생했습니다. 입력 정보를 확인해주세요.';
+        }
+        // 타임아웃 에러
+        else if (errorMessage.includes('timeout')) {
+          userFriendlyMessage = '요청 처리 시간이 초과되었습니다. 다시 시도해주세요.';
+        }
+        // 기타 알려진 에러들
+        else if (errorMessage.includes('unauthorized')) {
+          userFriendlyMessage = '인증에 문제가 발생했습니다. 다시 로그인해주세요.';
+        }
+        else if (errorMessage.includes('forbidden')) {
+          userFriendlyMessage = '접근 권한이 없습니다. 계정 상태를 확인해주세요.';
+        }
+      }
+
+      setTransferError(userFriendlyMessage);
 
       // 재시도 로직 (최대 2회)
       if (retryCount < 2) {
         showDialog({
           title: '송금 실패',
-          content: `${errorMessage}\n\n다시 시도하시겠습니까?`,
+          content: `${userFriendlyMessage}\n\n다시 시도하시겠습니까?`,
           confirmText: '재시도',
           cancelText: '취소',
           onConfirm: () => {
             setRetryCount((prev) => prev + 1);
+            // 재시도 시 에러 상태 초기화
+            setTransferError(null);
             // 1초 후 재시도
             setTimeout(() => {
               executeTransfer();
@@ -118,7 +156,7 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
         // 재시도 횟수 초과
         showDialog({
           title: '송금 실패',
-          content: `${errorMessage}\n\n계속해서 문제가 발생하고 있습니다. 잠시 후 다시 시도해주세요.`,
+          content: `${userFriendlyMessage}\n\n계속해서 문제가 발생하고 있습니다. 잠시 후 다시 시도해주세요.`,
           confirmText: '확인',
           onConfirm: () => onBack?.(),
         });
@@ -166,14 +204,22 @@ export default function CompleteStep({ data, onBack }: StepComponentProps) {
               : lastTransfer?.recvAccountNumber
           }
           isLoading={isLoading}
+          isSuccess={transferSuccess}
+          message={transferError || undefined}
         />
 
         <View style={styles.spacer} />
 
-        {/* 송금 성공 시에만 홈으로 돌아가기 버튼 표시 */}
-        {transferSuccess && !isLoading && (
+        {/* 송금 완료/실패 후 버튼 표시 */}
+        {!isLoading && (
           <View style={styles.buttonContainer}>
-            <NextButton onPress={handleGoHome} enabled={true} title="홈으로" />
+            {transferSuccess ? (
+              // 성공 시: 홈으로 버튼
+              <NextButton onPress={handleGoHome} enabled={true} title="홈으로" />
+            ) : transferError ? (
+              // 실패 시: 홈으로 버튼 (재시도는 다이얼로그에서 처리)
+              <NextButton onPress={handleGoHome} enabled={true} title="홈으로" />
+            ) : null}
           </View>
         )}
       </View>
