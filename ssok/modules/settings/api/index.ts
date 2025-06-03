@@ -1,3 +1,3 @@
-import { profileApi } from './profile';
+import { profileApi } from './profileApi';
 
 export { profileApi };

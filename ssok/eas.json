@@ -6,7 +6,11 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "cache": {
+        "disabled": true
+      },
+      "prebuildCommand": "npx expo prebuild --clean"
     },
     "preview": {
       "distribution": "internal"

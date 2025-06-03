@@ -1,77 +1,178 @@
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { authStoreActions } from '@/modules/auth/store/authStore';
+import axios, {
+  type AxiosInstance,
+  type AxiosResponse,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+import {
+  getTokens as getTokensFromSecureStore,
+  saveTokens as saveTokensToSecureStore,
+  clearTokens,
+  hasValidTokens,
+} from '@/services/tokenService';
+import { useAuthStore } from '@/modules/auth/store/authStore';
+import Toast from 'react-native-toast-message';
 
-const BASE_URL = 'http://api.ssok.kr/';
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-
+// const BASE_URL = 'https://api.ssok.kr/';
+const BASE_URL = 'http://kudong.kr:55030/';
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
 });
 
-async function getTokens() {
-  const [accessToken, refreshToken] = await Promise.all([
-    SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
-    SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
-  ]);
-  return { accessToken, refreshToken };
-}
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}> = [];
 
-async function saveTokens(accessToken: string, refreshToken: string) {
-  await Promise.all([
-    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken),
-    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken),
-  ]);
-}
+const processFailedQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
+  });
+  failedQueue = [];
+};
 
 // 요청 인터셉터: accessToken이 있으면 헤더에 붙임
 api.interceptors.request.use(async (config) => {
-  const { accessToken } = await getTokens();
+  const { accessToken } = await getTokensFromSecureStore();
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+
+  // 요청 디버깅 로그
+  console.log('🚀 API 요청:', {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    baseURL: config.baseURL,
+    fullURL: `${config.baseURL}${config.url}`,
+    headers: {
+      'Content-Type': config.headers['Content-Type'],
+      Authorization: config.headers.Authorization ? 'Bearer [TOKEN]' : 'None',
+      'X-User-Id': config.headers['X-User-Id'] || 'None',
+    },
+    data: config.data instanceof FormData ? 'FormData' : config.data,
+  });
+
   return config;
 });
 
 // 응답 인터셉터: 401 → 토큰 갱신 → 원래 요청 재시도
 api.interceptors.response.use(
-  (res) => res,
+  async (res) => {
+    // 응답 성공 디버깅 로그
+    console.log('✅ API 응답 성공:', {
+      status: res.status,
+      url: res.config.url,
+      data: res.data,
+    });
+
+    // foreground API 응답에서 토큰 자동 저장
+    if (
+      res.config.url?.includes('/api/auth/foreground') &&
+      res.data.isSuccess &&
+      res.data.result?.accessToken &&
+      res.data.result?.refreshToken
+    ) {
+      const { accessToken, refreshToken } = res.data.result;
+      console.log('Foreground API 응답에서 토큰 자동 저장');
+      await saveTokensToSecureStore(accessToken, refreshToken);
+    }
+
+    return res;
+  },
   async (err) => {
-    const { response, config } = err;
-    if (response?.status !== 401 || (config as any)._retry) {
+    // 응답 에러 디버깅 로그
+    console.log('❌ API 응답 에러:', {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      url: err.config?.url,
+      method: err.config?.method?.toUpperCase(),
+      fullURL: `${err.config?.baseURL}${err.config?.url}`,
+      headers: err.config?.headers,
+      data: err.response?.data,
+      message: err.message,
+    });
+
+    const { response, config: originalRequest } = err; // config를 originalRequest로 명명
+
+    if (response?.status !== 401 || (originalRequest as any)._retry) {
       return Promise.reject(err);
     }
 
-    (config as any)._retry = true;
+    if (isRefreshing) {
+      // 현재 토큰 갱신 중이라면, 요청을 큐에 추가
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then((token) => {
+          (originalRequest as any).headers['Authorization'] = 'Bearer ' + token;
+          return api(originalRequest); // 원래 요청 재시도
+        })
+        .catch((err) => {
+          return Promise.reject(err); // 큐에서 에러가 발생하면 전파
+        });
+    }
+
+    (originalRequest as any)._retry = true;
+    isRefreshing = true;
 
     try {
-      const { refreshToken } = await getTokens();
+      console.log('토큰 갱신 시도 (단일 인스턴스)');
+      const { refreshToken } = await getTokensFromSecureStore();
       if (!refreshToken) throw new Error('No refresh token');
 
       const { data } = await axios.post(`${BASE_URL}api/auth/refresh`, {
         refreshToken,
       });
 
-      const { accessToken: newAccess, refreshToken: newRefresh } = data.result;
-      await saveTokens(newAccess, newRefresh);
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        data.result;
+      console.log('토큰 갱신 성공 (단일 인스턴스)');
+      await saveTokensToSecureStore(newAccessToken, newRefreshToken);
 
-      config.headers.Authorization = `Bearer ${newAccess}`;
-      return api(config);
-    } catch (refreshError) {
-      // 특정 API 경로에 대해서는 로그아웃 처리를 하지 않음
-      // 푸시 알림 등록 API는 로그인 과정 중에 호출될 수 있으므로 예외 처리
-      if (config.url?.includes('/api/notification/fcm/register')) {
+      (originalRequest as any).headers['Authorization'] =
+        `Bearer ${newAccessToken}`;
+      processFailedQueue(null, newAccessToken); // 대기 중인 요청들 성공 처리
+      return api(originalRequest); // 현재 실패한 요청 재시도
+    } catch (refreshError: any) {
+      processFailedQueue(refreshError, null); // 대기 중인 요청들 실패 처리
+
+      // FCM 등록 중 발생한 특정 에러는 로그인 프로세스 유지 (기존 로직)
+      if (
+        originalRequest.url?.includes('/api/notification/fcm/register') &&
+        refreshError.message === 'No refresh token'
+      ) {
         console.log('푸시 알림 등록 중 토큰 오류, 로그인 프로세스 유지');
-        return Promise.reject(new Error('No refresh token'));
+        isRefreshing = false; // 플래그 리셋
+        return Promise.reject(refreshError); // No refresh token 에러는 그대로 reject
       }
 
-      // 갱신 실패 시 상태 초기화
-      console.error('토큰 갱신 실패, 로그아웃 처리:', refreshError);
-      authStoreActions.resetAuth();
+      Toast.show({
+        type: 'error',
+        text1: '토큰 갱신 실패',
+        text2: '다시 로그인해주세요.',
+        position: 'bottom',
+      });
+      
+      // 토큰 갱신 실패시 로그아웃 처리
+      await clearTokens();
+      useAuthStore.getState().resetAuth();
       return Promise.reject(refreshError);
+    } finally {
+      // try-catch 후에는 isRefreshing = false;를 여기로 옮기는 것이 더 안전할 수 있으나,
+      // 현재 로직에서는 refreshError 발생 시 reject 후 finally가 실행되므로,
+      // 각 에러 처리 경로에서 isRefreshing을 false로 설정하는 것이 명확할 수 있습니다.
+      // 단, 성공 경로에서도 isRefreshing = false;가 필요합니다. (아래 추가)
+      if (isRefreshing) {
+        // 성공적으로 try 블록을 마쳤다면
+        isRefreshing = false;
+      }
     }
   },
 );

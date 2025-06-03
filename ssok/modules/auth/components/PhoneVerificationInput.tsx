@@ -1,7 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { Text } from '@/components/TextProvider';
-import CustomTextInput from '@/components/CustomTextInput';
+import CustomTextInput from '@/components/TextInput';
 import { colors } from '@/constants/colors';
 
 interface PhoneVerificationInputProps {

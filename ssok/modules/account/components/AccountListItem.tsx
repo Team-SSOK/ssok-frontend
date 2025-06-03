@@ -28,6 +28,16 @@ interface AccountListItemProps {
    * 애니메이션 순서를 위한 인덱스
    */
   index: number;
+
+  /**
+   * 이미 연동된 계좌인지 여부
+   */
+  isAlreadyLinked?: boolean;
+
+  /**
+   * 이미 연동된 계좌 터치 시 실행할 콜백 함수
+   */
+  onAlreadyLinkedPress?: () => void;
 }
 
 const ITEM_DELAY = 150;
@@ -46,6 +56,8 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
   account,
   onSelect,
   index = 0,
+  isAlreadyLinked = false,
+  onAlreadyLinkedPress,
 }) => {
   // 애니메이션 값
   const opacity = useSharedValue(0);
@@ -73,6 +85,15 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
     };
   });
 
+  // 터치 핸들러
+  const handlePress = () => {
+    if (isAlreadyLinked) {
+      onAlreadyLinkedPress?.();
+    } else {
+      onSelect(account);
+    }
+  };
+
   // 터치 애니메이션 핸들러 (단순한 값 설정이므로 useCallback 불필요)
   const handlePressIn = () => {
     scale.value = withTiming(0.98, { duration: 100 });
@@ -88,12 +109,12 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
   return (
     <AnimatedTouchable
       style={[styles.container, containerStyle]}
-      onPress={() => onSelect(account)}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       activeOpacity={1}
-      accessibilityLabel={`${account.bankName} ${account.accountNumber} 계좌 선택`}
-      accessibilityHint="이 계좌를 선택하여 등록합니다"
+      accessibilityLabel={`${account.bankName} ${account.accountNumber} 계좌 ${isAlreadyLinked ? '이미 연동됨' : '선택'}`}
+      accessibilityHint={isAlreadyLinked ? '이미 연동된 계좌입니다' : '이 계좌를 선택하여 등록합니다'}
     >
       <View style={styles.contentContainer}>
         <BankLogo bank={bank} bankName={account.bankName} />
@@ -113,9 +134,27 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
           </Text>
         </View>
       </View>
+
+      {/* 이미 연동된 계좌 오버레이 */}
+      {isAlreadyLinked && <AlreadyLinkedOverlay />}
     </AnimatedTouchable>
   );
 };
+
+/**
+ * 이미 연동된 계좌 오버레이 컴포넌트
+ */
+const AlreadyLinkedOverlay: React.FC = memo(() => {
+  return (
+    <View style={styles.overlay}>
+      <View style={styles.overlayContent}>
+        <Text style={[typography.caption, styles.overlayText]}>
+          이미 연동된 계좌입니다
+        </Text>
+      </View>
+    </View>
+  );
+});
 
 /**
  * 은행 로고 컴포넌트
@@ -153,11 +192,32 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.silver,
     overflow: 'hidden',
+    position: 'relative',
   },
   contentContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayContent: {
+    backgroundColor: colors.mGrey || colors.grey,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  overlayText: {
+    color: colors.white,
+    fontWeight: '600',
   },
   bankBadge: {
     width: 40,

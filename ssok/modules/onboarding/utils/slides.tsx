@@ -1,31 +1,4 @@
-import React from 'react';
-import Slide from '../components/Slide';
-import { colors } from '@/constants/colors';
-import { SlideData, SlideStyles } from './types';
-
-/**
- * 슬라이드 스타일 정의
- */
-export const slideStyles: SlideStyles = {
-  containerStyle: {
-    backgroundColor: colors.white,
-    padding: 20,
-  },
-  titleStyle: {
-    color: colors.black,
-    textAlign: 'center',
-  },
-  subtitleStyle: {
-    color: colors.grey,
-    textAlign: 'center',
-  },
-  imageContainerStyle: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 0,
-  },
-};
+import { SlideData } from '../types';
 
 /**
  * 슬라이드 데이터 정의
@@ -44,76 +17,23 @@ export const slideData: SlideData[] = [
     title: '더 빠른 송금을 경험하세요',
     subtitle1: '단순한 송금을 넘어,',
     subtitle2: '더 빠르고 간편한 송금 프로세스',
-    mediaType: 'video',
-    source: require('@/modules/onboarding/assets/slide2.mp4'),
+    mediaType: 'image',
+    source: require('@/modules/onboarding/assets/slide1.jpg'),
   },
   {
     key: 'slide3',
     title: `SSOK만의 블루투스 송금`,
     subtitle1: '블루투스 송금으로',
     subtitle2: '주변 사람에게 빠르게 송금해보세요',
-    mediaType: 'lottie',
-    source: require('@/modules/onboarding/assets/slide3.json'),
+    mediaType: 'image',
+    source: require('@/modules/onboarding/assets/slide3.jpg'),
   },
   {
     key: 'slide4',
     title: '지금 SSOK과 함께 시작하세요',
     subtitle1: '간편 송금의 모든 경험을',
     subtitle2: '지금 바로 만나보세요',
-    mediaType: 'video',
-    source: require('@/modules/onboarding/assets/slide4.mp4'),
+    mediaType: 'image',
+    source: require('@/modules/onboarding/assets/slide1.jpg'),
   },
 ];
-
-/**
- * 슬라이드 렌더링 함수: 슬라이드 데이터를 컴포넌트로 변환
- */
-const createSlideComponent = (
-  slide: SlideData,
-  index: number,
-  totalSlides: number,
-): React.ReactNode => {
-  // 공통 props 정의
-  const commonProps = {
-    title: slide.title,
-    subtitle1: slide.subtitle1,
-    subtitle2: slide.subtitle2,
-    containerStyle: slideStyles.containerStyle,
-    titleStyle: slideStyles.titleStyle,
-    subtitleStyle: slideStyles.subtitleStyle,
-    imageContainerStyle: slideStyles.imageContainerStyle,
-    isLast: index === totalSlides - 1,
-  };
-
-  // 미디어 타입에 따라 적절한 props 추가
-  switch (slide.mediaType) {
-    case 'image':
-      return (
-        <Slide key={slide.key} {...commonProps} imageSource={slide.source} />
-      );
-    case 'video':
-      return (
-        <Slide key={slide.key} {...commonProps} videoSource={slide.source} />
-      );
-    case 'lottie':
-      return (
-        <Slide key={slide.key} {...commonProps} lottieSource={slide.source} />
-      );
-    case 'component':
-      return (
-        <Slide
-          key={slide.key}
-          {...commonProps}
-          isCard={true}
-          cardContent={slide.component}
-        />
-      );
-    default:
-      return null;
-  }
-};
-
-// 미리 렌더링된 슬라이드 배열 - React.memo로 감싸인 컴포넌트를 사용하여 불필요한 리렌더링 방지
-export const onboardingSlides = slideData.map((slide, index) =>
-  createSlideComponent(slide, index, slideData.length),
-);

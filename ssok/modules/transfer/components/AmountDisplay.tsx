@@ -1,171 +1,120 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
-import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/TextProvider';
-import { typography } from '@/theme/typography';
 
 interface AmountDisplayProps {
-  amount: number;
-  recipientName: string;
-  bankName: string;
-  accountNumber?: string;
+  amount: string;
+  accountBalance: number;
+  onBalanceInput: () => void;
 }
 
-const AmountDisplay: React.FC<AmountDisplayProps> = ({
+/**
+ * 금액 입력 및 표시 컴포넌트
+ * 현재 입력된 금액과 잔액 전체 입력 버튼을 표시합니다
+ */
+export default function AmountDisplay({
   amount,
-  recipientName,
-  bankName,
-  accountNumber,
-}) => {
-  const formattedAmount = amount.toLocaleString('ko-KR');
-  const isZero = amount === 0;
-  const isBluetoothTransfer = !accountNumber;
+  accountBalance,
+  onBalanceInput,
+}: AmountDisplayProps) {
+  // 애니메이션을 위한 shared value
+  const amountOpacity = useSharedValue(0);
+  const amountScale = useSharedValue(0.95);
+  const amountTranslateY = useSharedValue(10);
+
+  React.useEffect(() => {
+    // 더 자연스러운 spring-like 애니메이션
+    amountOpacity.value = withDelay(
+      150,
+      withTiming(1, {
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
+    amountScale.value = withDelay(
+      150,
+      withTiming(1, {
+        duration: 700,
+        easing: Easing.out(Easing.back(1.1)),
+      }),
+    );
+    amountTranslateY.value = withDelay(
+      150,
+      withTiming(0, {
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+      }),
+    );
+  }, []);
+
+  // 애니메이션 스타일
+  const amountAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: amountOpacity.value,
+    transform: [
+      { scale: amountScale.value },
+      { translateY: amountTranslateY.value },
+    ],
+  }));
 
   return (
-    <View style={styles.container}>
-      {/* 받는 분 정보 카드 */}
-      <View style={styles.recipientCard}>
-        <View style={styles.recipientHeader}>
-          <Text style={[typography.body1, styles.recipientLabel]}>받는 분</Text>
-          <View style={styles.bankBadge}>
-            <Text style={[typography.body2, styles.bankBadgeText]}>
-              {bankName}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.recipientNameContainer}>
-          <Text style={[typography.h3, styles.recipientName]}>
-            {recipientName}
+    <Animated.View style={[styles.container, amountAnimatedStyle]}>
+      {/* 금액 입력 표시 */}
+      <View style={styles.amountInputContainer}>
+        <Text style={styles.amountText}>{amount || '0'}</Text>
+        <Text style={styles.currencyText}>원</Text>
+      </View>
+
+      {/* 잔액 전체 입력 버튼 */}
+      <View>
+        <Pressable style={styles.presetButton} onPress={onBalanceInput}>
+          <Text style={styles.presetButtonText}>
+            잔액 • {accountBalance.toLocaleString('ko-KR')}원 입력
           </Text>
-          {!isBluetoothTransfer && (
-            <Text style={[typography.body1, styles.recipientAccount]}>
-              {accountNumber}
-            </Text>
-          )}
-          {isBluetoothTransfer && (
-            <Text style={[typography.caption, styles.bluetoothLabel]}>
-              블루투스 송금
-            </Text>
-          )}
-        </View>
+        </Pressable>
       </View>
-
-      {/* 금액 표시 섹션 */}
-      <View style={styles.amountSection}>
-        <View style={styles.amountContainer}>
-          {isZero ? (
-            <View style={styles.placeholderContainer}>
-              <Ionicons name="wallet-outline" size={24} color={colors.lGrey} />
-              <Text style={[typography.h3, styles.placeholderText]}>
-                금액을 입력해주세요
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.amountWrapper}>
-              <Text style={[typography.h1, styles.currency]}>
-                {formattedAmount}
-              </Text>
-              <Text style={[typography.h2, styles.currencyUnit]}>원</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.divider} />
-      </View>
-    </View>
+    </Animated.View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 20,
+    alignItems: 'center',
+    marginBottom: 10,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
-  recipientCard: {
-    padding: 16,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    marginBottom: 24,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  recipientHeader: {
+  amountInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  recipientLabel: {
-    color: colors.lGrey,
-  },
-  bankBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: colors.silver,
-    borderRadius: 12,
-  },
-  bankBadgeText: {
-    color: colors.mGrey,
-  },
-  recipientNameContainer: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  recipientName: {
-    color: colors.black,
-  },
-  recipientAccount: {
-    color: colors.mGrey,
-  },
-  bluetoothLabel: {
-    color: colors.primary,
-    backgroundColor: colors.primary + '15', // 약간 투명한 배경색
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  amountSection: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  amountContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 60,
+    alignItems: 'baseline',
     marginBottom: 16,
   },
-  placeholderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: {
-    color: colors.lGrey,
-    marginLeft: 8,
-  },
-  amountWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  currency: {
+  amountText: {
+    fontSize: 32,
+    fontWeight: '700',
     color: colors.black,
+    marginRight: 8,
   },
-  currencyUnit: {
-    color: colors.black,
-    marginLeft: 4,
-    marginBottom: 4,
+  currencyText: {
+    fontSize: 20,
+    color: colors.grey,
+    fontWeight: '500',
   },
-  divider: {
-    height: 1,
+  presetButton: {
     backgroundColor: colors.silver,
-    width: '40%',
-    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  presetButtonText: {
+    fontSize: 12,
+    color: colors.lGrey,
   },
 });
-
-export default AmountDisplay;

@@ -1,5 +1,5 @@
 // API exports
-export { authApi } from './api/auth';
+export { authApi } from './api/authApi';
 
 // Components
 export * from './components';
@@ -11,7 +11,6 @@ export { default as usePinInput } from './hooks/usePin';
 
 // Utils
 export * from './utils/constants';
-export * from './utils/authUtils';
 
 // Types
 export interface AuthUser {

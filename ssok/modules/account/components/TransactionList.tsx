@@ -7,33 +7,12 @@ import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 
 interface TransactionListProps {
-  /**
-   * 거래내역 목록
-   */
   transactions: Transaction[];
-
-  /**
-   * 전체보기 버튼 클릭 시 실행할 함수
-   */
   onViewAllPress: () => void;
-
-  /**
-   * 로딩 상태
-   */
   isLoading?: boolean;
-
-  /**
-   * 에러 메시지
-   */
   errorMessage?: string;
 }
 
-/**
- * 거래내역 목록 컴포넌트
- *
- * 계좌의 거래내역을 리스트로 표시합니다.
- * 로딩 상태, 비어있는 상태, 에러 상태 처리를 포함합니다.
- */
 const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   onViewAllPress,
@@ -42,14 +21,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
 }) => {
   // 로딩 중 상태 UI
   if (isLoading) {
-    return (
-      <View style={[styles.container, styles.centerContainer]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
-  // 에러 상태 UI
   if (errorMessage) {
     return (
       <View style={[styles.container, styles.centerContainer]}>
@@ -69,7 +43,6 @@ const TransactionList: React.FC<TransactionListProps> = ({
     );
   }
 
-  // 거래 내역 렌더링
   return (
     <View style={styles.container}>
       <FlatList
@@ -78,7 +51,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
         renderItem={({ item }) => <TransactionItem transaction={item} />}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={false} // 부모 ScrollView에서 스크롤 처리
+        scrollEnabled={false}
         contentContainerStyle={styles.listContent}
       />
     </View>

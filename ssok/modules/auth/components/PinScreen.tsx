@@ -7,8 +7,9 @@ import usePinInput from '@/modules/auth/hooks/usePin';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import { useLoadingStore } from '@/stores/loadingStore';
-import useDialog from '@/modules/auth/hooks/useDialog';
+import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
+import Toast from 'react-native-toast-message';
 
 interface PinScreenProps {
   title: string;
@@ -16,6 +17,7 @@ interface PinScreenProps {
   maxLength?: number;
   onComplete: (pin: string) => Promise<boolean> | boolean;
   errorDuration?: number;
+  isLoading?: boolean;
 }
 
 /**
@@ -53,11 +55,11 @@ const PinScreen: React.FC<PinScreenProps> = ({
         }
         return true;
       } catch (error) {
-        console.error('[ERROR] PIN 처리 중 오류:', error);
-        showDialog({
-          title: '오류',
-          content: '처리 중 오류가 발생했습니다.',
-          confirmText: '확인',
+        Toast.show({
+          type: 'error',
+          text1: 'PIN 처리 오류',
+          text2: 'PIN 처리 중 오류가 발생했습니다.',
+          position: 'bottom',
         });
         return false;
       } finally {
@@ -126,6 +128,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 80,
@@ -135,13 +138,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtitle: {
-    marginBottom: 36,
     textAlign: 'center',
     color: colors.text.tertiary,
   },
   pinSection: {
     alignItems: 'center',
-    marginBottom: 50,
   },
   errorContainer: {
     height: 24,

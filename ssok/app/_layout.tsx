@@ -1,94 +1,87 @@
 import { Stack } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 
-import { FontProvider } from '../components/TextProvider';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { FontProvider } from '../components/TextProvider';
+import Toast from 'react-native-toast-message';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { useLoadingStore } from '@/stores/loadingStore';
-import notificationService from '@/modules/notification/services/notificationService';
-import { usePushNotification } from '@/modules/notification/hooks/usePushNotification';
+import { SessionProvider, useSession } from '@/contexts/useSession';
+import { AppStateManager } from '@/components/AppStateManager';
+import toastConfig from '@/components/ToastConfig';
+
+SplashScreen.preventAutoHideAsync();
+
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
 
 export default function RootLayout() {
-  const isLoading = useLoadingStore((state) => state.isLoading);
-  const { initPushNotifications, error, devicePushToken, isRegistered } =
-    usePushNotification();
-  // 초기화 플래그 추가
-  const hasInitializedRef = useRef(false);
+  const [appIsReady, setAppIsReady] = useState(false);
+  const { initializeAuth, isLoading: sessionIsLoading } = useSession();
+  const globalLoading = useLoadingStore((state) => state.isLoading);
 
-  // 앱 시작 시 푸시 알림 초기화 (한 번만 실행)
   useEffect(() => {
-    // 이미 초기화된 경우 다시 실행하지 않음
-    if (hasInitializedRef.current || isRegistered) {
-      console.log('푸시 알림이 이미 초기화되어 있거나 등록되어 있습니다.');
-      hasInitializedRef.current = true;
-      return;
-    }
-
-    const initNotifications = async () => {
+    async function appInit() {
       try {
-        await initPushNotifications();
-        console.log('푸시 알림이 초기화되었습니다.');
-
-        // 초기화 완료 표시
-        hasInitializedRef.current = true;
-      } catch (err) {
-        console.error('푸시 알림 초기화 오류:', err);
+        await initializeAuth();
+      } catch (e) {
+        console.warn('[ERROR][RootLayout] 앱 준비 중 에러:', e);
+      } finally {
+        setAppIsReady(true);
+        SplashScreen.hideAsync();
       }
-    };
-
-    initNotifications();
-  }, []);
-
-  // 푸시 알림 오류 로깅
-  useEffect(() => {
-    if (error) {
-      console.error('푸시 알림 오류:', error);
     }
-  }, [error]);
+    appInit();
+  }, [initializeAuth]);
+
+  if (!appIsReady || sessionIsLoading) {
+    console.log(
+      '[RootLayout] appIsReady 또는 sessionIsLoading false. 스플래시 유지 또는 null 반환.',
+    );
+    return null;
+  }
 
   return (
-    <PaperProvider>
-      <FontProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="auth/register" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="auth/pin-setup"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="auth/pin-confirm"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="auth/pin-login"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="account/[id]" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="account/register"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="transfer/index"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="transfer/amount"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="transfer/confirm"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="transfer/complete"
-            options={{ headerShown: false }}
-          />
-        </Stack>
-        <LoadingIndicator visible={isLoading} />
-      </FontProvider>
-    </PaperProvider>
+    <SessionProvider>
+      <PaperProvider>
+        <FontProvider>
+          <RootNavigator />
+          <LoadingIndicator visible={globalLoading && appIsReady} />
+          <AppStateManager />
+          <Toast config={toastConfig} />
+        </FontProvider>
+      </PaperProvider>
+    </SessionProvider>
+  );
+}
+
+function RootNavigator() {
+  const { isLoading, isAuthenticated } = useSession();
+
+  if (isLoading) {
+    return <LoadingIndicator visible={true} />;
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(app)" />
+        <Stack.Screen
+          name="reauth"
+          options={{
+            presentation: 'modal',
+            gestureEnabled: false,
+            headerShown: false,
+          }}
+        />
+      </Stack.Protected>
+    </Stack>
   );
 }
