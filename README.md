@@ -136,16 +136,16 @@ eas build:configure
 ## 📖 문서 가이드
 
 ### 📚 개발 문서
-- **[Modules README](./modules/README.md)**: 모듈 구조 및 개발 가이드
-- **[App README](./app/README.md)**: 화면 구조 및 네비게이션
-- **[API Documentation](./docs/)**: API 명세 및 사용법
+- **[Modules README](./ssok/modules/README.md)**: 모듈 구조 및 개발 가이드
+- **[App README](./ssok/app/README.md)**: 화면 구조 및 네비게이션
+- **[API Documentation](./ssok/docs/)**: API 명세 및 사용법
 
 ### 🔧 모듈별 문서
-- **[Auth Module](./modules/auth/README.md)**: 인증 시스템
-- **[Bluetooth Module](./modules/bluetooth/README.md)**: 블루투스 연동
-- **[Transfer Module](./modules/transfer/README.md)**: 송금/결제
-- **[Account Module](./modules/account/README.md)**: 계좌 관리
-- **[Settings Module](./modules/settings/README.md)**: 사용자 설정
+- **[Auth Module](./ssok/modules/auth/README.md)**: 인증 시스템
+- **[Bluetooth Module](./ssok/modules/bluetooth/README.md)**: 블루투스 연동
+- **[Transfer Module](./ssok/modules/transfer/README.md)**: 송금/결제
+- **[Account Module](./ssok/modules/account/README.md)**: 계좌 관리
+- **[Settings Module](./ssok/modules/settings/README.md)**: 사용자 설정
 
 ## 🧪 테스트
 
