@@ -2,8 +2,7 @@ import React from 'react';
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
-  ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import { Text } from '@/components/TextProvider';
 import CustomTextInput from '@/components/TextInput';
@@ -43,7 +42,7 @@ const CodeVerificationInput: React.FC<CodeVerificationInputProps> = ({
         containerStyle={styles.input}
         disabled={disabled || verificationConfirmed}
       />
-      <TouchableOpacity
+      <Pressable
         style={[
           styles.button,
           (verificationConfirmed ||
@@ -60,7 +59,7 @@ const CodeVerificationInput: React.FC<CodeVerificationInputProps> = ({
         <Text style={styles.buttonText}>
           {verificationConfirmed ? '인증완료' : '인증확인'}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

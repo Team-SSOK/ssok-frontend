@@ -4,7 +4,7 @@ import {
   Text,
   View,
   SafeAreaView,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,12 +16,12 @@ export default function PrivacyScreen() {
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity
+        <Pressable
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color={colors.black} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.title}>개인정보처리방침</Text>
         <View style={styles.rightSpace} />
       </View>
@@ -208,12 +208,12 @@ export default function PrivacyScreen() {
         </View>
 
         {/* 고객센터 안내 */}
-        <TouchableOpacity
+        <Pressable
           style={styles.supportButton}
           onPress={() => router.push('/(app)/(tabs)/settings/support')}
         >
           <Text style={styles.supportButtonText}>개인정보 관련 문의하기</Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );

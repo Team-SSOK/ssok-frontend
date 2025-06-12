@@ -2,7 +2,7 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   StyleProp,
   ViewStyle,
@@ -25,37 +25,37 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
       {/* 숫자 키패드 1-9 */}
       <View style={styles.keypadRow}>
         {[1, 2, 3].map((num) => (
-          <TouchableOpacity
+          <Pressable
             key={num}
             style={styles.keypadButton}
             onPress={() => onPressNumber(num)}
           >
             <Text style={styles.keypadButtonText}>{num}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
       <View style={styles.keypadRow}>
         {[4, 5, 6].map((num) => (
-          <TouchableOpacity
+          <Pressable
             key={num}
             style={styles.keypadButton}
             onPress={() => onPressNumber(num)}
           >
             <Text style={styles.keypadButtonText}>{num}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
       <View style={styles.keypadRow}>
         {[7, 8, 9].map((num) => (
-          <TouchableOpacity
+          <Pressable
             key={num}
             style={styles.keypadButton}
             onPress={() => onPressNumber(num)}
           >
             <Text style={styles.keypadButtonText}>{num}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
 
@@ -63,17 +63,17 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
         {/* 빈 공간 */}
         <View style={styles.keypadEmpty} />
 
-        <TouchableOpacity
+        <Pressable
           style={styles.keypadButton}
           onPress={() => onPressNumber(0)}
         >
           <Text style={styles.keypadButtonText}>0</Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* 삭제 버튼 */}
-        <TouchableOpacity style={styles.keypadButton} onPress={onPressDelete}>
+        <Pressable style={styles.keypadButton} onPress={onPressDelete}>
           <Text style={styles.keypadButtonText}>←</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

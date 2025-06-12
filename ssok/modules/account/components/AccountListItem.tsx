@@ -1,5 +1,5 @@
 import React, { useEffect, memo } from 'react';
-import { StyleSheet, TouchableOpacity, View, Image } from 'react-native';
+import { StyleSheet, Pressable, View, Image } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Account, RegisteredAccount } from '../api/accountApi';
 import { findBank } from '@/modules/account/utils/bankUtils';
@@ -44,7 +44,7 @@ const ITEM_DELAY = 150;
 const FADE_IN_DURATION = 300;
 const SLIDE_DURATION = 400;
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
  * 계좌 목록 아이템 컴포넌트
@@ -107,12 +107,11 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
   const bank = findBank(account.bankCode, account.bankName);
 
   return (
-    <AnimatedTouchable
+    <AnimatedPressable
       style={[styles.container, containerStyle]}
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      activeOpacity={1}
       accessibilityLabel={`${account.bankName} ${account.accountNumber} 계좌 ${isAlreadyLinked ? '이미 연동됨' : '선택'}`}
       accessibilityHint={isAlreadyLinked ? '이미 연동된 계좌입니다' : '이 계좌를 선택하여 등록합니다'}
     >
@@ -137,7 +136,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
 
       {/* 이미 연동된 계좌 오버레이 */}
       {isAlreadyLinked && <AlreadyLinkedOverlay />}
-    </AnimatedTouchable>
+    </AnimatedPressable>
   );
 };
 

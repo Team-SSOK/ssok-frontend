@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
+  Pressable,
   SafeAreaView,
   StatusBar,
   Keyboard,
@@ -197,7 +197,7 @@ export default function Register() {
             />
           )}
           <View style={styles.termsContainer}>
-            <TouchableOpacity
+            <Pressable
               style={styles.checkbox}
               onPress={() => handleChange('agreedToTerms', !form.agreedToTerms)}
               disabled={isLoading}
@@ -207,7 +207,7 @@ export default function Register() {
               ) : (
                 <Ionicons name="square-outline" size={24} color={colors.grey} />
               )}
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.termsText}>서비스 이용약관에 동의합니다.</Text>
           </View>
           <Button

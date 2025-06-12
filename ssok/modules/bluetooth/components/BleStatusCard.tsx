@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   Platform,
 } from 'react-native';
 import { colors } from '@/constants/colors';
@@ -79,7 +79,7 @@ const BleStatusCard: React.FC<BleStatusCardProps> = ({
             </Text>
             {/* Android에서만 광고 버튼 표시 */}
             {Platform.OS === 'android' && (
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.actionButton,
                   isAdvertising ? styles.stopButton : styles.startButton,
@@ -89,7 +89,7 @@ const BleStatusCard: React.FC<BleStatusCardProps> = ({
                 <Text style={styles.actionButtonText}>
                   {isAdvertising ? '중지' : '시작'}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
 
@@ -110,7 +110,7 @@ const BleStatusCard: React.FC<BleStatusCardProps> = ({
             <Text style={styles.statusValue}>
               {isScanning ? '스캔 중...' : '대기 중'}
             </Text>
-            <TouchableOpacity
+            <Pressable
               style={[
                 styles.actionButton,
                 isScanning ? styles.stopButton : styles.startButton,
@@ -120,7 +120,7 @@ const BleStatusCard: React.FC<BleStatusCardProps> = ({
               <Text style={styles.actionButtonText}>
                 {isScanning ? '중지' : '시작'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>

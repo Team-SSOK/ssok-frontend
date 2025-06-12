@@ -5,7 +5,7 @@ import {
   Dimensions,
   Text,
   Image,
-  TouchableOpacity,
+  Pressable,
   FlatList,
 } from 'react-native';
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
@@ -139,14 +139,14 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
 
         {/* 추가 기기 버튼 (5개 초과 시) */}
         {listDevices.length > 0 && (
-          <TouchableOpacity
+          <Pressable
             style={styles.moreDevicesButton}
             onPress={() => setShowList(!showList)}
           >
             <Text style={styles.moreDevicesText}>
               +{listDevices.length}개 더 보기
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 
@@ -157,9 +157,9 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
             <Text style={styles.deviceListTitle}>
               추가 발견된 기기 ({listDevices.length})
             </Text>
-            <TouchableOpacity onPress={() => setShowList(false)}>
+            <Pressable onPress={() => setShowList(false)}>
               <Text style={styles.closeButton}>닫기</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
           <FlatList
             data={listDevices}
@@ -172,7 +172,7 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
               const userName = user ? user.username : '알 수 없음';
 
               return (
-                <TouchableOpacity
+                <Pressable
                   style={styles.deviceListItem}
                   onPress={() => onDevicePress(item)}
                 >
@@ -184,7 +184,7 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
                   />
                   <Text style={styles.deviceName}>{userName}</Text>
                   <Text style={styles.deviceRssi}>{item.rssi || '-'} dBm</Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             }}
           />

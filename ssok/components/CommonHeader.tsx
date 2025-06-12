@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
@@ -23,9 +23,9 @@ const CommonHeader: React.FC<HeaderProps> = ({ title, onBackPress }) => {
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+      <Pressable onPress={handleBackPress} style={styles.backButton}>
         <Ionicons name="chevron-back" size={28} color="black" />
-      </TouchableOpacity>
+      </Pressable>
       <Text style={[typography.h3, styles.headerTitle]}>{title}</Text>
       <View style={styles.rightPlaceholder} />
     </View>

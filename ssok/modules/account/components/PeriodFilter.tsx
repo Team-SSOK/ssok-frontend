@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
@@ -42,7 +42,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({
   return (
     <View style={styles.container} accessibilityLabel="거래내역 기간 필터">
       {periods.map((period) => (
-        <TouchableOpacity
+        <Pressable
           key={period}
           style={[
             styles.periodButton,
@@ -62,7 +62,7 @@ const PeriodFilter: React.FC<PeriodFilterProps> = ({
           >
             {period}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   );

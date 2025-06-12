@@ -2,7 +2,7 @@ import React from 'react';
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { Text } from '@/components/TextProvider';
@@ -43,7 +43,7 @@ const PhoneVerificationInput: React.FC<PhoneVerificationInputProps> = ({
         containerStyle={styles.input}
         disabled={disabled}
       />
-      <TouchableOpacity
+      <Pressable
         style={[
           styles.button,
           (verificationSent || !phoneNumber || disabled || isLoading) &&
@@ -55,7 +55,7 @@ const PhoneVerificationInput: React.FC<PhoneVerificationInputProps> = ({
         <Text style={styles.buttonText}>
           {verificationSent ? '재발송' : '인증번호 발송'}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

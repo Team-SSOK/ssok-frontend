@@ -114,49 +114,64 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         </Text>
       )}
 
-      <PaperTextInput
-        label={!required ? label : ''}
-        value={value}
-        onChangeText={handleChangeText}
-        error={!!error}
-        disabled={disabled}
-        mode={mode}
-        multiline={multiline}
-        numberOfLines={multiline ? 3 : 1}
-        left={startIcon ? <PaperTextInput.Icon icon={startIcon} /> : undefined}
-        right={
-          endIcon || secureTextEntry ? (
-            <PaperTextInput.Icon
-              icon={getEndIcon()}
-              onPress={handleEndIconPress}
-              forceTextInputFocus={false}
-            />
-          ) : undefined
-        }
-        secureTextEntry={secureTextEntry && !isSecureTextVisible}
-        style={[
-          styles.input,
-          isFocused && styles.focusedInput,
-          multiline && styles.multilineInput,
-          error && styles.errorInput,
-          style,
-        ]}
-        dense={dense}
-        keyboardType={keyboardType}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
-        contentStyle={contentStyle}
-        theme={{
-          colors: {
-            primary: colors.primary,
-            error: colors.error,
-            onSurfaceVariant: colors.lGrey, // 라벨 색상
-          },
-        }}
-        underlineColor={colors.silver}
-      />
+      <View style={styles.inputContainer}>
+        <PaperTextInput
+          label={!required ? label : ''}
+          value={value}
+          onChangeText={handleChangeText}
+          error={!!error}
+          disabled={disabled}
+          mode={mode}
+          multiline={multiline}
+          numberOfLines={multiline ? 3 : 1}
+          left={startIcon ? <PaperTextInput.Icon icon={startIcon} /> : undefined}
+          right={
+            endIcon || secureTextEntry ? (
+              <PaperTextInput.Icon
+                icon={getEndIcon()}
+                onPress={handleEndIconPress}
+                forceTextInputFocus={false}
+              />
+            ) : undefined
+          }
+          secureTextEntry={secureTextEntry && !isSecureTextVisible}
+          style={[
+            styles.input,
+            isFocused && styles.focusedInput,
+            multiline && styles.multilineInput,
+            error && styles.errorInput,
+            maxLength && styles.inputWithCharCount,
+            style,
+          ]}
+          dense={dense}
+          keyboardType={keyboardType}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderTextColor}
+          contentStyle={[
+            contentStyle,
+            maxLength && styles.contentWithCharCount,
+          ]}
+          theme={{
+            colors: {
+              primary: colors.primary,
+              error: colors.error,
+              onSurfaceVariant: colors.lGrey, // 라벨 색상
+            },
+          }}
+          underlineColor={colors.silver}
+        />
+        
+        {/* maxLength가 설정된 경우 글자 수 표시 - 절대 위치로 오버레이 */}
+        {maxLength && !(endIcon || secureTextEntry) && (
+          <View style={styles.charCountContainer}>
+            <Text style={styles.charCountInside}>
+              {value.length}/{maxLength}
+            </Text>
+          </View>
+        )}
+      </View>
 
       {/* 에러 또는 도움말 텍스트 */}
       {(error || helperText) && (
@@ -168,13 +183,6 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           {error || helperText}
         </HelperText>
       )}
-
-      {/* maxLength가 설정된 경우 글자 수 표시 */}
-      {maxLength && (
-        <Text style={styles.charCount}>
-          {value.length}/{maxLength}
-        </Text>
-      )}
     </View>
   );
 };
@@ -184,12 +192,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     width: '100%',
   },
+  inputContainer: {
+    position: 'relative',
+  },
+  charCountContainer: {
+    position: 'absolute',
+    right: 8,
+    top: '50%',
+    zIndex: 1,
+  },
   input: {
     backgroundColor: colors.white,
     fontSize: 18,
     paddingHorizontal: 0,
     borderBottomWidth: 1,
     borderColor: colors.silver,
+  },
+  inputWithCharCount: {
+    paddingRight: 50, // 글자 수 표시 공간 확보
   },
   focusedInput: {
     borderColor: colors.primary,
@@ -215,11 +235,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
   },
-  charCount: {
-    alignSelf: 'flex-end',
+  charCountInside: {
     fontSize: 12,
     color: colors.grey,
-    marginTop: 4,
+    alignSelf: 'center',
+    marginRight: 8,
+  },
+  contentWithCharCount: {
+    paddingRight: 60, // 입력 텍스트와 글자 수 표시 간격
   },
   requiredLabel: {
     fontSize: 14,

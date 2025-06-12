@@ -4,7 +4,14 @@ module.exports = {
   plugins: ['prettier'],
   rules: {
     'import/no-unresolved': 'off',
-    'prettier/prettier': 'error',
+    'prettier/prettier': 'warn',
+    'max-depth': ['warn', 3],           
+    'max-nested-callbacks': ['warn', 3],
+    'max-lines-per-function': ['warn', {'max': 50, "skipBlankLines": true, "skipComments": true}],
+    "max-lines": ['warn', {"max": 300, "skipBlankLines": true, "skipComments": true}],
+    "no-unused-vars": ["warn", {"vars": "all", "args": "after-used", "ignoreRestSiblings": true}],
+    "no-nested-ternary": "warn",
+    
   },
   settings: {
     'import/resolver': {

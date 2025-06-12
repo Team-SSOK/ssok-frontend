@@ -4,7 +4,7 @@ import {
   Text,
   View,
   SafeAreaView,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   TextInput,
   Alert,
@@ -53,12 +53,12 @@ export default function SupportScreen() {
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity
+        <Pressable
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color={colors.black} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.title}>고객센터</Text>
         <View style={styles.rightSpace} />
       </View>
@@ -82,7 +82,7 @@ export default function SupportScreen() {
             <Text style={styles.sectionTitle}>문의 유형*</Text>
             <View style={styles.typeContainer}>
               {inquiryTypes.map((type, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={index}
                   style={[
                     styles.typeButton,
@@ -98,7 +98,7 @@ export default function SupportScreen() {
                   >
                     {type}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           </View>
@@ -145,9 +145,9 @@ export default function SupportScreen() {
           </View>
 
           {/* 문의 등록 버튼 */}
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Pressable style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.submitButtonText}>문의 등록하기</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {/* 전화 상담 안내 */}
           <View style={styles.phoneSupport}>

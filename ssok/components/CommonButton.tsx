@@ -2,7 +2,7 @@ import React from 'react';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
+  Pressable,
   TouchableOpacityProps,
   TextStyle,
   ViewStyle,
@@ -190,7 +190,7 @@ export const CommonButton: React.FC<ButtonProps> = ({
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       {...props}
       disabled={disabled || variant === 'disabled' || loading}
       style={[getButtonStyles(), buttonStyle]}
@@ -203,7 +203,7 @@ export const CommonButton: React.FC<ButtonProps> = ({
       ) : (
         <Text style={[getTextStyles(), textStyle]}>{title}</Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

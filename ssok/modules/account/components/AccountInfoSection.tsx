@@ -2,10 +2,7 @@ import React, { useState, memo } from 'react';
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
-  ToastAndroid,
-  Platform,
-  Alert,
+  Pressable,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { colors } from '@/constants/colors';
@@ -79,9 +76,8 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
     <View style={styles.container}>
       <Text style={[typography.body1, styles.accountType]}>{accountType}</Text>
 
-      <TouchableOpacity
+      <Pressable
         onPress={copyAccountNumber}
-        activeOpacity={0.6}
         accessibilityLabel="계좌번호 복사"
         accessibilityHint="터치하여 계좌번호를 클립보드에 복사합니다"
       >
@@ -93,23 +89,22 @@ const AccountInfoSection: React.FC<AccountInfoSectionProps> = ({
             {copied ? '복사됨' : '터치하여 복사'}
           </Text>
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       <View style={styles.balanceRow}>
         <Text style={[typography.h1, styles.balance]}>
           {formatNumber(balance)}원
         </Text>
-        <TouchableOpacity
+        <Pressable
           style={styles.transferButton}
           onPress={handleTransferPress}
-          activeOpacity={0.7}
           accessibilityLabel="송금하기"
           accessibilityHint="송금 화면으로 이동합니다"
         >
           <Text style={[typography.button, styles.transferButtonText]}>
             송금
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

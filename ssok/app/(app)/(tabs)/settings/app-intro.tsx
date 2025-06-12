@@ -4,7 +4,7 @@ import {
   View,
   SafeAreaView,
   StatusBar,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
@@ -30,7 +30,7 @@ export default function AppIntroScreen() {
           showPagination={true}
           EndComponent={
             <View style={styles.buttonContainer}>
-              <TouchableOpacity
+              <Pressable
                 style={styles.closeButton}
                 onPress={() => router.back()}
                 activeOpacity={0.8}
@@ -38,7 +38,7 @@ export default function AppIntroScreen() {
                 <Text style={[typography.button, styles.closeButtonText]}>
                   닫기
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           } */}
         {/* /> */}

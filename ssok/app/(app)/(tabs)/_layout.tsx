@@ -4,7 +4,7 @@ import { colors } from '@/constants/colors';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -57,14 +57,13 @@ function TabButton({ route, index, state, descriptors, navigation }: any) {
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       key={route.key}
       accessibilityRole="button"
       accessibilityState={isFocused ? { selected: true } : {}}
       accessibilityLabel={options.tabBarAccessibilityLabel}
       onPress={onPress}
       style={styles.tabItem}
-      activeOpacity={0.8}
     >
       <View style={[styles.lottieContainer, isFocused && styles.activeTab]}>
         <LottieView
@@ -94,7 +93,7 @@ function TabButton({ route, index, state, descriptors, navigation }: any) {
       >
         {label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

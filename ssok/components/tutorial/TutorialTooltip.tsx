@@ -3,7 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   Dimensions,
   Modal,
   Platform,
@@ -78,7 +78,7 @@ export default function TutorialTooltip({
               top: 0,
               left: 0,
               right: 0,
-              height: targetY + 16, // 하이라이트 영역 시작점 - 4픽셀
+              height: targetY + 20, // 하이라이트 영역 시작점 - 4픽셀
             },
           ]}
         />
@@ -88,7 +88,7 @@ export default function TutorialTooltip({
           style={[
             styles.overlaySection,
             {
-              top: targetY + 16, // 하이라이트 영역과 맞춤
+              top: targetY + 20, // 하이라이트 영역과 맞춤
               left: 0,
               width: targetX - 4,
               height: targetHeight + 8,
@@ -101,7 +101,7 @@ export default function TutorialTooltip({
           style={[
             styles.overlaySection,
             {
-              top: targetY + 16, // 하이라이트 영역과 맞춤
+              top: targetY + 20, // 하이라이트 영역과 맞춤
               left: targetX + targetWidth + 4,
               right: 0,
               height: targetHeight + 8,
@@ -114,7 +114,7 @@ export default function TutorialTooltip({
           style={[
             styles.overlaySection,
             {
-              top: targetY + 16 + targetHeight + 8, // 하이라이트 영역 끝점 + 4픽셀
+              top: targetY + 20 + targetHeight + 8, // 하이라이트 영역 끝점 + 4픽셀
               left: 0,
               right: 0,
               bottom: 0,
@@ -129,7 +129,7 @@ export default function TutorialTooltip({
             {
               position: 'absolute',
               left: targetX - 4,
-              top: targetY + 16,
+              top: targetY + 20,
               width: targetWidth + 8,
               height: targetHeight + 8,
             },
@@ -146,23 +146,21 @@ export default function TutorialTooltip({
             {/* 액션 버튼들 */}
             <View style={styles.buttonContainer}>
               {showSkipButton && (
-                <TouchableOpacity
+                <Pressable
                   style={[styles.button, styles.skipButton]}
                   onPress={onSkip}
-                  activeOpacity={0.7}
                 >
                   <Text style={styles.skipButtonText}>{skipButtonText}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
 
               {showNextButton && (
-                <TouchableOpacity
+                <Pressable
                   style={[styles.button, styles.nextButton]}
                   onPress={onNext}
-                  activeOpacity={0.7}
                 >
                   <Text style={styles.nextButtonText}>{nextButtonText}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
           </View>
