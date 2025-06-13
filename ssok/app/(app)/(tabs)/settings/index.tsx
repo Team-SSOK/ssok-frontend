@@ -16,7 +16,6 @@ import { BleManager } from 'react-native-ble-plx';
 import { router, useFocusEffect } from 'expo-router';
 import { Header, Section, SettingItem } from '@/modules/settings';
 import Toast from 'react-native-toast-message';
-import * as Notifications from 'expo-notifications';
 import { usePushNotifications } from '@/modules/notification';
 
 // 라우트 타입 정의
@@ -215,9 +214,7 @@ export default function SettingsScreen() {
           <SettingItem
             icon="information-circle-outline"
             label="앱 소개"
-            onPress={() =>
-              navigateTo('/(tabs)/settings/app-intro' as SettingsRoute)
-            }
+            onPress={() => router.push('/(app)/(tabs)/settings/app-intro')}
           />
         </Section>
 
@@ -226,17 +223,17 @@ export default function SettingsScreen() {
           <SettingItem
             icon="help-circle-outline"
             label="도움말"
-            onPress={() => navigateTo('/(app)/(tabs)/settings/help')}
+            onPress={() => router.push('/(app)/(tabs)/settings/help')}
           />
           <SettingItem
             icon="shield-checkmark-outline"
             label="개인정보처리방침"
-            onPress={() => navigateTo('/(app)/(tabs)/settings/privacy')}
+            onPress={() => router.push('/(app)/(tabs)/settings/privacy')}
           />
           <SettingItem
             icon="call-outline"
             label="고객센터"
-            onPress={() => navigateTo('/(app)/(tabs)/settings/support')}
+            onPress={() => router.push('/(app)/(tabs)/settings/support')}
           />
         </Section>
       </ScrollView>

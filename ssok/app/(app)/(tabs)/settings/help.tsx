@@ -7,7 +7,7 @@ import {
   Section,
   InfoBox,
   HelpItem,
-  Button,
+  SettingsButton as Button,
   FAQItem,
   FAQItemTypes,
 } from '@/modules/settings';
