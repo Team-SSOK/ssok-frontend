@@ -1,96 +1,149 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
+  TextInput,
   Pressable,
+  Keyboard,
 } from 'react-native';
 import { Text } from '@/components/TextProvider';
-import CustomTextInput from '@/components/TextInput';
 import { colors } from '@/constants/colors';
+import { typography } from '@/theme/typography';
 
 interface CodeVerificationInputProps {
   verificationCode: string;
   onChangeVerificationCode: (text: string) => void;
-  error?: string;
   onVerifyCode: () => void;
   isLoading: boolean;
   verificationConfirmed: boolean;
   disabled?: boolean;
 }
 
-/**
- * 인증번호 입력과 확인 버튼을 포함하는 컴포넌트
- */
+const CODE_LENGTH = 6;
+
 const CodeVerificationInput: React.FC<CodeVerificationInputProps> = ({
   verificationCode,
   onChangeVerificationCode,
-  error,
   onVerifyCode,
   isLoading,
   verificationConfirmed,
   disabled = false,
 }) => {
+  const inputRef = useRef<TextInput>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (
+      verificationCode.length === CODE_LENGTH &&
+      !isLoading &&
+      !verificationConfirmed
+    ) {
+      onVerifyCode();
+    }
+  }, [verificationCode, isLoading, verificationConfirmed, onVerifyCode]);
+
+  useEffect(() => {
+    if (verificationConfirmed) {
+      Keyboard.dismiss();
+    }
+  }, [verificationConfirmed]);
+
+  const handlePress = () => {
+    if (!disabled && !verificationConfirmed) {
+      inputRef.current?.focus();
+    }
+  };
+
+  const renderInputBoxes = () => {
+    return Array.from({ length: CODE_LENGTH }).map((_, i) => {
+      const digit = verificationCode[i] || '';
+      const isCurrent = i === verificationCode.length;
+
+      return (
+        <View
+          key={i}
+          style={[
+            styles.inputBox,
+            isFocused &&
+              isCurrent &&
+              !verificationConfirmed &&
+              styles.inputBoxFocused,
+            verificationConfirmed && styles.inputBoxVerified,
+            !!digit && !verificationConfirmed && styles.inputBoxFilled,
+          ]}
+        >
+          <Text style={styles.inputText}>{digit}</Text>
+        </View>
+      );
+    });
+  };
+
   return (
-    <View style={styles.container}>
-      <CustomTextInput
-        label="인증번호"
+    <Pressable onPress={handlePress} style={styles.container}>
+      <View style={styles.inputContainer}>{renderInputBoxes()}</View>
+      <TextInput
+        ref={inputRef}
+        style={styles.hiddenInput}
         value={verificationCode}
-        onChangeText={onChangeVerificationCode}
-        placeholder="인증번호 6자리 입력"
-        error={error}
+        onChangeText={text => {
+          if (!isLoading && !verificationConfirmed) {
+            onChangeVerificationCode(text.replace(/[^0-9]/g, ''));
+          }
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         keyboardType="numeric"
-        containerStyle={styles.input}
-        disabled={disabled || verificationConfirmed}
+        maxLength={CODE_LENGTH}
+        editable={!disabled && !verificationConfirmed && !isLoading}
+        caretHidden
       />
-      <Pressable
-        style={[
-          styles.button,
-          (verificationConfirmed ||
-            !verificationCode ||
-            disabled ||
-            isLoading) &&
-            styles.disabledButton,
-        ]}
-        onPress={onVerifyCode}
-        disabled={
-          verificationConfirmed || !verificationCode || disabled || isLoading
-        }
-      >
-        <Text style={styles.buttonText}>
-          {verificationConfirmed ? '인증완료' : '인증확인'}
-        </Text>
-      </Pressable>
-    </View>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 32,
+  },
+  inputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+    justifyContent: 'space-around',
+    width: '100%',
   },
-  input: {
-    flex: 1,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
+  inputBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
-    minWidth: 100,
-    height: 48,
+    backgroundColor: colors.white,
   },
-  buttonText: {
-    color: colors.white,
+  inputBoxFilled: {
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+  },
+  inputBoxFocused: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  inputBoxVerified: {
+    backgroundColor: colors.silver,
+    borderColor: colors.border,
+  },
+  inputText: {
+    ...typography.h3,
+    color: colors.text.primary,
     fontWeight: 'bold',
-    fontSize: 14,
   },
-  disabledButton: {
-    backgroundColor: colors.disabled,
+  hiddenInput: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
   },
 });
 
