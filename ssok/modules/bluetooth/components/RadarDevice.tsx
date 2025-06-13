@@ -84,6 +84,7 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
     : undefined;
   const userName = user ? user.username : '알 수 없음';
   const userProfileImage = user?.profileImage;
+  const userPhoneSuffix = user ? `${user.phoneSuffix}` : '';
   const signalColor = getSignalColor(device.rssi);
 
   console.log('RadarDevice user:', user); // 디버깅용
@@ -128,10 +129,17 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
         />
       </View>
 
-      {/* 사용자 이름 */}
-      <Text style={styles.deviceName} numberOfLines={1}>
-        {userName}
-      </Text>
+      {/* 사용자 정보 (이름과 전화번호 뒷자리) */}
+      <View style={styles.userInfoContainer}>
+        <Text style={styles.userName} numberOfLines={1}>
+          {userName}
+        </Text>
+        {userPhoneSuffix && (
+          <Text style={styles.userPhone} numberOfLines={1}>
+            {userPhoneSuffix}
+          </Text>
+        )}
+      </View>
     </TouchableOpacity>
   );
 };
@@ -169,19 +177,32 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     borderWidth: 2,
   },
-  deviceName: {
+  userInfoContainer: {
     position: 'absolute',
-    bottom: -24,
+    bottom: -40, // 위치 조정
+    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 5,
-    fontSize: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  userName: {
+    fontSize: 13,
+    fontWeight: '600',
     color: colors.black,
     maxWidth: 100,
     textAlign: 'center',
-    overflow: 'hidden',
-    elevation: 1,
+  },
+  userPhone: {
+    fontSize: 11,
+    color: colors.grey,
+    maxWidth: 100,
+    textAlign: 'center',
   },
 });
 
