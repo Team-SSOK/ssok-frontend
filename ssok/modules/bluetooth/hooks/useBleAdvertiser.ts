@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform, PermissionsAndroid, Linking, Alert } from 'react-native';
 // @ts-ignore
 import BleAdvertise from 'react-native-ble-advertise';
-import { useFocusEffect } from 'expo-router';
 
 /**
  * BLE 광고 기능을 관리하는 커스텀 훅
@@ -18,6 +17,8 @@ export const useBleAdvertiser = (
 ) => {
   const [isAdvertising, setIsAdvertising] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isAdvertisingRef = useRef(isAdvertising);
+  isAdvertisingRef.current = isAdvertising;
 
   const LOG_TAG = '[useBleAdvertiser]';
 
@@ -67,7 +68,7 @@ export const useBleAdvertiser = (
 
   // 광고 시작
   const startAdvertising = useCallback(async () => {
-    if (isAdvertising || Platform.OS !== 'android') return;
+    if (isAdvertisingRef.current || Platform.OS !== 'android') return;
 
     setError(null);
 
@@ -91,18 +92,11 @@ export const useBleAdvertiser = (
       console.error(`${LOG_TAG} 광고 시작 오류:`, e);
       setIsAdvertising(false);
     }
-  }, [
-    isAdvertising,
-    uuid,
-    major,
-    minor,
-    checkAdvertisePermission,
-    requestAdvertisePermission,
-  ]);
+  }, [uuid, major, minor, checkAdvertisePermission, requestAdvertisePermission]);
 
   // 광고 중지
   const stopAdvertising = useCallback(async () => {
-    if (!isAdvertising || Platform.OS !== 'android') return;
+    if (!isAdvertisingRef.current || Platform.OS !== 'android') return;
 
     try {
       await BleAdvertise.stopBroadcast();
@@ -114,17 +108,7 @@ export const useBleAdvertiser = (
       setError(errorMessage);
       console.error(`${LOG_TAG} 광고 중지 오류:`, e);
     }
-  }, [isAdvertising]);
-
-  // 화면 포커스 시 광고 시작, 블러 시 중지
-  useFocusEffect(
-    useCallback(() => {
-      startAdvertising();
-      return () => {
-        stopAdvertising();
-      };
-    }, [startAdvertising, stopAdvertising]),
-  );
+  }, []);
 
   return { isAdvertising, error, startAdvertising, stopAdvertising };
 }; 

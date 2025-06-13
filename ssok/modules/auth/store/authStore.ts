@@ -295,13 +295,13 @@ export const useAuthStore = create<AuthStoreState>()(
       // 인증 관련 액션
       signupAndLoginViaApi: async (inputPin) => {
         const { user } = get();
-        
+
         if (!user || !user.username || !user.birthDate) {
           const message = ERROR_MESSAGES.MISSING_REGISTRATION_INFO;
           set({ error: message, isLoading: false });
           return { success: false, message };
         }
-        
+
         set({ isLoading: true, error: null });
         
         try {
@@ -311,13 +311,13 @@ export const useAuthStore = create<AuthStoreState>()(
             phoneNumber: user.phoneNumber,
             birthDate: user.birthDate,
             pinCode: parseInt(inputPin, 10),
-          });
-          
+            });
+
           if (!signupResponse.data.isSuccess || !signupResponse.data.result) {
             const message = signupResponse.data.message || ERROR_MESSAGES.SIGNUP_FAILED;
             set({ error: message, isLoading: false });
             return { success: false, message };
-          }
+              }
           
           const { userId } = signupResponse.data.result;
           
@@ -361,7 +361,7 @@ export const useAuthStore = create<AuthStoreState>()(
               accessToken,
               refreshToken,
             );
-            return { success: true };
+              return { success: true };
           } else {
             const message = response.data.message || ERROR_MESSAGES.LOGIN_FAILED;
             set({ error: message, isLoading: false });
@@ -375,14 +375,14 @@ export const useAuthStore = create<AuthStoreState>()(
       },
 
       login: async (user, accessToken, refreshToken) => {
-        set({
-          user,
-          accessToken,
-          refreshToken,
-          isAuthenticated: true,
-          isLoading: false,
+          set({
+            user,
+            accessToken,
+            refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
           error: null,
-        });
+          });
         await saveTokensToSecureStore(accessToken, refreshToken);
       },
 

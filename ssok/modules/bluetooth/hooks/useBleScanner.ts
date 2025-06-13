@@ -1,43 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Platform, PermissionsAndroid, Linking, Alert } from 'react-native';
-import { BleManager, Device } from 'react-native-ble-plx';
+import { BleManager, ScanMode, BleError, Device } from 'react-native-ble-plx';
 import { parseIBeaconData } from '@/utils/ble';
 import { useBluetoothStore } from '../stores/bluetoothStore';
-import { useFocusEffect } from 'expo-router';
 
-// BLE 스캐너 상태 타입 정의
-type ScannerState = {
-  isScanning: boolean;
-  discoveredDevices: Map<string, DiscoveredDevice>;
-  error: string | null;
-};
+const LOG_TAG = '[useBleScanner]';
 
-// 발견된 장치 타입 정의
-export type DiscoveredDevice = {
+// DiscoveredDevice 타입을 useBleScanner 파일 내에서 직접 정의하거나,
+// 또는 공유 타입 파일에서 가져옵니다. bluetoothStore.ts와 타입을 일치시킵니다.
+export interface DiscoveredDevice {
   id: string;
   name: string | null;
   rssi: number | null;
-  iBeaconData: {
+  iBeaconData?: {
     uuid: string;
     major: number;
     minor: number;
     txPower: number;
   } | null;
   lastSeen: Date;
-};
-// iBeacon UUID 발견 시 콜백 타입 정의
-type OnDeviceDiscoveredCallback = (device: DiscoveredDevice) => void;
+}
 
 /**
  * BLE 스캐닝 기능을 위한 커스텀 훅
  * Central 모드로 작동하여 주변 iBeacon 장치를 스캔
  */
 export const useBleScanner = () => {
-  const [bleManager] = useState(() => new BleManager());
+  const bleManager = useMemo(() => new BleManager(), []);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isScanningRef = useRef(isScanning);
+  isScanningRef.current = isScanning;
+
   const addOrUpdateDevice = useBluetoothStore(s => s.addOrUpdateDevice);
-  const LOG_TAG = '[useBleScanner]';
 
   const requestPermissions = useCallback(async (): Promise<boolean> => {
     if (Platform.OS !== 'android') return true;
@@ -70,75 +65,57 @@ export const useBleScanner = () => {
               { text: '설정으로 이동', onPress: () => Linking.openSettings() },
             ],
           );
-        }
+      }
       }
       return allGranted;
     } catch (e) {
       console.error(`${LOG_TAG} 권한 요청 오류:`, e);
       return false;
-    }
+      }
   }, []);
 
-  const startScan = useCallback(async () => {
-    setError(null);
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      const msg = '블루투스 스캔 권한이 없습니다.';
-      setError(msg);
-      console.log(`${LOG_TAG} ${msg}`);
+  const startScan = useCallback(() => {
+    if (isScanningRef.current) {
+      console.log(`${LOG_TAG} 이미 스캔 중입니다.`);
       return;
     }
-
-    // 블루투스 상태 확인
-    const state = await bleManager.state();
-    if (state !== 'PoweredOn') {
-      const msg = '블루투스가 꺼져있습니다. 활성화 후 다시 시도해주세요.';
-      setError(msg);
-      Alert.alert('블루투스 비활성화', msg);
-      return;
-    }
-
     console.log(`${LOG_TAG} 스캔 시작`);
     setIsScanning(true);
-
-    bleManager.startDeviceScan(null, { allowDuplicates: true }, (err, dev) => {
-      if (err) {
-        setError(err.message);
-        setIsScanning(false);
-        console.error(`${LOG_TAG} 스캔 오류:`, err);
-        return;
-      }
-      if (dev?.manufacturerData) {
-        const iBeaconData = parseIBeaconData(dev.manufacturerData);
-        if (iBeaconData) {
-          addOrUpdateDevice({
-            id: dev.id,
-            name: dev.name,
-            rssi: dev.rssi,
-            iBeaconData,
-            lastSeen: new Date(),
-          });
+    setError(null);
+    bleManager.startDeviceScan(
+      null,
+      { scanMode: ScanMode.LowLatency },
+      (err, device) => {
+        if (err) {
+          const errorMessage = `스캔 오류: ${err.message}`;
+          setError(errorMessage);
+          console.error(LOG_TAG, errorMessage, err);
+          setIsScanning(false);
+          bleManager.stopDeviceScan();
+          return;
         }
-      }
-    });
-  }, [bleManager, requestPermissions, addOrUpdateDevice]);
+        if (device?.manufacturerData) {
+          const iBeaconData = parseIBeaconData(device.manufacturerData);
+          if (iBeaconData) {
+            addOrUpdateDevice({
+              id: device.id,
+              name: device.name,
+              rssi: device.rssi,
+              iBeaconData: iBeaconData,
+              lastSeen: new Date(),
+            });
+          }
+        }
+      },
+    );
+  }, [bleManager, addOrUpdateDevice]);
 
   const stopScan = useCallback(() => {
     bleManager.stopDeviceScan();
     setIsScanning(false);
     console.log(`${LOG_TAG} 스캔 중지`);
   }, [bleManager]);
-  
-  // 화면 포커스 시 스캔 시작, 블러 시 중지
-  useFocusEffect(
-    useCallback(() => {
-      startScan();
-      return () => {
-        stopScan();
-      };
-    }, [startScan, stopScan]),
-  );
-  
+
   // 컴포넌트 언마운트 시 bleManager 정리
   useEffect(() => {
     return () => {

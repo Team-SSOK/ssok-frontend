@@ -64,7 +64,7 @@ export const useRegisterForm = () => {
    */
   const formatPhoneNumber = (value: string): string => {
     const digits = value.replace(/[^0-9]/g, '');
-    
+
     if (digits.length <= 3) {
       return digits;
     } else if (digits.length <= 7) {
@@ -122,7 +122,7 @@ export const useRegisterForm = () => {
           return ERROR_MESSAGES.REQUIRED_PHONE;
         } else if (!REGEX.PHONE_NUMBER.test(phoneDigits)) {
           return ERROR_MESSAGES.INVALID_PHONE;
-        }
+    }
         break;
         
       case 'agreedToTerms':
@@ -138,7 +138,7 @@ export const useRegisterForm = () => {
    * 전체 폼 유효성 검증
    */
   const validateForm = useCallback((): boolean => {
-    const newErrors: FormErrors = {};
+      const newErrors: FormErrors = {};
 
     // 각 필드 검증
     Object.keys(form).forEach((key) => {
@@ -149,8 +149,8 @@ export const useRegisterForm = () => {
       }
     });
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
   }, [form]);
 
   /**
