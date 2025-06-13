@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { colors } from '@/constants/colors';
 import { BleManager } from 'react-native-ble-plx';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Header, Section, SettingItem } from '@/modules/settings';
 import Toast from 'react-native-toast-message';
+import * as Notifications from 'expo-notifications';
+import { usePushNotifications } from '@/modules/notification';
 
 // 라우트 타입 정의
 type SettingsRoute =
@@ -28,6 +30,25 @@ type SettingsRoute =
 export default function SettingsScreen() {
   const [isBluetoothEnabled, setIsBluetoothEnabled] = useState<boolean>(false);
   const [bleManager] = useState(() => new BleManager());
+  const [isNotificationEnabled, setIsNotificationEnabled] =
+    useState<boolean>(false);
+
+  const {
+    requestPermissionsAndRegisterToken,
+    checkPermissionStatus,
+    permissionStatus,
+  } = usePushNotifications();
+
+  // 화면이 포커스될 때마다 알림 권한 상태를 다시 확인
+  useFocusEffect(
+    useCallback(() => {
+      const checkStatus = async () => {
+        const status = await checkPermissionStatus();
+        setIsNotificationEnabled(status === 'granted');
+      };
+      checkStatus();
+    }, [checkPermissionStatus]),
+  );
 
   // 블루투스 상태 체크
   useEffect(() => {
@@ -70,6 +91,46 @@ export default function SettingsScreen() {
       Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS');
     } else {
       Linking.openSettings();
+    }
+  };
+
+  // 알림 토글 핸들러
+  const handleNotificationToggle = async () => {
+    if (isNotificationEnabled) {
+      // 알림 비활성화 (설정으로 이동 안내)
+      Alert.alert(
+        '알림 비활성화',
+        '알림을 끄려면 앱 설정에서 직접 변경해야 합니다. 설정으로 이동하시겠습니까?',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '설정으로 이동', onPress: () => Linking.openSettings() },
+        ],
+      );
+    } else {
+      // 알림 활성화
+      try {
+        await requestPermissionsAndRegisterToken();
+        // 성공 후 상태 다시 확인
+        const status = await checkPermissionStatus();
+        setIsNotificationEnabled(status === 'granted');
+        if (status === 'granted') {
+          Toast.show({
+            type: 'success',
+            text1: '알림이 활성화되었습니다.',
+            position: 'bottom',
+          });
+        }
+      } catch (error) {
+        // 사용자가 권한을 거부했거나 에러 발생 시 설정으로 이동 안내
+        Alert.alert(
+          '알림 권한 필요',
+          '알림을 받으려면 앱 설정에서 권한을 허용해야 합니다. 설정으로 이동하시겠습니까?',
+          [
+            { text: '취소', style: 'cancel' },
+            { text: '설정으로 이동', onPress: () => Linking.openSettings() },
+          ],
+        );
+      }
     }
   };
 
@@ -127,6 +188,18 @@ export default function SettingsScreen() {
 
         {/* 앱 설정 섹션 */}
         <Section title="앱 설정">
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <Text style={styles.settingText}>알림 받기</Text>
+            </View>
+            <Switch
+              trackColor={{ false: colors.silver, true: colors.primary }}
+              thumbColor={colors.white}
+              ios_backgroundColor={colors.silver}
+              onValueChange={handleNotificationToggle}
+              value={isNotificationEnabled}
+            />
+          </View>
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Text style={styles.settingText}>블루투스 사용</Text>

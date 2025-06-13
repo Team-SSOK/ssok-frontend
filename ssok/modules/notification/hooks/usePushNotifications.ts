@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import { notificationApi } from '../api/notificationApi';
 import { usePushStore } from '../store/pushStore';
 import { getNotificationErrorMessage } from '../utils/notificationUtils';
+import Toast from 'react-native-toast-message';
 
 /**
  * 푸시 알림 관리 훅
@@ -85,7 +86,10 @@ export const usePushNotifications = () => {
     } catch (error) {
       const errorMessage = getNotificationErrorMessage(error);
       setState({ error: errorMessage, isLoading: false });
-      console.error('푸시 알림 설정 오류:', errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: errorMessage,
+      });
       throw new Error(errorMessage);
     }
   };
