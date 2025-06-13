@@ -10,6 +10,7 @@ import { useLoadingStore } from '@/stores/loadingStore';
 import { SessionProvider, useSession } from '@/contexts/useSession';
 import { AppStateManager } from '@/components/AppStateManager';
 import toastConfig from '@/components/ToastConfig';
+import { useNotificationManager } from '@/modules/notification';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +23,9 @@ export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const { initializeAuth, isLoading: sessionIsLoading } = useSession();
   const globalLoading = useLoadingStore((state) => state.isLoading);
+
+  // 앱 전역 알림 리스너 초기화
+  useNotificationManager();
 
   useEffect(() => {
     async function appInit() {

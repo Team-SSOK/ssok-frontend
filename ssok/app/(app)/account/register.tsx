@@ -9,20 +9,17 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
+
 import { useAccountStore } from '@/modules/account/stores/accountStore';
-import {
-  Account,
-  accountApi,
-  AccountRequest,
-} from '@/modules/account/api/accountApi';
+import { Account, AccountRequest } from '@/modules/account/api/accountApi';
 import AccountListItem from '@/modules/account/components/AccountListItem';
 import LoadingModal from '@/modules/account/components/LoadingModal';
 import Header from '@/components/CommonHeader';
 import { colors } from '@/constants/colors';
-import { useLoadingStore } from '@/stores/loadingStore';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import useDialog from '@/hooks/useDialog';
+import { transparent } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 /**
  * 계좌 등록 화면
@@ -31,24 +28,38 @@ import useDialog from '@/hooks/useDialog';
  */
 export default function RegisterAccountScreen() {
   const router = useRouter();
-  const { registerAccount, accounts } = useAccountStore();
-  const [candidates, setCandidates] = useState<Account[]>([]);
-  const { isLoading, withLoading } = useLoadingStore();
+  const {
+    accounts,
+    candidateAccounts,
+    isLoading,
+    error,
+    registerAccount,
+    fetchCandidateAccounts,
+    fetchAccounts,
+    setPrimaryAccount,
+  } = useAccountStore();
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { showDialog } = useDialog();
 
-  // 이미 연동된 계좌인지 확인하는 함수
-  const isAccountAlreadyLinked = useCallback((account: Account): boolean => {
-    return accounts.some(
-      (linkedAccount) =>
-        linkedAccount.bankCode === account.bankCode &&
-        linkedAccount.accountNumber === account.accountNumber
-    );
-  }, [accounts]);
+  useEffect(() => {
+    const initializeData = async () => {
+      await Promise.all([fetchAccounts(), fetchCandidateAccounts()]);
+    };
+    initializeData();
+  }, [fetchAccounts, fetchCandidateAccounts]);
+  
+  const isAccountAlreadyLinked = useCallback(
+    (account: Account) =>
+      accounts.some(
+        (linked) =>
+          linked.bankCode === account.bankCode &&
+          linked.accountNumber === account.accountNumber,
+      ),
+    [accounts],
+  );
 
-  // 이미 연동된 계좌 터치 시 토스트 표시
   const handleAlreadyLinkedPress = useCallback(() => {
     Toast.show({
       type: 'info',
@@ -58,55 +69,11 @@ export default function RegisterAccountScreen() {
     });
   }, []);
 
-  // 계좌 목록 로딩 (API 호출이 포함되어 있으므로 useCallback 유지)
-  const loadCandidates = useCallback(async () => {
-    setError(null);
-
-    await withLoading(async () => {
-      try {
-        const response = await accountApi.getLinkedAccounts();
-        if (response.data.isSuccess && response.data.result) {
-          setCandidates(response.data.result);
-        } else {
-          throw new Error(
-            response.data.message || '계좌 목록을 불러오는데 실패했습니다.',
-          );
-        }
-      } catch (error) {
-        const errorMessage =
-          '계좌 목록을 불러오는데 실패했습니다. 다시 시도해주세요.';
-        setError(errorMessage);
-
-        Toast.show({
-          type: 'error',
-          text1: '계좌 목록 로딩 실패',
-          text2: errorMessage,
-          position: 'bottom',
-        });
-      }
-    });
-  }, [withLoading]);
-
-  // 컴포넌트 마운트 시 계좌 목록 로딩
-  useEffect(() => {
-    const initializeData = async () => {
-      // 등록된 계좌 목록과 후보 계좌 목록을 동시에 로딩
-      await Promise.all([
-        useAccountStore.getState().fetchAccounts(),
-        loadCandidates(),
-      ]);
-    };
-
-    initializeData();
-  }, [loadCandidates]);
-
-  // 계좌 선택 핸들러 (단순 상태 업데이트라 useCallback 불필요)
   const handleSelectAccount = (account: Account) => {
     setSelectedAccount(account);
     setModalVisible(true);
   };
 
-  // 계좌 등록 완료 핸들러 (API 호출과 복잡한 로직이 있으므로 useCallback 유지)
   const handleModalFinish = useCallback(async () => {
     if (!selectedAccount) return;
 
@@ -119,66 +86,33 @@ export default function RegisterAccountScreen() {
           : Number(selectedAccount.accountTypeCode),
     };
 
-    await withLoading(async () => {
-      try {
-        const result = await registerAccount(accountRequest);
+    const result = await registerAccount(accountRequest);
 
-        if (result.success && result.data) {
-          console.log('[LOG][RegisterAccount] 계좌 등록 성공 - 주계좌로 설정 중...');
-          
-          // 등록된 계좌를 주계좌로 설정
-          const setPrimaryResult = await useAccountStore.getState().setPrimaryAccount(result.data.accountId);
-          
-          if (setPrimaryResult.success) {
-            console.log('[LOG][RegisterAccount] 주계좌 설정 완료');
-          } else {
-            console.log('[LOG][RegisterAccount] 주계좌 설정 실패:', setPrimaryResult.message);
-            // 주계좌 설정 실패해도 계좌 등록은 성공이므로 계속 진행
-          }
+    if (result.success && result.data) {
+      await setPrimaryAccount(result.data.accountId);
+      await fetchAccounts(); 
 
-          // 계좌 등록 성공 시 즉시 최신 계좌 목록을 가져오기 (잔액 포함)
-          console.log('[LOG][RegisterAccount] 최신 계좌 목록 가져오는 중...');
-          await useAccountStore.getState().fetchAccounts();
-          console.log('[LOG][RegisterAccount] 최신 계좌 목록 로딩 완료');
+      Toast.show({
+        type: 'success',
+        text1: '계좌 등록 완료',
+        text2: '계좌가 주계좌로 등록되었습니다.',
+        position: 'bottom',
+      });
+      router.replace('/');
+    } else {
+      setModalVisible(false);
+      showDialog({
+        title: '계좌 등록 실패',
+        content: result.message || '계좌 등록 중 오류가 발생했습니다. 다시 시도해주세요.',
+        confirmText: '확인',
+      });
+    }
+  }, [selectedAccount, registerAccount, setPrimaryAccount, fetchAccounts, router, showDialog]);
 
-          Toast.show({
-            type: 'success',
-            text1: '계좌 등록 완료',
-            text2: '계좌가 주계좌로 등록되었습니다.',
-            position: 'bottom',
-          });
-          
-          // 홈으로 직접 이동하여 튜토리얼 트리거
-          console.log('[LOG][RegisterAccount] 홈 화면으로 이동');
-          router.replace('/');
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: '계좌 등록 실패',
-            text2: result.message || '계좌 등록에 실패했습니다.',
-            position: 'bottom',
-          });
-        }
-      } catch (error) {
-        setModalVisible(false);
-
-        showDialog({
-          title: '계좌 등록 실패',
-          content: '계좌 등록 중 오류가 발생했습니다. 다시 시도해주세요.',
-          confirmText: '재시도',
-          cancelText: '취소',
-          onConfirm: () => handleModalFinish(),
-        });
-      }
-    });
-  }, [selectedAccount, withLoading, registerAccount, router, showDialog]);
-
-  // 재시도 핸들러 (간단한 함수 호출이므로 useCallback 불필요)
   const handleRetry = () => {
-    loadCandidates();
+    fetchCandidateAccounts();
   };
-
-  // 빈 목록 컴포넌트 (memo 함수로 감싸서 처리하는 것이 더 적절)
+  
   const EmptyListComponent = () => (
     <View style={styles.emptyList}>
       <Text style={typography.body1}>연동 가능한 계좌가 없습니다.</Text>
@@ -207,13 +141,13 @@ export default function RegisterAccountScreen() {
       />
       <Header title="연동할 계좌 선택" />
 
-      {isLoading && candidates.length === 0 ? (
+      {isLoading && candidateAccounts.length === 0 ? (
         <View style={styles.loading}>
           <Text style={typography.body1}>계좌 목록을 불러오는 중...</Text>
         </View>
       ) : (
         <FlatList
-          data={candidates}
+          data={candidateAccounts}
           keyExtractor={(item) => `${item.bankCode}-${item.accountNumber}`}
           renderItem={({ item, index }) => (
             <AccountListItem
@@ -245,10 +179,11 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     height: '100%',
+    backgroundColor: 'transparent'
   },
   listContainer: {
     paddingVertical: 8,
-    flex: 1,
+    flexGrow: 1,
   },
   loading: {
     flex: 1,

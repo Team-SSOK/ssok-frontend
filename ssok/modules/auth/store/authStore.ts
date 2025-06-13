@@ -204,10 +204,10 @@ export const useAuthStore = create<AuthStoreState>()(
               set({
                 user: {
                   id: userId,
-                  username: '',
+                  username: get().user?.username || '',
                   phoneNumber,
-                  birthDate: '',
-                }
+                  birthDate: get().user?.birthDate || '',
+                },
               });
             } else {
               // 신규 사용자
@@ -217,7 +217,7 @@ export const useAuthStore = create<AuthStoreState>()(
                   username: '',
                   phoneNumber,
                   birthDate: '',
-                }
+                },
               });
             }
             
@@ -254,21 +254,20 @@ export const useAuthStore = create<AuthStoreState>()(
       clearPin: () => set({ pin: '' }),
 
       saveRegistrationInfo: (username, phoneNumber, birthDate, pin) => {
-        console.log('[LOG][authStore] 사용자 회원 가입 정보 및 PIN 임시 저장');
         set({
-          pin,
           user: {
+            id: null,
             username,
             phoneNumber,
             birthDate,
-            id: null,
           },
+          pin,
         });
       },
 
       isUserRegistered: () => {
-        const { pin } = get();
-        return !!pin;
+        const { user } = get();
+        return !!user?.username && !!user?.birthDate;
       },
 
       // PIN 재설정 액션
@@ -295,129 +294,38 @@ export const useAuthStore = create<AuthStoreState>()(
 
       // 인증 관련 액션
       signupAndLoginViaApi: async (inputPin) => {
-        set({ isLoading: true, error: null });
-        const tempUser = get().user;
-
-        if (
-          !tempUser ||
-          !tempUser.username ||
-          !tempUser.phoneNumber ||
-          !tempUser.birthDate
-        ) {
-          const msg = '회원가입에 필요한 사용자 정보가 스토어에 없습니다.';
-          Toast.show({
-            type: 'error',
-            text1: '회원가입 정보 오류',
-            text2: '필요한 사용자 정보가 없습니다.',
-            position: 'bottom',
-          });
-          set({ error: msg, isLoading: false });
-          return { success: false, message: msg };
+        const { user } = get();
+        
+        if (!user || !user.username || !user.birthDate) {
+          const message = ERROR_MESSAGES.MISSING_REGISTRATION_INFO;
+          set({ error: message, isLoading: false });
+          return { success: false, message };
         }
-
+        
+        set({ isLoading: true, error: null });
+        
         try {
-          const signupData = {
-            username: tempUser.username,
-            phoneNumber: tempUser.phoneNumber,
-            birthDate: tempUser.birthDate,
-            pinCode: Number(inputPin),
-          };
-
-          console.log('[LOG][authStore] 회원가입 API 요청:', signupData);
-          const signupResponse = await authApi.signup(signupData);
-          console.log(
-            '[LOG][authStore] 회원가입 API 응답:',
-            signupResponse.data,
-          );
-
-          if (
-            signupResponse.data.isSuccess &&
-            signupResponse.data.result?.userId
-          ) {
-            const userId = signupResponse.data.result.userId;
-            console.log(
-              '[LOG][authStore] 회원가입 성공. userId:',
-              userId,
-              '로그인 API 시도.',
-            );
-
-            const loginResponse = await authApi.login({
-              userId,
-              pinCode: Number(inputPin),
-            });
-            console.log(
-              '[LOG][authStore] 로그인 API 응답:',
-              loginResponse.data,
-            );
-
-            if (loginResponse.data.isSuccess && loginResponse.data.result) {
-              const { accessToken, refreshToken } = loginResponse.data.result;
-
-              if (
-                typeof accessToken === 'string' &&
-                typeof refreshToken === 'string' &&
-                accessToken.trim() !== '' &&
-                refreshToken.trim() !== ''
-              ) {
-                const finalUser: User = {
-                  id: userId,
-                  username: tempUser.username,
-                  phoneNumber: tempUser.phoneNumber,
-                  birthDate: tempUser.birthDate,
-                };
-                await get().login(finalUser, accessToken, refreshToken);
-                console.log(
-                  '[LOG][authStore] signupAndLoginViaApi: 회원가입 및 로그인 성공',
-                );
-                return { success: true };
-              } else {
-                const msg =
-                  '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
-                Toast.show({
-                  type: 'error',
-                  text1: '로그인 토큰 오류',
-                  text2: '유효한 인증 토큰을 받지 못했습니다.',
-                  position: 'bottom',
-                });
-                set({ error: msg, isLoading: false });
-                return { success: false, message: msg };
-              }
-            } else {
-              const msg =
-                loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
-              Toast.show({
-                type: 'error',
-                text1: '로그인 실패',
-                text2: msg,
-                position: 'bottom',
-              });
-              set({ error: msg, isLoading: false });
-              return { success: false, message: msg };
-            }
-          } else {
-            const msg =
-              signupResponse.data.message ||
-              '회원가입 API 호출에 실패했거나 userId가 없습니다.';
-            Toast.show({
-              type: 'error',
-              text1: '회원가입 실패',
-              text2: msg,
-              position: 'bottom',
-            });
-            set({ error: msg, isLoading: false });
-            return { success: false, message: msg };
-          }
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : '회원가입 또는 로그인 처리 중 예외 발생';
-          Toast.show({
-            type: 'error',
-            text1: '회원가입/로그인 오류',
-            text2: errorMessage,
-            position: 'bottom',
+          // 1. 회원가입 요청
+          const signupResponse = await authApi.signup({
+            username: user.username,
+            phoneNumber: user.phoneNumber,
+            birthDate: user.birthDate,
+            pinCode: parseInt(inputPin, 10),
           });
+          
+          if (!signupResponse.data.isSuccess || !signupResponse.data.result) {
+            const message = signupResponse.data.message || ERROR_MESSAGES.SIGNUP_FAILED;
+            set({ error: message, isLoading: false });
+            return { success: false, message };
+          }
+          
+          const { userId } = signupResponse.data.result;
+          
+          // 2. 회원가입 성공 후 바로 로그인 요청
+          return get().loginWithPinViaApi(inputPin, userId);
+
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.SIGNUP_FAILED;
           set({ error: errorMessage, isLoading: false });
           return { success: false, message: errorMessage };
         }
@@ -425,133 +333,57 @@ export const useAuthStore = create<AuthStoreState>()(
 
       loginWithPinViaApi: async (inputPin, userId) => {
         set({ isLoading: true, error: null });
-        const storedUser = get().user;
-
-        if (!userId) {
-          const msg = '로그인에 필요한 userId가 없습니다.';
-          Toast.show({
-            type: 'error',
-            text1: '로그인 정보 오류',
-            text2: '사용자 ID가 없습니다.',
-            position: 'bottom',
-          });
-          set({ error: msg, isLoading: false });
-          return { success: false, message: msg };
-        }
 
         try {
-          console.log(
-            `[LOG][authStore] loginWithPinViaApi: userId: ${userId}로 로그인 API 요청`,
-          );
-          const loginResponse = await authApi.login({
+          const response = await authApi.login({
             userId,
-            pinCode: Number(inputPin),
+            pinCode: parseInt(inputPin, 10),
           });
-          console.log(
-            '[LOG][authStore] loginWithPinViaApi: 로그인 API 응답:',
-            loginResponse.data,
-          );
 
-          if (loginResponse.data.isSuccess && loginResponse.data.result) {
+          if (response.data.isSuccess && response.data.result) {
             const {
               accessToken,
               refreshToken,
-              username: apiUsername,
-              phoneNumber: apiPhoneNumber,
-              birthDate: apiBirthDate,
-            } = loginResponse.data.result as {
-              accessToken: string;
-              refreshToken: string;
-              username?: string;
-              phoneNumber?: string;
-              birthDate?: string;
-            };
+              username,
+              phoneNumber,
+              birthDate,
+            } = response.data.result;
 
-            if (
-              typeof accessToken === 'string' &&
-              typeof refreshToken === 'string' &&
-              accessToken.trim() !== '' &&
-              refreshToken.trim() !== ''
-            ) {
-              const finalUser: User = {
+            const currentUser = get().user;
+
+            await get().login(
+              {
                 id: userId,
-                username: apiUsername || storedUser?.username || '',
-                phoneNumber: apiPhoneNumber || storedUser?.phoneNumber || '',
-                birthDate: apiBirthDate || storedUser?.birthDate || '',
-              };
-
-              await get().login(finalUser, accessToken, refreshToken);
-              console.log('[LOG][authStore] loginWithPinViaApi: 로그인 성공');
-              return { success: true };
-            } else {
-              const msg = '로그인 API 응답에서 유효한 토큰을 받지 못했습니다.';
-              Toast.show({
-                type: 'error',
-                text1: '로그인 토큰 오류',
-                text2: '유효한 인증 토큰을 받지 못했습니다.',
-                position: 'bottom',
-              });
-              set({ error: msg, isLoading: false });
-              return { success: false, message: msg };
-            }
+                username: username || currentUser?.username || '',
+                phoneNumber: phoneNumber || currentUser?.phoneNumber || '',
+                birthDate: birthDate || currentUser?.birthDate || '',
+              },
+              accessToken,
+              refreshToken,
+            );
+            return { success: true };
           } else {
-            const msg =
-              loginResponse.data.message || '로그인 API 호출에 실패했습니다.';
-            Toast.show({
-              type: 'error',
-              text1: '로그인 실패',
-              text2: msg,
-              position: 'bottom',
-            });
-            set({ error: msg, isLoading: false });
-            return { success: false, message: msg };
+            const message = response.data.message || ERROR_MESSAGES.LOGIN_FAILED;
+            set({ error: message, isLoading: false });
+            return { success: false, message };
           }
         } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : 'PIN 로그인 처리 중 예외 발생';
-          Toast.show({
-            type: 'error',
-            text1: 'PIN 로그인 오류',
-            text2: errorMessage,
-            position: 'bottom',
-          });
+          const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.LOGIN_FAILED;
           set({ error: errorMessage, isLoading: false });
           return { success: false, message: errorMessage };
         }
       },
 
       login: async (user, accessToken, refreshToken) => {
-        set({ isLoading: true, error: null });
-        console.log('[LOG][authStore] 로그인 처리 시작', user);
-        try {
-          await saveTokensToSecureStore(accessToken, refreshToken);
-          set({
-            user,
-            accessToken,
-            refreshToken,
-            isAuthenticated: true,
-            isLoading: false,
-            pin: get().pin,
-          });
-          console.log(
-            '[LOG][authStore] 로그인 완료, isAuthenticated:',
-            get().isAuthenticated,
-          );
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : '로그인 처리 중 오류 발생';
-          console.error('[ERROR][authStore] 로그인 실패:', errorMessage);
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            isAuthenticated: false,
-            error: errorMessage,
-            isLoading: false,
-          });
-        }
+        set({
+          user,
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        await saveTokensToSecureStore(accessToken, refreshToken);
       },
 
       logout: async () => {

@@ -2,42 +2,6 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 /**
- * 푸시 토큰 유효성 검사
- *
- * @param token 검사할 토큰
- * @returns 유효한 토큰인지 여부
- */
-export const isValidPushToken = (token: string | null): token is string => {
-  if (!token || typeof token !== 'string') {
-    return false;
-  }
-
-  // 토큰이 비어있지 않고 최소 길이를 만족하는지 확인
-  return token.length > 10;
-};
-
-/**
- * 알림 권한 상태를 사용자 친화적인 메시지로 변환
- *
- * @param status 권한 상태
- * @returns 사용자 친화적인 메시지
- */
-export const getPermissionStatusMessage = (
-  status: Notifications.PermissionStatus | null,
-): string => {
-  switch (status) {
-    case 'granted':
-      return '알림 권한이 허용되었습니다.';
-    case 'denied':
-      return '알림 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.';
-    case 'undetermined':
-      return '알림 권한을 요청해주세요.';
-    default:
-      return '알림 권한 상태를 확인할 수 없습니다.';
-  }
-};
-
-/**
  * 플랫폼별 알림 설정 가이드 메시지
  *
  * @returns 플랫폼별 설정 가이드

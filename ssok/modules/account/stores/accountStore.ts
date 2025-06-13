@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {
+  Account,
   AccountRequest,
   RegisteredAccount,
   accountApi,
@@ -21,6 +22,7 @@ type StoreResponse<T = any> =
 interface AccountState {
   // 상태
   accounts: RegisteredAccount[];
+  candidateAccounts: Account[];
   currentAccount: RegisteredAccount | null;
   verifiedName: NameVerificationResponse | null;
   isLoading: boolean;
@@ -28,6 +30,7 @@ interface AccountState {
 
   // API 액션 - 모두 통일된 반환 타입 사용
   fetchAccounts: () => Promise<StoreResponse<RegisteredAccount[]>>;
+  fetchCandidateAccounts: () => Promise<StoreResponse<Account[]>>;
   registerAccount: (
     account: AccountRequest,
   ) => Promise<StoreResponse<RegisteredAccount>>;
@@ -77,6 +80,7 @@ const createErrorResponse = <T>(message: string): StoreResponse<T> => ({
 export const useAccountStore = create<AccountState>((set, get) => ({
   // 초기 상태
   accounts: [],
+  candidateAccounts: [],
   currentAccount: null,
   verifiedName: null,
   isLoading: false,
@@ -106,6 +110,34 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           ? error.message
           : '계좌 정보를 불러오는데 실패했습니다.';
       set({ error: message, isLoading: false });
+      return createErrorResponse(message);
+    }
+  },
+
+  /**
+   * 연동 가능한 계좌 목록 조회
+   */
+  fetchCandidateAccounts: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await accountApi.getLinkedAccounts();
+      if (response.data.isSuccess && response.data.result) {
+        const candidates = response.data.result;
+        set({ candidateAccounts: candidates, isLoading: false });
+        return createSuccessResponse(candidates);
+      } else {
+        const message =
+          response.data.message ||
+          '연동 가능 계좌 목록을 불러오는 데 실패했습니다.';
+        set({ error: message, isLoading: false, candidateAccounts: [] });
+        return createErrorResponse(message);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '연동 가능 계좌 목록을 불러오는 데 실패했습니다.';
+      set({ error: message, isLoading: false, candidateAccounts: [] });
       return createErrorResponse(message);
     }
   },

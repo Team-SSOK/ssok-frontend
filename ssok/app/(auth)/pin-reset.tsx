@@ -63,8 +63,8 @@ export default function PinResetScreen() {
                 position: 'bottom',
               });
               
-              // 메인 화면으로 이동
-              router.replace('/(app)/(tabs)');
+              // 알림 권한 요청 화면으로 이동
+              router.replace('/notification-permission');
               return true;
             } else {
               showDialog({

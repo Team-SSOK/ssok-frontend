@@ -33,7 +33,8 @@ export const ERROR_MESSAGES = {
   // 회원가입 관련
   REQUIRED_USERNAME: '이름을 입력해주세요.',
   REQUIRED_BIRTH_DATE: '생년월일을 입력해주세요.',
-  INVALID_BIRTH_DATE: '유효하지 않은 생년월일입니다.',
+  INVALID_BIRTH_DATE: '유효하지 않은 생년월일 형식입니다. (YYYYMMDD)',
+  MISSING_REGISTRATION_INFO: '회원가입에 필요한 정보가 부족합니다.',
   REQUIRED_PHONE: '휴대폰 번호를 입력해주세요.',
   INVALID_PHONE: '올바르지 않은 휴대폰 번호입니다.',
   PHONE_VERIFICATION_REQUIRED: '휴대폰 인증을 완료해주세요.',

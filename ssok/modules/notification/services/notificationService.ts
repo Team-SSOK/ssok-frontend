@@ -1,4 +1,8 @@
 import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
+
+let isInitialized = false;
 
 /**
  * 알림 핸들러 설정
@@ -13,10 +17,11 @@ import * as Notifications from 'expo-notifications';
 export const setupNotificationHandler = () => {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
+      shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
     }),
   });
 };
@@ -32,36 +37,49 @@ export interface NotificationListeners {
 }
 
 /**
- * 알림 수신 및 응답 리스너 설정
- *
- * @param onNotificationReceived 알림 수신 시 호출될 콜백
- * @param onNotificationResponse 알림 탭 시 호출될 콜백
- * @returns 리스너 객체들 (정리용)
+ * 알림 수신 및 응답 리스너를 초기화합니다.
+ * 중복 실행을 방지하기 위해 내부에 초기화 플래그를 가집니다.
+ * @returns 리스너를 정리하는 cleanup 함수
  */
-export const setupNotificationListeners = (
-  onNotificationReceived?: (notification: Notifications.Notification) => void,
-  onNotificationResponse?: (
-    response: Notifications.NotificationResponse,
-  ) => void,
-): NotificationListeners => {
-  // 알림 수신 리스너
-  const notificationListener = Notifications.addNotificationReceivedListener(
-    (notification) => {
-      console.log('알림 수신:', notification);
-      onNotificationReceived?.(notification);
-    },
-  );
+export const initializeNotificationListeners = () => {
+  if (isInitialized) {
+    // 이미 리스너가 설정되었다면 아무것도 하지 않음
+    return () => {};
+  }
+  isInitialized = true;
 
-  // 알림 응답 리스너 (사용자가 알림을 탭했을 때)
-  const responseListener =
-    Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('알림 응답:', response);
-      onNotificationResponse?.(response);
+  // 앱이 실행 중일 때 알림을 수신했을 경우의 리스너
+  const notificationListener =
+    Notifications.addNotificationReceivedListener((notification) => {
+      console.log(
+        'Notification received while app is foregrounded:',
+        notification,
+      );
+      Toast.show({
+        type: 'info',
+        text1: notification.request.content.title || '새로운 알림',
+        text2: notification.request.content.body || '',
+      });
     });
 
-  return {
-    notificationListener,
-    responseListener,
+  // 사용자가 알림을 탭하는 등 상호작용했을 경우의 리스너
+  const responseListener =
+    Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log('User responded to notification:', response);
+      const url = response.notification.request.content.data?.url;
+      if (url) {
+        router.push(url as any);
+      }
+    });
+
+  console.log('Notification listeners initialized.');
+
+  // 컴포넌트 언마운트 또는 앱 종료 시 리스너를 정리하는 함수를 반환
+  return () => {
+    console.log('Cleaning up notification listeners.');
+    Notifications.removeNotificationSubscription(notificationListener);
+    Notifications.removeNotificationSubscription(responseListener);
+    isInitialized = false;
   };
 };
 

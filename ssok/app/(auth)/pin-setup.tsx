@@ -50,7 +50,7 @@ export default function PinSetup() {
 
         if (result.success) {
           console.log('[LOG][PinSetup] 회원가입 및 로그인 성공, 화면 전환');
-          router.replace('/(app)'); // 성공 시 메인 화면으로
+          router.replace('/notification-permission'); // 성공 시 알림 권한 요청 화면으로
           return true;
         } else {
           console.error(
