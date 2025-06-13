@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { initializeNotificationListeners } from '../services/notificationService';
+import {
+  initializeNotificationListeners,
+  setupNotificationHandler,
+} from '../services/notificationService';
 
 /**
  * 앱의 전역 알림 리스너를 관리하는 훅.
@@ -7,6 +10,9 @@ import { initializeNotificationListeners } from '../services/notificationService
  */
 export const useNotificationManager = () => {
   useEffect(() => {
+    // 포그라운드 알림 핸들러 설정
+    setupNotificationHandler();
+
     // 알림 리스너를 설정하고, 정리(cleanup) 함수를 반환받습니다.
     const cleanupListeners = initializeNotificationListeners();
 

@@ -50,16 +50,14 @@ export const initializeNotificationListeners = () => {
 
   // 앱이 실행 중일 때 알림을 수신했을 경우의 리스너
   const notificationListener =
-    Notifications.addNotificationReceivedListener((notification) => {
+    Notifications.addNotificationReceivedListener(notification => {
+      // 포그라운드 알림 수신 시 특별한 동작이 필요하다면 여기에 구현합니다.
+      // 현재는 setNotificationHandler의 설정에 따라 시스템 알림이 표시되므로
+      // 이 리스너에서는 별도의 UI 처리를 하지 않습니다.
       console.log(
         'Notification received while app is foregrounded:',
-        notification,
+        notification.request.content.title,
       );
-      Toast.show({
-        type: 'info',
-        text1: notification.request.content.title || '새로운 알림',
-        text2: notification.request.content.body || '',
-      });
     });
 
   // 사용자가 알림을 탭하는 등 상호작용했을 경우의 리스너
