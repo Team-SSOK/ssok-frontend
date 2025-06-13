@@ -9,9 +9,28 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
-import { router } from 'expo-router';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
 
 export default function PrivacyScreen() {
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          display: 'none',
+        },
+      });
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            display: 'flex',
+          },
+        });
+      };
+    }, [navigation]),
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
@@ -223,7 +242,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingBottom: 100 
   },
   header: {
     flexDirection: 'row',

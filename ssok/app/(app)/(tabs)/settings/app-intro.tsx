@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 24,
     paddingBottom: 20,
-    marginTop: 20,
+    marginTop: 20
   },
   closeButton: {
     backgroundColor: colors.primary,

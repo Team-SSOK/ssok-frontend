@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, SafeAreaView, ScrollView } from 'react-native';
 import { colors } from '@/constants/colors';
-import { router } from 'expo-router';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
 import {
   Header,
   Section,
@@ -46,6 +46,25 @@ const INITIAL_FAQS: FAQItemTypes[] = [
 ];
 
 export default function HelpScreen() {
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          display: 'none',
+        },
+      });
+      return () => {
+        navigation.getParent()?.setOptions({
+          tabBarStyle: {
+            display: 'flex',
+          },
+        });
+      };
+    }, [navigation]),
+  );
+
   // FAQ 데이터
   const [faqs, setFaqs] = useState<FAQItemTypes[]>(INITIAL_FAQS);
 
@@ -106,7 +125,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingBottom: 100 
   },
   content: {
     flex: 1,
