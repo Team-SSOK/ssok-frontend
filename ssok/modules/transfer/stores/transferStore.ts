@@ -6,6 +6,7 @@ import {
   BluetoothTransferRequest,
   RecentTransferHistory,
   TransferHistory,
+  TransferCounterpart,
 } from '../api/transferApi';
 import { Transaction } from '@/utils/types';
 import { getBankCodeByName } from '../utils/bankUtils';
@@ -35,6 +36,7 @@ interface TransferState {
   error: string | null;
   lastTransfer: TransferResponse | null;
   transactions: Transaction[];
+  recentCounterparts: TransferCounterpart[];
 
   // 액션 - 통일된 반환 타입 사용
   sendMoney: (
@@ -52,6 +54,7 @@ interface TransferState {
   getTransferHistory: (
     accountId: number,
   ) => Promise<StoreResponse<Transaction[]>>;
+  fetchRecentCounterparts: () => Promise<StoreResponse<TransferCounterpart[]>>;
   clearError: () => void;
 
   /**
@@ -83,6 +86,7 @@ export const useTransferStore = create<TransferState>((set, get) => ({
   error: null,
   lastTransfer: null,
   transactions: [],
+  recentCounterparts: [],
 
   sendMoney: async (data: TransferRequest) => {
     set({ isLoading: true, error: null });
@@ -261,6 +265,30 @@ export const useTransferStore = create<TransferState>((set, get) => ({
     }
   },
 
+  fetchRecentCounterparts: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await transferApi.getRecentCounterparts();
+
+      if (response.data.isSuccess && response.data.result) {
+        const counterparts = response.data.result;
+        set({ recentCounterparts: counterparts, isLoading: false });
+        return createSuccessResponse(counterparts, '최근 송금 상대방을 조회했습니다.');
+      } else {
+        const message = response.data.message || '최근 송금 상대방 조회에 실패했습니다.';
+        set({ error: message, isLoading: false });
+        return createErrorResponse(message);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '최근 송금 상대방 조회 중 오류가 발생했습니다.';
+      set({ recentCounterparts: [], error: message, isLoading: false });
+      return createErrorResponse(message);
+    }
+  },
+
   clearError: () => {
     set({ error: null });
   },
@@ -275,6 +303,7 @@ export const useTransferStore = create<TransferState>((set, get) => ({
       error: null,
       lastTransfer: null,
       transactions: [],
+      recentCounterparts: [],
     });
   },
 }));

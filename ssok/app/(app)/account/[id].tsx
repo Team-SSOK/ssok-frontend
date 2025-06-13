@@ -104,9 +104,6 @@ export default function AccountDetailScreen() {
     setSelectedPeriod(period);
   };
 
-  const handleViewAllPress = () => {
-    console.log('거래내역 전체보기');
-  };
 
   if (!currentAccount) {
     return null; // 로딩 UI 또는 오류 UI로 대체 가능
@@ -139,7 +136,6 @@ export default function AccountDetailScreen() {
         {/* 거래 목록 */}
         <TransactionList
           transactions={filteredTransactions}
-          onViewAllPress={handleViewAllPress}
           isLoading={isLoading}
         />
       </ScrollView>

@@ -47,6 +47,12 @@ export interface RecentTransferHistory {
   createdAt: string;
 }
 
+export interface TransferCounterpart {
+  counterpartName: string;
+  counterpartAccountNumber: string;
+  createdAt: string;
+}
+
 interface ApiResponse<T = any> {
   isSuccess: boolean;
   code: number;
@@ -94,6 +100,15 @@ export const transferApi = {
   getRecentTransferHistory: async () => {
     return api.get<ApiResponse<RecentTransferHistory[]>>(
       '/api/transfers/history',
+    );
+  },
+
+  /**
+   * 최근 송금 상대방 조회
+   */
+  getRecentCounterparts: async () => {
+    return api.get<ApiResponse<TransferCounterpart[]>>(
+      '/api/transfers/counterparts',
     );
   },
 };

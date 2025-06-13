@@ -8,21 +8,14 @@ import { typography } from '@/theme/typography';
 
 interface TransactionListProps {
   transactions: Transaction[];
-  onViewAllPress: () => void;
   isLoading?: boolean;
   errorMessage?: string;
 }
 
 const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
-  onViewAllPress,
-  isLoading = false,
   errorMessage,
 }) => {
-  // 로딩 중 상태 UI
-  if (isLoading) {
-    return <ActivityIndicator size="large" color={colors.primary} />;
-  }
 
   if (errorMessage) {
     return (

@@ -40,7 +40,7 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
   profileImage,
 }) => {
   const [showList, setShowList] = useState(false);
-  
+
   // 스토어에서 직접 원본 기기 목록과 사용자 조회 함수를 가져옴
   const rawDevices = useBluetoothStore(s => s.rawDiscoveredDevices);
   const getMatchedUserByUuid = useBluetoothStore(s => s.getMatchedUserByUuid);
@@ -108,7 +108,7 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
         <View style={[styles.radarCircle, styles.radarCircle1]} />
         <View style={[styles.radarCircle, styles.radarCircle2]} />
         <View style={[styles.radarCircle, styles.radarCircle3]} />
-        
+
         <View style={styles.myProfileContainer}>
           <View style={styles.myProfile}>
             <Image
@@ -122,13 +122,13 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
 
         {/* 발견된 기기들 (레이더 위에 표시) */}
         {radarDevices.map((device) => (
-          <RadarDevice
-            key={device.id}
-            device={device}
+            <RadarDevice
+              key={device.id}
+              device={device}
             position={getPositionFromFixed(device.id)}
-            onPress={() => onDevicePress(device)}
-            animated={true}
-          />
+              onPress={() => onDevicePress(device)}
+              animated={true}
+            />
         ))}
 
         {listDevices.length > 0 && (

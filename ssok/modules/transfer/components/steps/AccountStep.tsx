@@ -9,11 +9,14 @@ import { NameVerificationRequest } from '@/modules/account/api/accountApi';
 import { Text } from '@/components/TextProvider';
 import { StepComponentProps } from '../../types/transferFlow';
 import { Bank } from '@/modules/account/constants/banks';
+import { TransferCounterpart } from '../../api/transferApi';
+import { banks } from '@/modules/account/constants/banks';
 
 // 기존 컴포넌트 재사용
 import AccountInput from '../AccountInput';
 import BankSelector from '../BankSelector';
 import NextButton from '../NextButton';
+import RecentCounterparts from '../RecentCounterparts';
 
 /**
  * 계좌 정보 입력 스텝 컴포넌트
@@ -31,6 +34,21 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
   // 은행 선택 처리
   const handleBankSelect = (bank: Bank) => {
     setSelectedBank(bank);
+    setErrorMessage(null);
+  };
+
+  // 최근 송금 상대방 선택 처리
+  const handleCounterpartSelect = (counterpart: TransferCounterpart) => {
+    setAccountNumber(counterpart.counterpartAccountNumber);
+    
+    // 계좌번호로부터 은행 코드 추출 (간단한 형태로, 실제로는 더 복잡한 로직이 필요할 수 있음)
+    const bankCode = counterpart.counterpartAccountNumber.split('-')[0];
+    const matchedBank = banks.find(bank => bank.code === bankCode);
+    
+    if (matchedBank) {
+      setSelectedBank(matchedBank);
+    }
+    
     setErrorMessage(null);
   };
 
@@ -116,6 +134,9 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
             onBankSelect={handleBankSelect}
           />
         </Animated.View>
+
+        {/* 최근 송금 상대방 목록 */}
+        <RecentCounterparts onCounterpartSelect={handleCounterpartSelect} />
 
         {/* 에러 메시지 */}
         {errorMessage && (

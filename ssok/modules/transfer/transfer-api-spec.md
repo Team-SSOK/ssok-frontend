@@ -225,3 +225,77 @@ GET {PORT}/api/transfers/history
   ]
 }
 ```
+
+---
+
+## 4. 최근 송금 상대방 조회
+
+### 개요
+
+- 최근 송금(출금)을 보낸 상대 계좌 목록을 조회
+- 중복된 상대 계좌는 제거되며, 가장 최근 송금 순으로 정렬되어 반환
+- 블루투스 송금에 대한 송금 계좌는 조회 x, 일반 송금에 대한 내역만 조회
+  - "transferMethod": "GENERAL" 인 것만
+- gateway로부터 헤더에 받은 X-User-Id로 계좌 서비스에 해당 유저id의 모든 계좌 id를 가져오고
+
+### 요청
+
+#### API URL
+
+```
+GET {PORT}/api/transfers/counterparts
+```
+
+#### 요청 PathVariable
+
+없음
+
+#### 요청 Query
+
+없음
+
+#### 요청 Header
+
+| 헤더명        | 설명                     |
+| ------------- | ------------------------ |
+| Content-Type  | `application/json`       |
+| Authorization | `Bearer xxx` (추가 예정) |
+
+#### 요청 Body
+
+없음
+
+### 응답
+
+#### 성공 (200)
+
+```json
+{
+  "isSuccess": true,
+  "code": 2000,
+  "message": "최근 송금 내역 조회가 완료되었습니다.",
+  "result": [
+    {
+      "counterpartName": "최지훈",
+      "counterpartAccountNumber": "1111-11-1111",
+      "createdAt": "2025-04-21T10:31:22"
+    },
+    {
+      "counterpartName": "홍길동",
+      "counterpartAccountNumber": "1111-11-1112",
+      "createdAt": "2025-04-20T10:31:22"
+    }
+  ]
+}
+```
+
+#### 실패
+
+```json
+{
+  "isSuccess": false,
+  "code": 4001,
+  "message": "송금 내역 조회에 실패했습니다.",
+  "result": null
+}
+```
