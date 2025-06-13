@@ -29,7 +29,7 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
   const opacityAnim = useRef(new Animated.Value(0.8)).current;
 
   // Bluetooth store에서 UUID에 해당하는 사용자 정보 가져오기
-  const getUserByUuid = useBluetoothStore((state) => state.getUserByUuid);
+  const getMatchedUserByUuid = useBluetoothStore(s => s.getMatchedUserByUuid);
 
   // RSSI 강도에 따른 색상 계산
   const getSignalColor = (rssi: number | null): string => {
@@ -80,7 +80,7 @@ const RadarDevice: React.FC<RadarDeviceProps> = ({
 
   // 기기 UUID로부터 사용자 이름과 프로필 이미지 가져오기
   const user = device.iBeaconData
-    ? getUserByUuid(device.iBeaconData.uuid)
+    ? getMatchedUserByUuid(device.iBeaconData.uuid)
     : undefined;
   const userName = user ? user.username : '알 수 없음';
   const userProfileImage = user?.profileImage;

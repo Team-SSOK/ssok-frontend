@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,7 +14,6 @@ import { colors } from '@/constants/colors';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/bluetoothStore';
 
 interface BluetoothRadarProps {
-  devices: DiscoveredDevice[];
   isScanning: boolean;
   myUUID: string;
   profileImage: string | null;
@@ -25,66 +24,75 @@ const { width } = Dimensions.get('window');
 const RADAR_SIZE = width * 1.2;
 const CENTER_POINT = RADAR_SIZE / 2;
 
-// 레이더 내 기기 고정 위치 (5개) - 반경을 약간 늘려 더 큰 기기 크기에 맞게 조정
+// 레이더 내 기기 고정 위치 (5개)
 const FIXED_POSITIONS = [
-  { angle: 0, distance: 0.65 }, // 우측
-  { angle: 70, distance: 0.65 }, // 우측 상단
-  { angle: 120, distance: 0.65 }, // 좌측 상단
-  { angle: 188, distance: 0.65 }, // 좌측 하단
-  { angle: 248, distance: 0.65 }, // 우측 하단
+  { angle: 0, distance: 0.65 },
+  { angle: 70, distance: 0.65 },
+  { angle: 120, distance: 0.65 },
+  { angle: 188, distance: 0.65 },
+  { angle: 248, distance: 0.65 },
 ];
 
 const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
-  devices,
   isScanning,
   myUUID,
   onDevicePress,
   profileImage,
 }) => {
-  // 추가 기기 리스트 표시 상태
   const [showList, setShowList] = useState(false);
+  
+  // 스토어에서 직접 원본 기기 목록과 사용자 조회 함수를 가져옴
+  const rawDevices = useBluetoothStore(s => s.rawDiscoveredDevices);
+  const getMatchedUserByUuid = useBluetoothStore(s => s.getMatchedUserByUuid);
 
-  // Bluetooth store에서 UUID에 해당하는 사용자 정보 가져오기
-  const getUserByUuid = useBluetoothStore((state) => state.getUserByUuid);
-  // 기기 ID와 위치 인덱스를 매핑하는 상태
-  const [devicePositions, setDevicePositions] = useState<Map<string, number>>(
-    new Map(),
-  );
+  // 기기 ID와 레이더 위치 인덱스를 매핑
+  const [devicePositions, setDevicePositions] = useState<Map<string, number>>(new Map());
 
-  // 기기를 RSSI 신호 강도 기준으로 정렬 (강한 신호가 앞에 오도록)
-  const sortedDevices = [...devices].sort((a, b) => {
-    const rssiA = a.rssi || -100;
-    const rssiB = b.rssi || -100;
-    return rssiB - rssiA; // 강한 신호(값이 큰)가 앞에 오도록 내림차순 정렬
-  });
+  // 발견된 기기 중 "매칭된 사용자"가 있는 기기만 필터링하고, 중복된 사용자는 신호가 가장 강한 기기 하나만 선택
+  const sortedDevices = useMemo(() => {
+    // 1. 사용자 UUID별로 기기를 그룹화하고, 각 그룹에서 신호가 가장 강한 기기만 선택
+    const bestDeviceByUuid = new Map<string, DiscoveredDevice>();
 
-  // 기기 위치 매핑 업데이트 (최초 1회만)
+    for (const device of rawDevices.values()) {
+      const uuid = device.iBeaconData?.uuid;
+      if (!uuid || !getMatchedUserByUuid(uuid)) {
+        continue; // 매칭된 사용자가 없는 기기는 무시
+      }
+
+      const existingDevice = bestDeviceByUuid.get(uuid);
+      if (!existingDevice || (device.rssi || -100) > (existingDevice.rssi || -100)) {
+        bestDeviceByUuid.set(uuid, device);
+      }
+    }
+
+    // 2. 신호 강도순으로 정렬
+    return [...bestDeviceByUuid.values()].sort((a, b) => (b.rssi || -100) - (a.rssi || -100));
+  }, [rawDevices, getMatchedUserByUuid]);
+
+  // 새로 발견된 기기에 대해 레이더 위치 할당
   useEffect(() => {
-    // 새로 발견된 기기를 확인하고 고정 위치 할당
-    devices.forEach((device) => {
+    sortedDevices.forEach((device) => {
       if (!devicePositions.has(device.id)) {
         setDevicePositions((prev) => {
           const newMap = new Map(prev);
-          // 다음 가용 위치 인덱스 할당 (최대 5개 위치 순환)
-          const nextIndex = newMap.size % 5;
+          const nextIndex = newMap.size % FIXED_POSITIONS.length;
           newMap.set(device.id, nextIndex);
           return newMap;
         });
       }
     });
-  }, [devices]);
+  }, [sortedDevices]);
 
-  // 레이더에 표시할 기기와 리스트에 표시할 기기로 분리
-  // 레이더에는 위치가 할당된 기기만 표시 (최대 5개)
-  const radarDevices = sortedDevices.filter((device) =>
-    devicePositions.has(device.id),
-  );
-  const listDevices = sortedDevices.filter(
-    (device) => !devicePositions.has(device.id),
-  );
+  // 레이더에 표시할 기기 (최대 5개)와 리스트에 표시할 기기 분리
+  const radarDevices = sortedDevices.slice(0, 5);
+  const listDevices = sortedDevices.slice(5);
 
-  // 고정 위치 기준으로 x, y 좌표 계산
-  const getPositionFromFixed = (index: number) => {
+  const getPositionFromFixed = (deviceId: string) => {
+    const index = devicePositions.get(deviceId);
+    if (index === undefined) {
+      // 위치가 할당되지 않은 경우 (이론상 발생하지 않음)
+      return { x: CENTER_POINT, y: CENTER_POINT };
+    }
     const position = FIXED_POSITIONS[index];
     const radians = (position.angle * Math.PI) / 180;
     const radius = CENTER_POINT * position.distance;
@@ -96,23 +104,15 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.radarContainer}>
-        {/* 레이더 스캔 애니메이션 효과 */}
         <View style={styles.scanEffect} />
-
-        {/* 레이더 그라데이션 원 */}
         <View style={[styles.radarCircle, styles.radarCircle1]} />
         <View style={[styles.radarCircle, styles.radarCircle2]} />
         <View style={[styles.radarCircle, styles.radarCircle3]} />
-
-        {/* 중앙 내 프로필 */}
+        
         <View style={styles.myProfileContainer}>
           <View style={styles.myProfile}>
             <Image
-              source={
-                profileImage
-                  ? { uri: profileImage }
-                  : require('@/assets/images/profile.webp')
-              }
+              source={profileImage ? { uri: profileImage } : require('@/assets/images/profile.webp')}
               style={styles.profileImage}
               resizeMode="cover"
             />
@@ -120,43 +120,28 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
           </View>
         </View>
 
-        {/* 발견된 기기들 (레이더 위에 표시) - 고정 위치 사용 */}
-        {radarDevices.map((device) => {
-          // 각 기기의 고정 위치 인덱스 가져오기
-          const positionIndex = devicePositions.get(device.id) || 0;
-          const position = getPositionFromFixed(positionIndex);
+        {/* 발견된 기기들 (레이더 위에 표시) */}
+        {radarDevices.map((device) => (
+          <RadarDevice
+            key={device.id}
+            device={device}
+            position={getPositionFromFixed(device.id)}
+            onPress={() => onDevicePress(device)}
+            animated={true}
+          />
+        ))}
 
-          return (
-            <RadarDevice
-              key={device.id}
-              device={device}
-              position={position}
-              onPress={() => onDevicePress(device)}
-              animated={true}
-            />
-          );
-        })}
-
-        {/* 추가 기기 버튼 (5개 초과 시) */}
         {listDevices.length > 0 && (
-          <Pressable
-            style={styles.moreDevicesButton}
-            onPress={() => setShowList(!showList)}
-          >
-            <Text style={styles.moreDevicesText}>
-              +{listDevices.length}개 더 보기
-            </Text>
+          <Pressable style={styles.moreDevicesButton} onPress={() => setShowList(!showList)}>
+            <Text style={styles.moreDevicesText}>+{listDevices.length}개 더 보기</Text>
           </Pressable>
         )}
       </View>
 
-      {/* 추가 기기 리스트 (고정 5개 초과 시) */}
       {showList && listDevices.length > 0 && (
         <View style={styles.deviceListContainer}>
           <View style={styles.deviceListHeader}>
-            <Text style={styles.deviceListTitle}>
-              추가 발견된 기기 ({listDevices.length})
-            </Text>
+            <Text style={styles.deviceListTitle}>추가 발견된 기기 ({listDevices.length})</Text>
             <Pressable onPress={() => setShowList(false)}>
               <Text style={styles.closeButton}>닫기</Text>
             </Pressable>
@@ -165,23 +150,12 @@ const BluetoothRadar: React.FC<BluetoothRadarProps> = ({
             data={listDevices}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
-              // 기기 UUID로부터 사용자 이름 가져오기
-              const user = item.iBeaconData
-                ? getUserByUuid(item.iBeaconData.uuid)
-                : undefined;
-              const userName = user ? user.username : '알 수 없음';
+              const user = item.iBeaconData ? getMatchedUserByUuid(item.iBeaconData.uuid) : undefined;
+              const userName = user?.username || '확인 중...';
 
               return (
-                <Pressable
-                  style={styles.deviceListItem}
-                  onPress={() => onDevicePress(item)}
-                >
-                  <View
-                    style={[
-                      styles.deviceSignal,
-                      { backgroundColor: getSignalColor(item.rssi) },
-                    ]}
-                  />
+                <Pressable style={styles.deviceListItem} onPress={() => onDevicePress(item)}>
+                  <View style={[styles.deviceSignal, { backgroundColor: getSignalColor(item.rssi) }]} />
                   <Text style={styles.deviceName}>{userName}</Text>
                   <Text style={styles.deviceRssi}>{item.rssi || '-'} dBm</Text>
                 </Pressable>

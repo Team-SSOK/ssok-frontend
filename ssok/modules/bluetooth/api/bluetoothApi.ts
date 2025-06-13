@@ -54,31 +54,21 @@ export const bluetoothApi = {
         '/api/bluetooth/match',
         data,
       );
-
       return response;
-    } catch (error) {
-      // 에러 응답 처리
-      if ((error as any).response?.data) {
-        const errorData = (error as any).response.data;
-
-        // 2400 코드는 성공으로 처리 (Bluetooth UUID에 대한 유저가 조회되었습니다)
-        if (errorData.code === 2400 && errorData.result) {
-          return { data: errorData };
-        }
-
-        if (
-          errorData.result &&
-          (errorData.message?.includes('매칭된 유저 조회 성공') ||
-            errorData.message?.includes(
-              'Bluetooth UUID에 대한 유저가 조회되었습니다',
-            ))
-        ) {
-          return { data: errorData };
-        }
-      } else {
-        // 실제 오류만 로깅
-        console.error('블루투스 매칭 오류:', error);
+    } catch (error: any) {
+      // 404 에러이고 "매칭된 유저가 없음" 메시지인 경우, 에러가 아닌 빈 결과로 처리
+      if (error.response?.status === 404 && error.response?.data?.code === 4403) {
+        console.log('[bluetoothApi] 매칭되는 사용자가 없어 빈 결과를 반환합니다.');
+        return { 
+          ...error.response, 
+          data: {
+            ...error.response.data,
+            result: { users: [], primaryAccount: null },
+          }
+        };
       }
+      // 그 외의 경우는 실제 에러로 처리
+      console.error('블루투스 매칭 API 오류:', error.message);
       throw error;
     }
   },

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/TextProvider';
 import { typography } from '@/theme/typography';
 import LottieView from 'lottie-react-native';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 // Android에서 LayoutAnimation 활성화
 if (
@@ -120,7 +121,7 @@ export default function TabLayout() {
           shadowOpacity: 0,
         },
       }}
-      tabBar={(props) => (
+      tabBar={(props: BottomTabBarProps) => (
         <View
           style={[
             styles.tabBarContainer,
@@ -130,7 +131,7 @@ export default function TabLayout() {
           ]}
         >
           <View style={styles.tabBar}>
-            {props.state.routes.map((route, index) => (
+            {props.state.routes.map((route: any, index: number) => (
               <TabButton
                 key={route.key}
                 route={route}

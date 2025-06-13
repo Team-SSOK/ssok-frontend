@@ -2,72 +2,73 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { colors } from '@/constants/colors';
-import bleService from '@/modules/bluetooth/services/bleService';
-import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
 import { generateUUID } from '@/utils/ble';
 import BluetoothRadar from '@/modules/bluetooth/components/BluetoothRadar';
-import { useFocusEffect } from '@react-navigation/native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import Loading from '@/components/LoadingIndicator';
 import Header from '@/components/CommonHeader';
 import { useBluetoothStore } from '@/modules/bluetooth/stores/bluetoothStore';
-import { getBankNameByCode } from '@/modules/transfer/utils/bankUtils';
 import { useProfileStore } from '@/modules/settings/store/profileStore';
 import { useAuthStore } from '@/modules/auth/store/authStore';
+import { useBleScanner, DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
+import { useBleAdvertiser } from '@/modules/bluetooth/hooks/useBleAdvertiser';
 
 const BluetoothScreen: React.FC = () => {
-  // 블루투스 상태
-  const [isAdvertising, setIsAdvertising] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [myUUID, setMyUUID] = useState<string>(generateUUID());
-  const [discoveredDevices, setDiscoveredDevices] = useState<
-    DiscoveredDevice[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // 고유 UUID 생성 (한 번만)
+  const [myUUID] = useState<string>(() => generateUUID());
 
-  // 스토어
-  const { registerUuid, updateDiscoveredDevices, primaryAccount, error } =
-    useBluetoothStore();
+  // 스토어 상태 및 액션
+  const {
+    setup,
+    matchFoundUsers,
+    clearInactiveDevices,
+    getMatchedUserByUuid,
+    primaryAccount,
+    isLoading: isStoreLoading,
+    error: storeError,
+    reset,
+  } = useBluetoothStore();
 
-  // 현재 로그인한 사용자의 프로필 이미지 가져오기
-  const userId = useAuthStore((state) => state.user?.id);
+  // 현재 사용자 정보
+  const userId = useAuthStore(state => state.user?.id);
   const { profileImage, fetchProfile } = useProfileStore();
 
-  // 사용자 프로필 정보 로드
+  // BLE 훅 사용
+  const { isScanning, error: scannerError } = useBleScanner();
+  const { isAdvertising, error: advertiserError } = useBleAdvertiser(myUUID);
+
+  // 화면 로딩 상태
+  const isLoading = isStoreLoading;
+
+  // 화면 포커스/블러 시 처리
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[BluetoothScreen] Focus: Setting up services.');
+      setup(myUUID);
+      if (userId) {
+        fetchProfile(userId);
+      }
+
+      const matchInterval = setInterval(() => {
+        matchFoundUsers();
+      }, 2000); // 2초마다 매칭 시도
+
+      const cleanupInterval = setInterval(() => {
+        clearInactiveDevices();
+      }, 5000); // 5초마다 비활성 기기 정리
+
+      return () => {
+        console.log('[BluetoothScreen] Blur: Cleaning up services.');
+        clearInterval(matchInterval);
+        clearInterval(cleanupInterval);
+        reset();
+      };
+    }, [userId, myUUID, setup, fetchProfile, matchFoundUsers, clearInactiveDevices, reset])
+  );
+
+  // 에러 통합 처리
   useEffect(() => {
-    if (userId) {
-      fetchProfile(userId);
-    }
-  }, [userId, fetchProfile]);
-
-  // 기기 활성 상태 정리 함수
-  const cleanupInactiveDevices = useCallback(() => {
-    const now = new Date();
-    setDiscoveredDevices((prev) => {
-      return prev.filter((device) => {
-        // lastSeen이 없거나 현재 시간에서 10초 이상 지난 기기는 제외
-        // 이 값을 늘려 기기가 더 오래 레이더에 유지되도록 설정
-        if (!device.lastSeen) return false;
-
-        const diffMs = now.getTime() - device.lastSeen.getTime();
-        return diffMs < 10000; // 10초 이내에 발견된 기기만 유지
-      });
-    });
-  }, []);
-
-  // 주기적으로 기기 목록 정리 (1초마다)
-  useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      cleanupInactiveDevices();
-    }, 1000);
-
-    return () => {
-      clearInterval(cleanupInterval);
-    };
-  }, [cleanupInactiveDevices]);
-
-  // API 오류 감지 및 알림
-  useEffect(() => {
+    const error = storeError || scannerError || advertiserError;
     if (error) {
       Toast.show({
         type: 'error',
@@ -76,177 +77,39 @@ const BluetoothScreen: React.FC = () => {
         position: 'bottom',
       });
     }
-  }, [error]);
-
-  // 화면 포커스/블러 처리
-  useFocusEffect(
-    useCallback(() => {
-      // 화면에 진입했을 때 BLE 서비스 초기화 및 시작
-      const initService = async () => {
-        const initialized = await bleService.initialize({
-          advertisingUUID: myUUID,
-          autoStart: false,
-        });
-
-        if (initialized) {
-          // UUID 업데이트
-          setMyUUID(bleService.getMyUUID());
-
-          // UUID API 등록
-          await registerUuid(bleService.getMyUUID());
-
-          // 앱 진입 시 자동으로 광고 및 스캔 시작
-          startAdvertisingAndScanning();
-        }
-      };
-
-      initService();
-
-      // 화면을 벗어날 때 정리
-      return () => {
-        bleService.stopAdvertising();
-        bleService.stopScanning();
-      };
-    }, [myUUID, registerUuid]),
-  );
-
-  // BLE 서비스 이벤트 리스너 등록
-  useEffect(() => {
-    const removeListener = bleService.addListener({
-      onPeerDiscovered: (device) => {
-        setDiscoveredDevices((prev) => {
-          // 현재 시간 업데이트
-          const updatedDevice = {
-            ...device,
-            lastSeen: new Date(),
-          };
-
-          // 이미 있는 기기인지 확인
-          const exists = prev.some((d) => d.id === device.id);
-          if (exists) {
-            // 기존 기기 업데이트
-            return prev.map((d) => (d.id === device.id ? updatedDevice : d));
-          }
-          // 새 기기 추가
-          return [...prev, updatedDevice];
-        });
-      },
-      onAdvertisingStarted: (uuid) => {
-        setIsAdvertising(true);
-      },
-      onAdvertisingStopped: () => {
-        setIsAdvertising(false);
-      },
-      onScanningStarted: () => {
-        setIsScanning(true);
-        // 스캔 시작 시 기존 발견 목록 초기화
-        setDiscoveredDevices([]);
-      },
-      onScanningStopped: () => {
-        setIsScanning(false);
-      },
-      onError: (error) => {
-        Toast.show({
-          type: 'error',
-          text1: 'BLE 오류',
-          text2: error,
-          position: 'bottom',
-        });
-      },
-    });
-
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      removeListener();
-      bleService.cleanup();
-    };
-  }, []);
-
-  // 발견된 기기 목록이 변경될 때마다 사용자 조회 시도
-  useEffect(() => {
-    if (discoveredDevices.length > 0) {
-      updateDiscoveredDevices(discoveredDevices);
-    }
-  }, [discoveredDevices, updateDiscoveredDevices]);
-
-  // 광고 및 스캔 시작 함수
-  const startAdvertisingAndScanning = async () => {
-    try {
-      // 광고 시작
-      const advSuccess = await bleService.startAdvertising();
-      if (!advSuccess) {
-        Toast.show({
-          type: 'warning',
-          text1: 'BLE 광고 시작 실패',
-          text2: 'BLE 광고를 시작할 수 없습니다.',
-          position: 'bottom',
-        });
-      }
-
-      // 스캔 시작
-      const scanSuccess = await bleService.startScanning();
-      if (!scanSuccess) {
-        Toast.show({
-          type: 'warning',
-          text1: 'BLE 스캔 시작 실패',
-          text2: 'BLE 스캔을 시작할 수 없습니다.',
-          position: 'bottom',
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'BLE 오류',
-        text2: 'BLE 서비스 시작 중 오류가 발생했습니다.',
-        position: 'bottom',
-      });
-    }
-  };
+  }, [storeError, scannerError, advertiserError]);
 
   // 사용자 선택 핸들러
   const handleDevicePress = (device: DiscoveredDevice) => {
     if (!device.iBeaconData) {
-      Alert.alert('오류', '기기 정보를 불러올 수 없습니다.', [
-        { text: '확인', style: 'default' },
-      ]);
+      Alert.alert('오류', '기기 정보를 불러올 수 없습니다.');
       return;
     }
 
-    // 발견된 UUID와 일치하는 사용자 찾기
     const uuid = device.iBeaconData.uuid;
-    const matchedUser = useBluetoothStore.getState().getUserByUuid(uuid);
+    const matchedUser = getMatchedUserByUuid(uuid);
 
     if (!matchedUser) {
-      Alert.alert('오류', '사용자 정보를 찾을 수 없습니다.', [
-        { text: '확인', style: 'default' },
-      ]);
+      Alert.alert('오류', '서버에서 사용자 정보를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+    
+    if (!primaryAccount) {
+      Alert.alert('오류', '주계좌 정보가 없습니다. 계좌를 먼저 등록해주세요.');
       return;
     }
 
-    // 로딩 상태 활성화
-    setIsLoading(true);
-
-    // 은행 정보 가져오기
-    const bankName = primaryAccount
-      ? getBankNameByCode(primaryAccount.bankCode)
-      : '은행';
-
-    // 실제 사용자 정보 사용
-    setTimeout(() => {
-      // 로딩 상태 비활성화
-      setIsLoading(false);
-
-      // 송금 페이지로 이동 (userId 포함하여 전달)
-      router.push({
-        pathname: '/transfer',
-        params: {
-          uuid: matchedUser.uuid,
-          userName: matchedUser.username,
-          bankName: bankName,
-          isBluetooth: 'true', // 블루투스 송금 플래그
-        },
-      });
-    }, 1000); // 1초 지연으로 API 호출 시뮬레이션
+    router.push({
+      pathname: '/transfer',
+      params: {
+        uuid: matchedUser.uuid,
+        userName: matchedUser.username,
+        // primaryAccount에서 bankCode를 가져와야 합니다. getBankNameByCode는 utils에 있다고 가정합니다.
+        // 이 부분은 getBankNameByCode의 위치에 따라 수정이 필요할 수 있습니다.
+        bankName: primaryAccount.bankCode.toString(), 
+        isBluetooth: 'true',
+      },
+    });
   };
 
   return (
@@ -254,15 +117,12 @@ const BluetoothScreen: React.FC = () => {
       <Header title="블루투스 송금" />
       <View style={styles.container}>
         <BluetoothRadar
-          devices={discoveredDevices}
           isScanning={isScanning}
           myUUID={myUUID}
           profileImage={profileImage}
           onDevicePress={handleDevicePress}
         />
       </View>
-
-      {/* 로딩 컴포넌트 - 사용자 상호작용 시에만 표시 (배경 스캔 시에는 표시하지 않음) */}
       <Loading visible={isLoading} />
     </SafeAreaView>
   );

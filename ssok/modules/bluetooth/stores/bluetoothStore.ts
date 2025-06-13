@@ -7,6 +7,9 @@ import {
   PrimaryAccount,
 } from '../api/bluetoothApi';
 import { DiscoveredDevice } from '@/modules/bluetooth/hooks/useBleScanner';
+import { devtools } from 'zustand/middleware';
+
+const LOG_TAG = '[BluetoothStore]';
 
 /**
  * API 응답 표준 타입
@@ -19,22 +22,33 @@ interface BluetoothState {
   // 상태
   myUuid: string | null;
   registeredUuid: boolean;
+  
+  // 원본 기기 목록 (스캐너에서 직접 받음)
+  rawDiscoveredDevices: Map<string, DiscoveredDevice>;
+
+  // 서버에서 매칭된 사용자 정보
   discoveredUsers: User[];
-  uuidToUserMap: Map<string, User>;
   primaryAccount: PrimaryAccount | null;
+
   isLoading: boolean;
   error: string | null;
+}
 
-  // 액션 - 통일된 반환 타입 사용
-  registerUuid: (uuid: string) => Promise<StoreResponse<boolean>>;
-  matchUsers: (
-    uuids: string[],
-    showLoading?: boolean,
-  ) => Promise<StoreResponse<User[]>>;
-  updateDiscoveredDevices: (devices: DiscoveredDevice[]) => void;
-  getUserByUuid: (uuid: string) => User | undefined;
-  resetState: () => void;
-  clearError: () => void;
+interface BluetoothActions {
+  setup: (uuid: string) => void;
+  registerMyUuid: () => Promise<void>;
+  
+  // 스캐너로부터 받은 기기 정보 처리
+  addOrUpdateDevice: (device: DiscoveredDevice) => void;
+  
+  // 주기적으로 실행될 액션
+  matchFoundUsers: () => Promise<void>;
+  clearInactiveDevices: () => void;
+
+  reset: () => void;
+  
+  // Computed-like-getters
+  getMatchedUserByUuid: (uuid: string) => User | undefined;
 }
 
 /**
@@ -68,195 +82,117 @@ const updateUuidUserMap = (
   return map;
 };
 
-export const useBluetoothStore = create<BluetoothState>((set, get) => ({
-  // 초기 상태
+const initialState: BluetoothState = {
   myUuid: null,
   registeredUuid: false,
+  rawDiscoveredDevices: new Map(),
   discoveredUsers: [],
-  uuidToUserMap: new Map(),
   primaryAccount: null,
   isLoading: false,
   error: null,
+};
 
-  // UUID 등록 함수
-  registerUuid: async (uuid: string) => {
-    const currentState = get();
-    const isAlreadyRegistered =
-      currentState.registeredUuid && currentState.myUuid === uuid;
+export const useBluetoothStore = create<BluetoothState & BluetoothActions>()(
+  devtools(
+    (set, get) => ({
+      ...initialState,
 
-    if (!isAlreadyRegistered) {
-      set({ isLoading: true, error: null });
-    }
+      // 초기 UUID 설정 및 등록
+      setup: (uuid: string) => {
+        set({ myUuid: uuid });
+        get().registerMyUuid();
+      },
 
-    try {
-      const request: BluetoothUuidRequest = { bluetoothUUID: uuid };
-      const response = await bluetoothApi.registerUuid(request);
+      registerMyUuid: async () => {
+        const myUuid = get().myUuid;
+        if (!myUuid || get().registeredUuid) return;
+        
+        console.log(`${LOG_TAG} 내 UUID 등록 시도:`, myUuid);
+        try {
+          const response = await bluetoothApi.registerUuid({ bluetoothUUID: myUuid });
+          if (response.data.code === 2000 || response.data.message.includes('정상적으로 등록')) {
+            set({ registeredUuid: true });
+            console.log(`${LOG_TAG} 내 UUID 등록 성공`);
+          }
+        } catch (e) {
+          console.error(`${LOG_TAG} UUID 등록 실패:`, e);
+        }
+      },
 
-      const isSuccess =
-        (response.data.message &&
-          response.data.message.includes('정상적으로 등록')) ||
-        response.data.code === 2000 ||
-        response.data.code === 200;
+      // 스캐너에서 기기 발견 시 호출
+      addOrUpdateDevice: (device) => {
+        // 내 UUID는 추가하지 않음
+        if (device.iBeaconData?.uuid === get().myUuid) return;
 
-      if (isSuccess) {
-        set({
-          myUuid: uuid,
-          registeredUuid: true,
-          isLoading: false,
+        set((state) => {
+          const newDevices = new Map(state.rawDiscoveredDevices);
+          newDevices.set(device.id, { ...device, lastSeen: new Date() });
+          return { rawDiscoveredDevices: newDevices };
         });
-        return createSuccessResponse(true, 'UUID가 성공적으로 등록되었습니다.');
-      } else {
-        const message = response.data.message || 'UUID 등록에 실패했습니다.';
-        set({ error: message, isLoading: false });
-        return createErrorResponse(message);
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'UUID 등록 중 오류가 발생했습니다.';
+      },
 
-      // 성공 메시지가 포함된 경우 실제로는 성공으로 처리
-      if (errorMessage.includes('정상적으로 등록')) {
-        set({
-          myUuid: uuid,
-          registeredUuid: true,
-          isLoading: false,
-          error: null,
+      // 발견된 UUID들로 서버에 사용자 정보 요청
+      matchFoundUsers: async () => {
+        const { rawDiscoveredDevices, myUuid } = get();
+        if (rawDiscoveredDevices.size === 0) return;
+
+        const uuids = [...rawDiscoveredDevices.values()]
+          .map((d) => d.iBeaconData?.uuid)
+          .filter((uuid): uuid is string => !!uuid && uuid !== myUuid);
+        
+        const uniqueUuids = [...new Set(uuids)];
+        if (uniqueUuids.length === 0) return;
+
+        try {
+          const response = await bluetoothApi.matchUsers({ bluetoothUUIDs: uniqueUuids });
+
+          if (response.data.result) {
+            const { users, primaryAccount } = response.data.result;
+            set({ discoveredUsers: users || [], primaryAccount: primaryAccount || null });
+            console.log(`${LOG_TAG} 사용자 매칭 성공:`, users.length, '명');
+          }
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : '사용자 매칭 오류';
+          set({ error: errorMessage });
+          console.error(`${LOG_TAG} 사용자 매칭 실패:`, e);
+        }
+      },
+
+      // 10초 이상 보이지 않은 기기 제거
+      clearInactiveDevices: () => {
+        set((state) => {
+          const now = new Date().getTime();
+          const newDevices = new Map(state.rawDiscoveredDevices);
+          let changed = false;
+
+          newDevices.forEach((device, id) => {
+            if (now - device.lastSeen.getTime() > 10000) { // 10초 초과
+              newDevices.delete(id);
+              changed = true;
+            }
+          });
+          
+          if(changed) {
+            console.log(`${LOG_TAG} 비활성 기기 정리. 현재:`, newDevices.size, '개');
+            // 비활성 기기가 정리되었으면, 매칭된 사용자 목록도 다시 동기화
+            get().matchFoundUsers();
+            return { rawDiscoveredDevices: newDevices };
+          }
+          
+          return state; // 변경 없으면 상태 업데이트 방지
         });
-        return createSuccessResponse(true, 'UUID가 성공적으로 등록되었습니다.');
-      }
+      },
 
-      set({ error: errorMessage, isLoading: false });
-      console.error('Bluetooth UUID 등록 실패:', errorMessage);
-      return createErrorResponse(errorMessage);
-    }
-  },
-
-  // 발견된 UUID 매칭 및 사용자 조회
-  matchUsers: async (uuids: string[], showLoading = false) => {
-    if (uuids.length === 0) {
-      return createSuccessResponse([] as User[], '매칭할 UUID가 없습니다.');
-    }
-
-    if (showLoading) {
-      set({ isLoading: true, error: null });
-    } else {
-      set({ error: null });
-    }
-
-    try {
-      const request: BluetoothMatchRequest = { bluetoothUUIDs: uuids };
-      const response = await bluetoothApi.matchUsers(request);
-
-      const isSuccess =
-        (response.data.message &&
-          (response.data.message.includes('매칭된 유저 조회 성공') ||
-            response.data.message.includes(
-              'Bluetooth UUID에 대한 유저가 조회되었습니다',
-            ))) ||
-        response.data.code === 200;
-
-      if (isSuccess && response.data.result) {
-        const { users, primaryAccount } = response.data.result;
-
-        console.log('🔍 매칭된 사용자들:', users);
-
-        const newUuidToUserMap = new Map(get().uuidToUserMap);
-        updateUuidUserMap(uuids, users, newUuidToUserMap);
-
-        console.log(
-          '🗺️ UUID 매핑 결과:',
-          Array.from(newUuidToUserMap.entries()),
-        );
-
-        set({
-          discoveredUsers: users,
-          primaryAccount,
-          uuidToUserMap: newUuidToUserMap,
-          isLoading: false,
-        });
-
-        return createSuccessResponse(users, '사용자 조회가 완료되었습니다.');
-      } else {
-        const message = response.data.message || '사용자 조회에 실패했습니다.';
-        set({ error: message, isLoading: false });
-        return createErrorResponse(message);
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : '사용자 조회 중 오류가 발생했습니다.';
-
-      // 성공 메시지가 포함된 경우 실제로는 성공으로 처리
-      if (
-        (errorMessage.includes('매칭된 유저 조회 성공') ||
-          errorMessage.includes(
-            'Bluetooth UUID에 대한 유저가 조회되었습니다',
-          )) &&
-        error instanceof Error &&
-        (error as any).response?.data?.result
-      ) {
-        const { users, primaryAccount } = (error as any).response.data.result;
-
-        const newUuidToUserMap = new Map(get().uuidToUserMap);
-        updateUuidUserMap(uuids, users, newUuidToUserMap);
-
-        set({
-          discoveredUsers: users,
-          primaryAccount,
-          uuidToUserMap: newUuidToUserMap,
-          isLoading: false,
-          error: null,
-        });
-
-        return createSuccessResponse(users, '사용자 조회가 완료되었습니다.');
-      }
-
-      set({ error: errorMessage, isLoading: false });
-      console.error('사용자 조회 실패:', errorMessage);
-      return createErrorResponse(errorMessage);
-    }
-  },
-
-  // 발견된 기기 목록 업데이트 및 매칭
-  updateDiscoveredDevices: (devices: DiscoveredDevice[]) => {
-    if (devices.length === 0) return;
-
-    const validDevices = devices.filter(
-      (device) => device.iBeaconData !== null,
-    );
-    if (validDevices.length === 0) return;
-
-    const uuids = validDevices.map((device) => device.iBeaconData!.uuid);
-    const uniqueUuids = [...new Set(uuids)];
-
-    const myUuid = get().myUuid;
-    const otherUuids = uniqueUuids.filter((uuid) => uuid !== myUuid);
-
-    if (otherUuids.length > 0) {
-      get().matchUsers(otherUuids, false);
-    }
-  },
-
-  // 상태 초기화
-  resetState: () => {
-    set({
-      discoveredUsers: [],
-      uuidToUserMap: new Map(),
-      error: null,
-      isLoading: false,
-    });
-  },
-
-  // 에러 초기화
-  clearError: () => {
-    set({ error: null });
-  },
-
-  // 사용자 선택 핸들러 - UUID로 사용자 찾기
-  getUserByUuid: (uuid: string) => {
-    return get().uuidToUserMap.get(uuid);
-  },
-}));
+      // 상태 리셋
+      reset: () => {
+        set(initialState);
+      },
+      
+      // UUID로 매칭된 사용자 정보 조회
+      getMatchedUserByUuid: (uuid) => {
+        return get().discoveredUsers.find(user => user.uuid === uuid);
+      },
+    }),
+    { name: 'BluetoothStore' },
+  )
+);
