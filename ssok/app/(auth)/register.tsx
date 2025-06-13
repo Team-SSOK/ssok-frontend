@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,7 +7,6 @@ import {
   StatusBar,
   Keyboard,
   TouchableWithoutFeedback,
-  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -20,11 +19,6 @@ import CustomTextInput from '@/components/TextInput';
 import { Text } from '@/components/TextProvider';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useRegisterForm } from '@/modules/auth/hooks/useRegisterForm';
-import {
-  PhoneVerificationInput,
-  CodeVerificationInput,
-} from '@/modules/auth/components';
-import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';
 import useDialog from '@/hooks/useDialog';
 import DialogProvider from '@/components/DialogProvider';
 
@@ -34,68 +28,24 @@ export default function Register() {
 
   const {
     isLoading,
-    verificationSent,
-    verificationConfirmed,
-    isSendingCode,
-    isVerifyingCode,
-    error,
+    user,
     setIsLoading,
     clearError,
     saveRegistrationInfo,
-    sendVerificationCode,
-    verifyCode,
-    resetVerification,
   } = useAuthStore();
 
   const { dialogState, showDialog, hideDialog } = useDialog();
 
-  const handleSendVerificationCode = useCallback(async () => {
-    clearError();
-    const result = await sendVerificationCode(form.phoneNumber);
-
-    if (result.success) {
-      showDialog({
-        title: '인증번호 발송',
-        content: '인증번호가 발송되었습니다.',
-        confirmText: '확인',
-      });
-    } else {
-      showDialog({
-        title: '오류',
-        content: result.message || ERROR_MESSAGES.SEND_CODE_ERROR,
-        confirmText: '확인',
-      });
+  // verify-number에서 전달된 휴대폰 번호를 폼에 설정
+  useEffect(() => {
+    if (user?.phoneNumber && !form.phoneNumber) {
+      handleChange('phoneNumber', user.phoneNumber);
     }
-  }, [form.phoneNumber, sendVerificationCode, clearError, showDialog]);
-
-  const handleVerifyCode = useCallback(async () => {
-    clearError();
-    const result = await verifyCode(form.phoneNumber, form.verificationCode);
-
-    if (result.success) {
-      showDialog({
-        title: '인증 성공',
-        content: '휴대폰 인증이 완료되었습니다.',
-        confirmText: '확인',
-      });
-    } else {
-      showDialog({
-        title: '오류',
-        content: result.message || ERROR_MESSAGES.VERIFY_CODE_ERROR,
-        confirmText: '확인',
-      });
-    }
-  }, [
-    form.phoneNumber,
-    form.verificationCode,
-    verifyCode,
-    clearError,
-    showDialog,
-  ]);
+  }, [user?.phoneNumber, form.phoneNumber, handleChange]);
 
   const goToPinSetup = useCallback(async () => {
-    if (!validateForm(false) || !verificationConfirmed || !form.agreedToTerms)
-      return;
+    // 휴대폰 인증은 이미 완료되었으므로 verificationConfirmed 체크 제거
+    if (!validateForm() || !form.agreedToTerms) return;
 
     setIsLoading(true);
     clearError();
@@ -121,18 +71,14 @@ export default function Register() {
     }
   }, [
     form,
-    verificationConfirmed,
     validateForm,
     setIsLoading,
     clearError,
     saveRegistrationInfo,
-    showDialog,
   ]);
 
-  const isDisabled =
-    !isFormComplete(verificationConfirmed) ||
-    !verificationConfirmed ||
-    isLoading;
+  // 휴대폰 인증이 이미 완료되었으므로 간단한 유효성 검사
+  const isDisabled = !form.username.trim() || !form.birthDate.trim() || !form.phoneNumber.trim() || !form.agreedToTerms || isLoading;
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
@@ -174,28 +120,17 @@ export default function Register() {
             maxLength={8}
           />
 
-          <PhoneVerificationInput
-            phoneNumber={form.phoneNumber}
-            onChangePhoneNumber={(text) => handleChange('phoneNumber', text)}
-            error={errors.phoneNumber}
-            onSendVerification={handleSendVerificationCode}
-            isLoading={isSendingCode}
-            verificationSent={verificationSent}
-            disabled={verificationConfirmed || isLoading}
-          />
-          {verificationSent && !verificationConfirmed && (
-            <CodeVerificationInput
-              verificationCode={form.verificationCode}
-              onChangeVerificationCode={(text) =>
-                handleChange('verificationCode', text)
-              }
-              error={errors.verificationCode}
-              onVerifyCode={handleVerifyCode}
-              isLoading={isVerifyingCode}
-              disabled={isLoading}
-              verificationConfirmed={verificationConfirmed}
-            />
-          )}
+          <View style={styles.phoneInfoContainer}>
+            <Text style={styles.phoneLabel}>휴대폰 번호</Text>
+            <View style={styles.phoneInfo}>
+              <Text style={styles.phoneNumber}>{form.phoneNumber}</Text>
+              <View style={styles.verifiedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={styles.verifiedText}>인증 완료</Text>
+              </View>
+            </View>
+          </View>
+
           <View style={styles.termsContainer}>
             <Pressable
               style={styles.checkbox}
@@ -244,5 +179,40 @@ const styles = StyleSheet.create({
   termsText: {
     fontSize: 14,
     color: colors.black,
+  },
+  phoneInfoContainer: {
+    marginBottom: 20,
+  },
+  phoneLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  phoneInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  phoneNumber: {
+    fontSize: 16,
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: colors.success,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

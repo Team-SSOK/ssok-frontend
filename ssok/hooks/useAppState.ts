@@ -3,7 +3,6 @@ import { AppState, AppStateStatus } from 'react-native';
 import { authApi } from '@/modules/auth/api/authApi';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { backgroundService } from '@/services/backgroundService';
-import { router } from 'expo-router';
 import useDialog from '@/hooks/useDialog';
 
 const LOG_TAG = '[LOG][useAppState]';

@@ -39,7 +39,7 @@ export default function RootLayout() {
 
   if (!appIsReady || sessionIsLoading) {
     console.log(
-      '[RootLayout] appIsReady 또는 sessionIsLoading false. 스플래시 유지 또는 null 반환.',
+      '[RootLayout] appIsReady 또는 sessionIsLoading false',
     );
     return null;
   }

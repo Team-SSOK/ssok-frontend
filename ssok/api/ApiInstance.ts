@@ -1,20 +1,14 @@
-import axios, {
-  type AxiosInstance,
-  type AxiosResponse,
-  type AxiosError,
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import axios from 'axios';
 import {
   getTokens as getTokensFromSecureStore,
   saveTokens as saveTokensToSecureStore,
   clearTokens,
-  hasValidTokens,
 } from '@/services/tokenService';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import Toast from 'react-native-toast-message';
 
-// const BASE_URL = 'https://api.ssok.kr/';
-const BASE_URL = 'http://kudong.kr:55030/';
+const BASE_URL = 'https://api.ssok.kr/';
+// const BASE_URL = 'http://kudong.kr:55030/';
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -143,15 +137,7 @@ api.interceptors.response.use(
     } catch (refreshError: any) {
       processFailedQueue(refreshError, null); // 대기 중인 요청들 실패 처리
 
-      // FCM 등록 중 발생한 특정 에러는 로그인 프로세스 유지 (기존 로직)
-      if (
-        originalRequest.url?.includes('/api/notification/fcm/register') &&
-        refreshError.message === 'No refresh token'
-      ) {
-        console.log('푸시 알림 등록 중 토큰 오류, 로그인 프로세스 유지');
-        isRefreshing = false; // 플래그 리셋
-        return Promise.reject(refreshError); // No refresh token 에러는 그대로 reject
-      }
+
 
       Toast.show({
         type: 'error',

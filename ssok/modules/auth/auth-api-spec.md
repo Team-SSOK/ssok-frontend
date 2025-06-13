@@ -8,7 +8,7 @@
 - **Request Body**
   ```json
   {
-    "phoneNumber": "01012345678"
+    "phoneNumber": "010-1234-5678"
   }
   ```
 - **Response** (200)
@@ -20,23 +20,47 @@
   }
   ```
 
-### 1-2. 인증코드 확인
+### 1-2. 인증코드 확인 (사용자 존재 여부 확인)
 
-- **URL**: `POST /api/users/phone/verify`
+- **URL**: `POST /api/users/phone/verify-with-user-check`
+- **Description**: 사용자가 입력한 인증코드의 유효성을 검증하고 기존 사용자 여부를 확인합니다.
 - **Request Body**
   ```json
   {
-    "phoneNumber": "01012345678",
+    "phoneNumber": "010-1234-5678",
     "verificationCode": "123456"
   }
   ```
+
+#### Parameters
+| 필드명 | 타입 | 필수 여부 | 설명 |
+|--------|------|-----------|------|
+| phoneNumber | String | Y | 인증받을 휴대폰 번호 |
+| verificationCode | String | Y | 사용자가 입력한 인증코드 |
+
 - **Response**
-  - **성공**
+  - **성공 (신규 사용자)**
     ```json
     {
-      "isSuccess": true,
-      "code": "1000",
-      "message": "성공"
+      "success": true,
+      "code": 2000,
+      "message": "요청에 성공하였습니다.",
+      "data": {
+        "isExistingUser": false,
+        "userId": null
+      }
+    }
+    ```
+  - **성공 (기존 사용자)**
+    ```json
+    {
+      "success": true,
+      "code": 2000,
+      "message": "요청에 성공하였습니다.",
+      "data": {
+        "isExistingUser": true,
+        "userId": 123
+      }
     }
     ```
   - **실패**
@@ -47,6 +71,12 @@
       "message": "인증코드 검증 실패"
     }
     ```
+
+#### Status Codes
+| 상태 코드 | 설명 |
+|-----------|------|
+| 200 | 인증코드 확인 성공 |
+| 400 | 인증코드 불일치 또는 만료 |
 
 ---
 
@@ -83,9 +113,44 @@
 
 ---
 
-## 3. 인증·토큰 관리
+## 3. PIN 재등록 (기존 사용자)
 
-### 3-1. 로그인
+- **URL**: `PATCH /api/users/re-pin/existing-user`
+- **Description**: 휴대폰 인증 후 기존 사용자의 PIN 코드를 재등록합니다.
+- **Headers**
+  ```
+  Content-Type: application/json
+  ```
+- **Request Body**
+  ```json
+  {
+    "userId": 123,
+    "pinCode": "654321"
+  }
+  ```
+- **Response**
+  - **성공**
+    ```json
+    {
+      "success": true,
+      "code": 2000,
+      "message": "요청에 성공하였습니다."
+    }
+    ```
+  - **실패 (인증 미완료)**
+    ```json
+    {
+      "success": false,
+      "code": 4003,
+      "message": "휴대폰 인증이 필요합니다."
+    }
+    ```
+
+---
+
+## 4. 인증·토큰 관리
+
+### 4-1. 로그인
 
 - **URL**: `POST /api/auth/login`
 - **Request Body**
@@ -116,7 +181,7 @@
   | 4015 | 로그인 제한 (5회 오입력 시) | `{ remainingSeconds, unlockTime }` |
   | 4016 | 계정 잠금 (24시간)          | `{ remainingHours, unlockTime }`   |
 
-### 3-2. 토큰 갱신
+### 4-2. 토큰 갱신
 
 - **URL**: `POST /api/auth/refresh`
 - **Request Body**
@@ -143,7 +208,7 @@
 
 ---
 
-## 4. 로그아웃
+## 5. 로그아웃
 
 - **URL**: `POST /api/auth/logout`
 - **Headers**
@@ -161,7 +226,7 @@
 
 ---
 
-## 5. 앱 백그라운드 전환 API
+## 6. 앱 백그라운드 전환 API
 
 - **URL**: `POST /api/auth/background`
 - **Description**: 앱이 백그라운드로 전환될 때 호출하여 현재 Access Token을 블랙리스트에 추가합니다.
@@ -182,7 +247,7 @@
 
 ---
 
-## 6. 앱 포그라운드 복귀 API
+## 7. 앱 포그라운드 복귀 API
 
 - **URL**: `POST /api/auth/foreground`
 - **Description**: 앱이 포그라운드로 복귀할 때 호출하여 PIN 코드 재인증 후 새로운 토큰을 발급받습니다.
@@ -214,7 +279,7 @@
 
 ---
 
-## 7. 프로필 이미지 업로드
+## 8. 프로필 이미지 업로드
 
 - **URL**: `POST /api/profiles`
 - **Description**: 사용자의 프로필 이미지를 AWS S3에 업로드합니다.
@@ -275,7 +340,7 @@
 
 ---
 
-## 8. 프로필 이미지 삭제
+## 9. 프로필 이미지 삭제
 
 - **URL**: `DELETE /api/profiles`
 - **Description**: 사용자의 프로필 이미지를 S3와 DB에서 완전히 삭제합니다.

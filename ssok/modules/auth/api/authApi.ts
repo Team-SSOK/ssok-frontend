@@ -27,6 +27,12 @@ export interface AuthRequestTypes {
     verificationCode: string;
   };
 
+  // 인증코드 확인 및 사용자 존재 여부 확인 요청
+  CodeVerificationWithUserCheck: {
+    phoneNumber: string;
+    verificationCode: string;
+  };
+
   // 회원가입 요청
   Signup: {
     username: string;
@@ -51,6 +57,12 @@ export interface AuthRequestTypes {
     userId: number;
     pinCode: number;
   };
+
+  // PIN 재등록 요청 (기존 사용자)
+  PinReset: {
+    userId: number;
+    pinCode: string;
+  };
 }
 
 /**
@@ -62,11 +74,20 @@ export interface AuthResponseTypes {
     userId: number;
   };
 
-  // 로그인 및 토큰 갱신 응답
+  // 토큰 관련 응답 (로그인, 토큰 갱신, 포그라운드 복귀)
   TokenResponse: {
     accessToken: string;
     refreshToken: string;
     accessTokenExpiresIn: number;
+    username?: string;
+    phoneNumber?: string;
+    birthDate?: string;
+  };
+
+  // 사용자 존재 여부 확인 응답
+  UserExistenceCheck: {
+    existingUser: boolean;
+    userId: number | null;
   };
 }
 
@@ -94,6 +115,19 @@ export const authApi = {
   verifyCode: (data: AuthRequestTypes['CodeVerification']) => {
     console.log(`${LOG_TAG} verifyCode: `, data);
     return api.post<ApiResponse>('/api/users/phone/verify', data);
+  },
+
+  /**
+   * 휴대폰 인증 코드 확인 및 사용자 존재 여부 확인
+   * @param data 요청 데이터 (휴대폰 번호, 인증코드)
+   * @returns API 응답 (사용자 존재 여부 및 userId 포함)
+   */
+  verifyCodeWithUserCheck: (data: AuthRequestTypes['CodeVerificationWithUserCheck']) => {
+    console.log(`${LOG_TAG} verifyCodeWithUserCheck: `, data);
+    return api.post<ApiResponse<AuthResponseTypes['UserExistenceCheck']>>(
+      '/api/users/phone/verify-with-user-check',
+      data,
+    );
   },
 
   /**
@@ -167,6 +201,16 @@ export const authApi = {
       data,
     );
   },
+
+  /**
+   * PIN 재등록 (기존 사용자)
+   * @param data 요청 데이터 (사용자 ID, PIN 코드)
+   * @returns API 응답
+   */
+  resetPin: (data: AuthRequestTypes['PinReset']) => {
+    console.log(`${LOG_TAG} resetPin: `, data);
+    return api.patch<ApiResponse>('/api/users/pin/existing-user', data);
+  }
 };
 
 export default authApi;

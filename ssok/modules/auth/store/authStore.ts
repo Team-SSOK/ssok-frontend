@@ -11,6 +11,7 @@ import {
 import { authApi } from '@/modules/auth/api/authApi';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import { ERROR_MESSAGES } from '@/modules/auth/utils/constants';
 
 // 상태 타입 정의
 interface TokenState {
@@ -25,19 +26,37 @@ interface User {
   birthDate: string;
 }
 
-interface AuthStateInternal extends TokenState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  pin: string;
+interface PhoneVerificationState {
+  phoneNumber: string;
+  verificationCode: string;
   verificationSent: boolean;
   verificationConfirmed: boolean;
   isSendingCode: boolean;
   isVerifyingCode: boolean;
 }
 
+interface AuthStateInternal extends TokenState, PhoneVerificationState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  pin: string;
+}
+
 // 액션 타입 정의
+interface PhoneVerificationActions {
+  setPhoneNumber: (phoneNumber: string) => void;
+  setVerificationCode: (code: string) => void;
+  sendVerificationCode: () => Promise<{ success: boolean; message?: string }>;
+  verifyCodeWithUserCheck: () => Promise<{ 
+    success: boolean; 
+    data?: { existingUser: boolean; userId: number | null }; 
+    message?: string 
+  }>;
+  resetVerification: () => void;
+  formatPhoneNumber: (value: string) => string;
+}
+
 interface UserActions {
   setPin: (pin: string) => void;
   clearPin: () => void;
@@ -48,17 +67,6 @@ interface UserActions {
     pin: string,
   ) => void;
   isUserRegistered: () => boolean;
-}
-
-interface VerificationActions {
-  sendVerificationCode: (
-    phoneNumber: string,
-  ) => Promise<{ success: boolean; message?: string }>;
-  verifyCode: (
-    phoneNumber: string,
-    verificationCode: string,
-  ) => Promise<{ success: boolean; message?: string }>;
-  resetVerification: () => void;
 }
 
 interface AuthActions {
@@ -79,6 +87,7 @@ interface AuthActions {
   clearError: () => void;
   resetAuth: () => Promise<void>;
   handleUserNotFound: () => Promise<void>;
+  resetPin: (userId: number, pinCode: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 interface NavigationActions {
@@ -89,8 +98,8 @@ interface NavigationActions {
 // 전체 스토어 타입
 export interface AuthStoreState
   extends AuthStateInternal,
+    PhoneVerificationActions,
     UserActions,
-    VerificationActions,
     AuthActions,
     NavigationActions {}
 
@@ -108,10 +117,137 @@ export const useAuthStore = create<AuthStoreState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      
+      // 휴대폰 인증 상태
+      phoneNumber: '',
+      verificationCode: '',
       verificationSent: false,
       verificationConfirmed: false,
       isSendingCode: false,
       isVerifyingCode: false,
+
+      // 휴대폰 인증 관련 액션
+      setPhoneNumber: (phoneNumber) => set({ phoneNumber }),
+      
+      setVerificationCode: (code) => set({ verificationCode: code }),
+
+      formatPhoneNumber: (value: string): string => {
+        // 숫자만 추출
+        const digits = value.replace(/[^0-9]/g, '');
+        let formattedPhoneNumber = '';
+
+        if (digits.length <= 3) {
+          formattedPhoneNumber = digits;
+        } else if (digits.length <= 7) {
+          formattedPhoneNumber = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        } else {
+          formattedPhoneNumber = `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+        }
+
+        return formattedPhoneNumber;
+      },
+
+      sendVerificationCode: async () => {
+        const { phoneNumber } = get();
+        
+        if (!phoneNumber) {
+          const message = ERROR_MESSAGES.REQUIRED_PHONE;
+          set({ error: message });
+          return { success: false, message };
+        }
+
+        set({ isSendingCode: true, error: null });
+
+        try {
+          const response = await authApi.sendVerificationCode({ phoneNumber });
+
+          if (response.data.isSuccess) {
+            set({ verificationSent: true, isSendingCode: false });
+            return { success: true };
+          } else {
+            const message = response.data.message || ERROR_MESSAGES.SEND_CODE_ERROR;
+            set({ error: message, isSendingCode: false });
+            return { success: false, message };
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.SEND_CODE_ERROR;
+          set({ error: errorMessage, isSendingCode: false });
+          return { success: false, message: errorMessage };
+        }
+      },
+
+      verifyCodeWithUserCheck: async () => {
+        const { phoneNumber, verificationCode } = get();
+        
+        if (!verificationCode) {
+          const message = ERROR_MESSAGES.REQUIRED_VERIFICATION_CODE;
+          set({ error: message });
+          return { success: false, message };
+        }
+
+        set({ isVerifyingCode: true, error: null });
+
+        try {
+          const response = await authApi.verifyCodeWithUserCheck({
+            phoneNumber,
+            verificationCode,
+          });
+
+          if (response.data.isSuccess && response.data.result) {
+            const { existingUser, userId } = response.data.result;
+            
+            set({ verificationConfirmed: true, isVerifyingCode: false });
+            
+            // 사용자 정보를 임시 저장
+            if (existingUser && userId) {
+              // 기존 사용자
+              set({
+                user: {
+                  id: userId,
+                  username: '',
+                  phoneNumber,
+                  birthDate: '',
+                }
+              });
+            } else {
+              // 신규 사용자
+              set({
+                user: {
+                  id: null,
+                  username: '',
+                  phoneNumber,
+                  birthDate: '',
+                }
+              });
+            }
+            
+            return { 
+              success: true, 
+              data: { existingUser, userId }
+            };
+          } else {
+            const message = response.data.message || ERROR_MESSAGES.INVALID_VERIFICATION_CODE;
+            set({ error: message, isVerifyingCode: false });
+            return { success: false, message };
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.VERIFY_CODE_ERROR;
+          set({ error: errorMessage, isVerifyingCode: false });
+          return { success: false, message: errorMessage };
+        }
+      },
+
+      resetVerification: () => {
+        set({
+          phoneNumber: '',
+          verificationCode: '',
+          verificationSent: false,
+          verificationConfirmed: false,
+          isSendingCode: false,
+          isVerifyingCode: false,
+          error: null,
+        });
+      },
 
       // 사용자 정보 관련 액션
       setPin: (pin) => set({ pin }),
@@ -135,67 +271,26 @@ export const useAuthStore = create<AuthStoreState>()(
         return !!pin;
       },
 
-      // Verification 관련 액션
-      sendVerificationCode: async (phoneNumber) => {
-        set({ isSendingCode: true, error: null });
+      // PIN 재설정 액션
+      resetPin: async (userId: number, pinCode: string) => {
+        set({ isLoading: true, error: null });
 
         try {
-          const response = await authApi.sendVerificationCode({ phoneNumber });
+          const response = await authApi.resetPin({ userId, pinCode });
 
           if (response.data.isSuccess) {
-            set({ verificationSent: true, isSendingCode: false });
+            set({ isLoading: false });
             return { success: true };
           } else {
-            const msg =
-              response.data.message || '인증번호 발송에 실패했습니다.';
-            set({ error: msg, isSendingCode: false });
-            return { success: false, message: msg };
+            const message = response.data.message || 'PIN 재설정에 실패했습니다.';
+            set({ error: message, isLoading: false });
+            return { success: false, message };
           }
         } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : '인증번호 발송 중 오류가 발생했습니다.';
-          set({ error: errorMessage, isSendingCode: false });
+          const errorMessage = error instanceof Error ? error.message : 'PIN 재설정 중 오류가 발생했습니다.';
+          set({ error: errorMessage, isLoading: false });
           return { success: false, message: errorMessage };
         }
-      },
-
-      verifyCode: async (phoneNumber, verificationCode) => {
-        set({ isVerifyingCode: true, error: null });
-
-        try {
-          const response = await authApi.verifyCode({
-            phoneNumber,
-            verificationCode,
-          });
-
-          if (response.data.isSuccess) {
-            set({ verificationConfirmed: true, isVerifyingCode: false });
-            return { success: true };
-          } else {
-            const msg =
-              response.data.message || '인증번호가 올바르지 않습니다.';
-            set({ error: msg, isVerifyingCode: false });
-            return { success: false, message: msg };
-          }
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : '인증 확인 중 오류가 발생했습니다.';
-          set({ error: errorMessage, isVerifyingCode: false });
-          return { success: false, message: errorMessage };
-        }
-      },
-
-      resetVerification: () => {
-        set({
-          verificationSent: false,
-          verificationConfirmed: false,
-          isSendingCode: false,
-          isVerifyingCode: false,
-        });
       },
 
       // 인증 관련 액션
@@ -651,8 +746,8 @@ export const useAuthStore = create<AuthStoreState>()(
           console.log('[LOG][authStore] navigate: (auth)/pin-login으로 이동');
           router.replace('/(auth)/pin-login');
         } else if (pin && !user?.id) {
-          console.log('[LOG][authStore] navigate: (auth)/pin-confirm으로 이동');
-          router.replace('/(auth)/pin-confirm');
+          console.log('[LOG][authStore] navigate: (auth)/pin-setup으로 이동');
+          router.replace('/(auth)/pin-setup');
         } else {
           console.log('[LOG][authStore] navigate: /sign-in으로 이동');
           router.replace('/sign-in');

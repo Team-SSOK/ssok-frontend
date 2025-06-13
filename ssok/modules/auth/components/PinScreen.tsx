@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { colors } from '@/constants/colors';
 import PinDots from '@/modules/auth/components/PinDots';
@@ -18,6 +18,7 @@ interface PinScreenProps {
   onComplete: (pin: string) => Promise<boolean> | boolean;
   errorDuration?: number;
   isLoading?: boolean;
+  resetTrigger?: any; // step이 바뀔 때마다 바뀌는 값
 }
 
 /**
@@ -32,6 +33,7 @@ const PinScreen: React.FC<PinScreenProps> = ({
   maxLength = 6,
   onComplete,
   errorDuration = 1000,
+  resetTrigger,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { startLoading, stopLoading } = useLoadingStore();
@@ -74,6 +76,12 @@ const PinScreen: React.FC<PinScreenProps> = ({
     maxLength,
     onComplete: handlePinComplete,
   });
+
+  // resetTrigger가 바뀔 때마다 PIN 입력값과 에러 초기화
+  useEffect(() => {
+    resetPin();
+    setErrorMessage('');
+  }, [resetTrigger]);
 
   return (
     <SafeAreaView style={styles.container}>
