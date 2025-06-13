@@ -50,10 +50,10 @@ const BluetoothScreen: React.FC = () => {
       }
 
       // 탭 전환 시 경합 상태를 막기 위해 짧은 지연 후 BLE 서비스 시작
-      const startTimer = setTimeout(() => {
+      const startTimer = setTimeout(async () => {
         console.log('[BluetoothScreen] Starting BLE services after delay.');
         startAdvertising();
-        startScan();
+        await startScan();
       }, 200);
 
       const matchInterval = setInterval(() => {
@@ -78,7 +78,7 @@ const BluetoothScreen: React.FC = () => {
         clearInterval(cleanupInterval);
         console.log('[BluetoothScreen] Cleanup complete.');
       };
-    }, [myUUID, userId]),
+    }, [myUUID, userId, startScan, startAdvertising, stopAdvertising, stopScan, setup, fetchProfile, matchFoundUsers, clearInactiveDevices, reset]),
   );
 
   // 에러 통합 처리

@@ -64,10 +64,27 @@ export const initializeNotificationListeners = () => {
   const responseListener =
     Notifications.addNotificationResponseReceivedListener((response) => {
       console.log('User responded to notification:', response);
-      const url = response.notification.request.content.data?.url;
-      if (url) {
-        router.push(url as any);
+      
+      const notificationData = response.notification.request.content.data;
+      
+      // 새로운 푸시 알림 형식 처리 (screen + accountId)
+      if (notificationData?.screen === 'AccountDetail' && notificationData?.accountId) {
+        const accountId = notificationData.accountId;
+        console.log(`Redirecting to AccountDetail with accountId: ${accountId}`);
+        router.push(`/(app)/account/${accountId}` as any);
+        return;
       }
+      
+      // 기존 URL 기반 처리 (하위 호환성)
+      const url = notificationData?.url;
+      if (url) {
+        console.log(`Redirecting to URL: ${url}`);
+        router.push(url as any);
+        return;
+      }
+      
+      // 처리할 수 있는 데이터가 없는 경우
+      console.log('No valid navigation data found in notification');
     });
 
   console.log('Notification listeners initialized.');

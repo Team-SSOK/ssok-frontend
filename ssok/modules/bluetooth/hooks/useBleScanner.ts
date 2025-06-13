@@ -74,14 +74,25 @@ export const useBleScanner = () => {
       }
   }, []);
 
-  const startScan = useCallback(() => {
+  const startScan = useCallback(async () => {
     if (isScanningRef.current) {
       console.log(`${LOG_TAG} 이미 스캔 중입니다.`);
       return;
     }
+
+    // 권한 확인
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      const errorMessage = '블루투스 스캔 권한이 필요합니다.';
+      setError(errorMessage);
+      console.error(`${LOG_TAG} ${errorMessage}`);
+      return;
+    }
+
     console.log(`${LOG_TAG} 스캔 시작`);
     setIsScanning(true);
     setError(null);
+    
     bleManager.startDeviceScan(
       null,
       { scanMode: ScanMode.LowLatency },
@@ -108,7 +119,7 @@ export const useBleScanner = () => {
         }
       },
     );
-  }, [bleManager, addOrUpdateDevice]);
+  }, [bleManager, addOrUpdateDevice, requestPermissions]);
 
   const stopScan = useCallback(() => {
     bleManager.stopDeviceScan();
