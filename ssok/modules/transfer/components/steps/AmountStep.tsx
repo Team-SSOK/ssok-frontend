@@ -8,6 +8,7 @@ import Animated, {
   runOnJS,
   FadeInUp,
 } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 import { colors } from '@/constants/colors';
 import { useAccountStore } from '@/modules/account/stores/accountStore';
 import { StepComponentProps } from '../../types/transferFlow';
@@ -113,6 +114,19 @@ export default function AmountStep({
 
   // 확인 모드로 전환
   const handleConfirmMode = () => {
+    const numericAmount = parseInt(amount.replace(/,/g, '')) || 0;
+
+    // 잔액 확인
+    if (numericAmount > accountBalance) {
+      Toast.show({
+        type: 'error',
+        text1: '잔액 부족',
+        text2: '출금하려는 금액이 계좌 잔액보다 많습니다.',
+        position: 'bottom',
+      });
+      return;
+    }
+
     // 먼저 다음 버튼을 숨김 (부드러운 사라짐을 위해)
     setShowNextButton(false);
 
