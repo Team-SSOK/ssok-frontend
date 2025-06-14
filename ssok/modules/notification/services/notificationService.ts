@@ -65,8 +65,10 @@ export const initializeNotificationListeners = () => {
     Notifications.addNotificationResponseReceivedListener((response) => {
       console.log('User responded to notification:', response);
       
+      
       const notificationData = response.notification.request.content.data;
       
+      console.log('notificationData', notificationData);
       // 새로운 푸시 알림 형식 처리 (screen + accountId)
       if (notificationData?.screen === 'AccountDetail' && notificationData?.accountId) {
         const accountId = notificationData.accountId;
