@@ -386,7 +386,6 @@ const handleBleError = (error: BleError) => {
 ### 외부 라이브러리
 - `react-native-ble-advertise`: BLE 광고 기능
 - `react-native-ble-plx`: BLE 스캔 기능  
-- `react-native-ble-manager`: BLE 관리 기능
 - `zustand`: 상태 관리
 
 ### 내부 의존성

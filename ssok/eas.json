@@ -13,7 +13,14 @@
       "prebuildCommand": "npx expo prebuild --clean"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "cache": {
+        "disabled": true
+      },
+      "prebuildCommand": "npx expo prebuild --clean"
     },
     "production": {
       "autoIncrement": true

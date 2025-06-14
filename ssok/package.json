@@ -53,7 +53,6 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
     "react-native-ble-advertise": "^2.0.3",
-    "react-native-ble-manager": "^12.1.4",
     "react-native-ble-plx": "^3.5.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-paper": "^5.14.0",

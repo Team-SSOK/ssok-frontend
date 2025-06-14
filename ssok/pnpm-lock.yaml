@@ -122,9 +122,6 @@ importers:
       react-native-ble-advertise:
         specifier: ^2.0.3
         version: 2.0.3(react-native@0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
-      react-native-ble-manager:
-        specifier: ^12.1.4
-        version: 12.1.5(react-native@0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-ble-plx:
         specifier: ^3.5.0
         version: 3.5.0(react-native@0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -4061,12 +4058,6 @@ packages:
 
   react-native-ble-advertise@2.0.3:
     resolution: {integrity: sha512-BwCIdx1ea0swt837Rx5pswwhieWnpOc77fpFiREHh7q663uKzSphb/LdnDKdQkKhyjkyX+tmGk6r1FHPyskPsA==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
-  react-native-ble-manager@12.1.5:
-    resolution: {integrity: sha512-kTt2nYBnouyOyw9TN37dDuUAdhtcg1pduF+XSRCBXoBEWp6F5u4P16ISoo25rpc19R9dE2hSovoMSDwwwCaWsw==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -9974,11 +9965,6 @@ snapshots:
   react-is@19.1.0: {}
 
   react-native-ble-advertise@2.0.3(react-native@0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0)
-
-  react-native-ble-manager@12.1.5(react-native@0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.27.4)(@types/react@19.0.14)(react@19.0.0)
