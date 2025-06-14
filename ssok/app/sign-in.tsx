@@ -93,7 +93,6 @@ export default function SignInScreen() {
           ) : (
             <Animated.View
               entering={FadeInUp.duration(500)}
-              style={styles.flexGrow}
             >
               <View style={styles.titleContainer}>
                 <Text style={[typography.h2, styles.title]}>

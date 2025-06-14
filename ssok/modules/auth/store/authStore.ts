@@ -47,6 +47,7 @@ interface AuthStateInternal extends TokenState, PhoneVerificationState {
 interface PhoneVerificationActions {
   setPhoneNumber: (phoneNumber: string) => void;
   setVerificationCode: (code: string) => void;
+  setVerificationSent: (sent: boolean) => void;
   sendVerificationCode: () => Promise<{ success: boolean; message?: string }>;
   verifyCodeWithUserCheck: () => Promise<{ 
     success: boolean; 
@@ -131,6 +132,8 @@ export const useAuthStore = create<AuthStoreState>()(
       
       setVerificationCode: (code) => set({ verificationCode: code }),
 
+      setVerificationSent: (sent) => set({ verificationSent: sent }),
+
       formatPhoneNumber: (value: string): string => {
         // 숫자만 추출
         const digits = value.replace(/[^0-9]/g, '');
@@ -162,7 +165,7 @@ export const useAuthStore = create<AuthStoreState>()(
           const response = await authApi.sendVerificationCode({ phoneNumber });
 
           if (response.data.isSuccess) {
-            set({ verificationSent: true, isSendingCode: false });
+            set({ isSendingCode: false });
             return { success: true };
           } else {
             const message = response.data.message || ERROR_MESSAGES.SEND_CODE_ERROR;

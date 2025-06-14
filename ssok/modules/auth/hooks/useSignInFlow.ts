@@ -26,6 +26,7 @@ export const useSignInFlow = () => {
     // 액션
     setPhoneNumber,
     setVerificationCode,
+    setVerificationSent,
     formatPhoneNumber,
     sendVerificationCode,
     verifyCodeWithUserCheck,
@@ -69,6 +70,10 @@ export const useSignInFlow = () => {
         title: '인증번호 발송',
         content: '인증번호가 발송되었습니다.',
         confirmText: '확인',
+        onConfirm: () => {
+          hideDialog();
+          setVerificationSent(true);
+        },
       });
     } else {
       showDialog({
@@ -77,7 +82,7 @@ export const useSignInFlow = () => {
         confirmText: '확인',
       });
     }
-  }, [sendVerificationCode, showDialog, clearError]);
+  }, [sendVerificationCode, showDialog, hideDialog, clearError, setVerificationSent]);
 
   // 인증번호 확인 핸들러
   const handleVerifyCode = useCallback(async () => {
