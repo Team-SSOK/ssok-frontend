@@ -32,7 +32,13 @@ import { useTutorialStore } from '@/stores/tutorialStore';
 import HomeTutorial from '@/components/tutorial/HomeTutorial';
 
 export default function HomeScreen() {
-  const { accounts, fetchAccounts, getAccountDetail, setPrimaryAccount } = useAccountStore();
+  const {
+    accounts,
+    fetchAccounts,
+    getAccountDetail,
+    setPrimaryAccount,
+    initialLoadStatus,
+  } = useAccountStore();
   const [refreshing, setRefreshing] = useState(false);
   const recentTransactionsRef = useRef<RecentTransactionListRefType>(null);
   const router = useRouter();
@@ -57,11 +63,19 @@ export default function HomeScreen() {
     }
   }, [fetchProfile, userId]);
 
+  // 첫 렌더링 시 계좌 정보를 가져옵니다.
+  useEffect(() => {
+    if (initialLoadStatus === 'idle') {
+      console.log('[LOG][HomeScreen] Initial account fetch');
+      withLoading(fetchAccounts);
+    }
+  }, [initialLoadStatus, fetchAccounts, withLoading]);
+
   // 계좌 데이터가 로드된 후 튜토리얼 시작 체크
   useEffect(() => {
-    if (accounts && accounts.length > 0) {
+    if (initialLoadStatus === 'success' && accounts && accounts.length > 0) {
       const shouldShow = shouldShowHomeTutorial(accounts.length);
-      
+
       if (shouldShow) {
         console.log('[LOG][HomeScreen] 첫 계좌 등록 후 튜토리얼 시작');
         // 화면 렌더링 완료 후 튜토리얼 시작
@@ -69,21 +83,16 @@ export default function HomeScreen() {
           console.log('[LOG][HomeScreen] 튜토리얼 시작 실행');
           startHomeTutorial();
         }, 1000); // 1초로 늘려서 레이아웃 완전히 완료 후 시작
-        
+
         return () => clearTimeout(startTutorialTimeout);
       }
     }
-  }, [accounts?.length, shouldShowHomeTutorial, startHomeTutorial]);
-
-  useFocusEffect(
-    useCallback(() => {
-      // 계좌가 없을 때만 API 호출 (또는 새로고침이 필요한 경우)
-      if (!accounts || accounts.length === 0) {
-        console.log('[LOG][HomeScreen] Screen focused - fetching accounts');
-        fetchAccounts();
-      }
-    }, [fetchAccounts, accounts])
-  );
+  }, [
+    accounts?.length,
+    shouldShowHomeTutorial,
+    startHomeTutorial,
+    initialLoadStatus,
+  ]);
 
   const reloadAllData = async () => {
     await fetchAccounts();

@@ -27,6 +27,7 @@ interface AccountState {
   verifiedName: NameVerificationResponse | null;
   isLoading: boolean;
   error: string | null;
+  initialLoadStatus: 'idle' | 'loading' | 'success' | 'error';
 
   // API 액션 - 모두 통일된 반환 타입 사용
   fetchAccounts: () => Promise<StoreResponse<RegisteredAccount[]>>;
@@ -85,31 +86,58 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   verifiedName: null,
   isLoading: false,
   error: null,
+  initialLoadStatus: 'idle',
 
   /**
    * 모든 등록된 계좌 조회
    */
   fetchAccounts: async () => {
-    set({ isLoading: true, error: null });
+    if (['idle', 'error'].includes(get().initialLoadStatus)) {
+      set({ isLoading: true, error: null, initialLoadStatus: 'loading' });
+    } else {
+      set({ isLoading: true, error: null });
+    }
+
     try {
       const response = await accountApi.getAccountsWithBalance();
 
       if (response.data.isSuccess && response.data.result) {
         const accounts = response.data.result;
-        set({ accounts, isLoading: false });
+        set({ accounts, isLoading: false, initialLoadStatus: 'success' });
         return createSuccessResponse(accounts);
       } else {
         const message =
           response.data.message || '계좌 정보를 불러오는데 실패했습니다.';
-        set({ error: message, isLoading: false });
+        if (response.status === 404) {
+          set({
+            accounts: [],
+            isLoading: false,
+            initialLoadStatus: 'success',
+            error: null,
+          });
+          return createSuccessResponse([]);
+        }
+        set({ error: message, isLoading: false, initialLoadStatus: 'error' });
         return createErrorResponse(message);
       }
-    } catch (error) {
+    } catch (error: any) {
       const message =
-        error instanceof Error
+        error.response?.data?.message ||
+        (error instanceof Error
           ? error.message
-          : '계좌 정보를 불러오는데 실패했습니다.';
-      set({ error: message, isLoading: false });
+          : '계좌 정보를 불러오는데 실패했습니다.');
+
+      if (error.response?.status === 404) {
+        set({
+          accounts: [],
+          isLoading: false,
+          initialLoadStatus: 'success',
+          error: null,
+        });
+        return createSuccessResponse([]);
+      }
+
+      set({ error: message, isLoading: false, initialLoadStatus: 'error' });
       return createErrorResponse(message);
     }
   },
