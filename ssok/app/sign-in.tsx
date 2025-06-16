@@ -7,7 +7,6 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
-import Animated, { FadeIn, FadeOutDown, FadeInUp } from 'react-native-reanimated';
 import { colors } from '@/constants/colors';
 import { typography } from '@/theme/typography';
 import SignInHeader from '@/modules/auth/components/SignIn/SignInHeader';
@@ -61,14 +60,11 @@ export default function SignInScreen() {
           onDismiss={hideDialog}
         />
         
-        <SignInHeader title="Welcome to SSOK" />
+        <SignInHeader title="welcome to SSOK" />
         
         <View style={styles.content}>
           {!verificationSent ? (
-            <Animated.View
-              entering={FadeIn.duration(500)}
-              exiting={FadeOutDown.duration(300)}
-            >
+            <View>
               <View style={styles.titleContainer}>
                 <Text style={[typography.h2, styles.title]}>
                   본인 인증을 위해
@@ -89,11 +85,9 @@ export default function SignInScreen() {
                 verificationSent={verificationSent}
                 error={undefined}
               />
-            </Animated.View>
+            </View>
           ) : (
-            <Animated.View
-              entering={FadeInUp.duration(500)}
-            >
+            <View>
               <View style={styles.titleContainer}>
                 <Text style={[typography.h2, styles.title]}>
                   인증번호를 입력해주세요
@@ -110,7 +104,7 @@ export default function SignInScreen() {
                 isLoading={isLoading}
                 verificationConfirmed={verificationConfirmed}
               />
-            </Animated.View>
+            </View>
           )}
         </View>
       </SafeAreaView>

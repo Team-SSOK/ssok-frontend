@@ -12,7 +12,7 @@ const SignInHeader: React.FC<HeaderProps> = ({ title }) => {
 
   return (
     <View style={styles.header}>
-      <Text style={[typography.h2, styles.headerTitle]}>{title}</Text>
+      <Text style={[typography.h3, styles.headerTitle]}>{title}</Text>
     </View>
   );
 };
@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: colors.primary,
+    fontWeight: 'bold',
   },
   rightPlaceholder: {
     width: 32,

@@ -7,8 +7,8 @@ import {
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import Toast from 'react-native-toast-message';
 
-// const BASE_URL = 'https://api.ssok.kr/';
-const BASE_URL = 'http://kudong.kr:55030/';
+const BASE_URL = 'https://api.ssok.kr/';
+// const BASE_URL = 'http://kudong.kr:55030/';
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
