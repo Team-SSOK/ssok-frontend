@@ -41,9 +41,8 @@ export default function AccountStep({ data, onNext }: StepComponentProps) {
   const handleCounterpartSelect = (counterpart: TransferCounterpart) => {
     setAccountNumber(counterpart.counterpartAccountNumber);
     
-    // 계좌번호로부터 은행 코드 추출 (간단한 형태로, 실제로는 더 복잡한 로직이 필요할 수 있음)
-    const bankCode = counterpart.counterpartAccountNumber.split('-')[0];
-    const matchedBank = banks.find(bank => bank.code === bankCode);
+    // API에서 제공하는 counterpartBankCode를 사용하여 은행 찾기
+    const matchedBank = banks.find(bank => Number(bank.code) === counterpart.counterpartBankCode);
     
     if (matchedBank) {
       setSelectedBank(matchedBank);

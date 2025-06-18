@@ -50,6 +50,7 @@ export interface RecentTransferHistory {
 export interface TransferCounterpart {
   counterpartName: string;
   counterpartAccountNumber: string;
+  counterpartBankCode: number;
   createdAt: string;
 }
 

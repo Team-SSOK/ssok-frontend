@@ -270,6 +270,8 @@ export const useTransferStore = create<TransferState>((set, get) => ({
     try {
       const response = await transferApi.getRecentCounterparts();
 
+      console.log('🔄 최근 송금 상대방 조회', response.data.result);
+
       if (response.data.isSuccess && response.data.result) {
         const counterparts = response.data.result;
         set({ recentCounterparts: counterparts, isLoading: false });
